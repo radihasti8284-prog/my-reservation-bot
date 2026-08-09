@@ -1,56 +1,51 @@
+from fastapi import FastAPI, Request
 import os
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, BackgroundTasks
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
-from app.bot import create_bot_application
+import httpx
+import uvicorn
+import json
 
+app = FastAPI()
 
-# --- مدیریت چرخه حیات (Lifespan) ---
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # قبل از شروع سرور
-    bot_app = create_bot_application()
-    await bot_app.initialize()
-    await bot_app.start()
-    app.state.bot_app = bot_app
+TOKEN = "8971000707:AAESYFI--ALKEXQgDN7c0yb9SjEBbQQN3BM"
 
-    yield  # سرور در این مرحله اجرا می‌شود
+# استفاده از api_route به جای post تا اعتبارسنجی خودکار FastAPI دور زده شود
+@app.api_route("/webhook", methods=["POST"])
+async def webhook(request: Request):
+    try:
+        # دریافت بدنه خام درخواست
+        body = await request.body()
+        print(f"Raw body: {body}")  # در لاگ‌ها نمایش داده می‌شود
 
-    # بعد از بسته شدن سرور
-    await bot_app.stop()
+        # اگر بدنه خالی نبود، پردازش کن
+        if body:
+            # تبدیل bytes به دیکشنری
+            data = json.loads(body.decode('utf-8'))
+            print(f"Received update: {data}")
 
+            # استخراج chat_id از داده
+            chat_id = data.get("message", {}).get("chat", {}).get("id")
+            if chat_id:
+                text = "سلام! Webhook به درستی کار می‌کند! 🎉"
+                url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+                async with httpx.AsyncClient() as client:
+                    await client.post(url, json={"chat_id": chat_id, "text": text})
+        else:
+            print("بدنه درخواست خالی است")
 
-# --- ایجاد اپلیکیشن FastAPI ---
-app = FastAPI(lifespan=lifespan)
+        # همیشه پاسخ موفق برمی‌گردانیم تا تلگرام دوباره تلاش نکند
+        return {"status": "ok"}
 
+    except json.JSONDecodeError as e:
+        print(f"خطا در پردازش JSON: {e}")
+        return {"status": "error", "message": "Invalid JSON"}
+    except Exception as e:
+        print(f"خطای غیرمنتظره: {e}")
+        return {"status": "error", "message": str(e)}
 
-# --- Webhook برای دریافت آپدیت‌های تلگرام ---
-@app.post("/webhook")
-async def webhook(request: Request, background_tasks: BackgroundTasks):
-    # دریافت داده‌های ارسالی از تلگرام
-    update_data = await request.json()
-
-    # پردازش در پس‌زمینه برای پاسخ سریع
-    bot_app = request.app.state.bot_app
-    background_tasks.add_task(bot_app.process_update, update_data)
-
-    return {"status": "ok"}
-
-
-# --- مسیر تست برای اطمینان از روشن بودن سرور ---
 @app.get("/")
-async def root():
-    return {"message": "ربات رزرو آرایشگاه فعال است!"}
+def root():
+    return {"message": "ربات روشن است!"}
 
-
-# --- سرو کردن فایل‌های استاتیک مینی‌اپ ---
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-
-# --- صفحه مینی‌اپ ---
-@app.get("/app", response_class=HTMLResponse)
-async def get_miniapp():
-    with open("static/index.html", "r", encoding="utf-8") as f:
-        html_content = f.read()
-    return HTMLResponse(content=html_content)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
