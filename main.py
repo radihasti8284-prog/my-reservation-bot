@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import os
 import requests
 import sqlite3
@@ -8,7 +8,12 @@ import time
 
 app = Flask(__name__)
 TOKEN = "8971000707:AAESYFI--ALKEXQgDN7c0yb9SjEBbQQN3BM"
-ADMIN_IDS = [int(x.strip()) for x in os.environ.get("ADMIN_IDS", "").split(",") if x.strip().isdigit()]
+
+# دریافت لیست ادمین‌ها از متغیر محیطی
+ADMIN_IDS = os.environ.get("ADMIN_IDS", "").split(",")
+ADMIN_IDS = [int(x.strip()) for x in ADMIN_IDS if x.strip().isdigit()]
+print(f"👑 Admin IDs: {ADMIN_IDS}")
+
 
 # ========== دیتابیس ==========
 def get_db():
@@ -16,9 +21,11 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+
 def init_db():
     conn = get_db()
     cursor = conn.cursor()
+
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,6 +59,8 @@ def init_db():
             FOREIGN KEY (service_id) REFERENCES services(id)
         )
     ''')
+
+    # اضافه کردن خدمات پیش‌فرض اگر جدول خالی است
     cursor.execute("SELECT COUNT(*) FROM services")
     if cursor.fetchone()[0] == 0:
         services = [
@@ -61,10 +70,14 @@ def init_db():
             ('رنگ مو', 60, 350000, 'رنگ‌آمیزی حرفه‌ای'),
         ]
         cursor.executemany("INSERT INTO services (name, duration, price, description) VALUES (?, ?, ?, ?)", services)
+
     conn.commit()
     conn.close()
+    print("✅ دیتابیس راه‌اندازی شد.")
+
 
 init_db()
+
 
 # ========== توابع کمکی ==========
 def send_message(chat_id, text, reply_markup=None):
@@ -77,6 +90,28 @@ def send_message(chat_id, text, reply_markup=None):
     except Exception as e:
         print(f"⚠️ Error sending message: {e}")
 
+
+def get_or_create_user(telegram_id, name, phone):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (telegram_id,))
+    user = cursor.fetchone()
+    if user:
+        conn.close()
+        return dict(user)
+    else:
+        is_admin = 1 if telegram_id in ADMIN_IDS else 0
+        cursor.execute(
+            "INSERT INTO users (telegram_id, name, phone, is_admin) VALUES (?, ?, ?, ?)",
+            (telegram_id, name, phone, is_admin)
+        )
+        conn.commit()
+        cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (telegram_id,))
+        user = cursor.fetchone()
+        conn.close()
+        return dict(user)
+
+
 # ========== وب‌هوک ==========
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -87,29 +122,42 @@ def webhook():
             msg = data['message']
             chat_id = msg['chat']['id']
             text = msg.get('text', '')
+
+            # ثبت خودکار کاربر در دیتابیس (با نام پیش‌فرض اگر نام نداشته باشد)
+            user = msg.get('from', {})
+            telegram_id = user.get('id')
+            first_name = user.get('first_name', 'کاربر')
+            last_name = user.get('last_name', '')
+            full_name = f"{first_name} {last_name}".strip()
+            # برای ثبت‌نام، نام کامل را ذخیره می‌کنیم و شماره را خالی می‌گذاریم (کاربر بعداً در مینی‌اپ شماره را وارد می‌کند)
+            get_or_create_user(telegram_id, full_name, "")
+
             if text == '/start':
                 send_message(chat_id,
-                    "👋 به ربات رزرو آرایشگاه خوش آمدید!\nبرای رزرو نوبت، روی دکمه زیر کلیک کنید:",
-                    reply_markup={
-                        "inline_keyboard": [[
-                            {"text": "📅 رزرو نوبت", "web_app": {"url": "https://my-reservation-bot.onrender.com/static/user.html"}}
-                        ]]
-                    }
-                )
+                             "👋 به ربات رزرو آرایشگاه خوش آمدید!\nبرای رزرو نوبت، روی دکمه زیر کلیک کنید:",
+                             reply_markup={
+                                 "inline_keyboard": [[
+                                     {"text": "📅 رزرو نوبت",
+                                      "web_app": {"url": "https://my-reservation-bot.onrender.com/static/user.html"}}
+                                 ]]
+                             }
+                             )
             elif text == '/admin':
                 conn = get_db()
                 cursor = conn.cursor()
                 cursor.execute("SELECT is_admin FROM users WHERE telegram_id = ?", (chat_id,))
-                user = cursor.fetchone()
-                if user and user['is_admin'] == 1:
+                user_row = cursor.fetchone()
+                conn.close()
+                if user_row and user_row['is_admin'] == 1:
                     send_message(chat_id,
-                        "👋 به پنل ادمین خوش آمدید!",
-                        reply_markup={
-                            "inline_keyboard": [[
-                                {"text": "📊 مدیریت نوبت‌ها", "web_app": {"url": "https://my-reservation-bot.onrender.com/static/admin.html"}}
-                            ]]
-                        }
-                    )
+                                 "👋 به پنل ادمین خوش آمدید!",
+                                 reply_markup={
+                                     "inline_keyboard": [[
+                                         {"text": "📊 مدیریت نوبت‌ها", "web_app": {
+                                             "url": "https://my-reservation-bot.onrender.com/static/admin.html"}}
+                                     ]]
+                                 }
+                                 )
                 else:
                     send_message(chat_id, "⛔ شما دسترسی ادمین ندارید.")
             else:
@@ -119,6 +167,7 @@ def webhook():
         print(f"❌ Error: {e}")
         return {"status": "error"}, 500
 
+
 # ========== API ==========
 @app.route('/api/auth', methods=['POST'])
 def auth_user():
@@ -126,20 +175,11 @@ def auth_user():
     telegram_id = data.get('telegram_id')
     name = data.get('name')
     phone = data.get('phone')
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (telegram_id,))
-    user = cursor.fetchone()
-    if user:
-        return jsonify({"status": "ok", "user": dict(user)})
-    else:
-        is_admin = 1 if telegram_id in ADMIN_IDS else 0
-        cursor.execute("INSERT INTO users (telegram_id, name, phone, is_admin) VALUES (?, ?, ?, ?)",
-                       (telegram_id, name, phone, is_admin))
-        conn.commit()
-        cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (telegram_id,))
-        user = cursor.fetchone()
-        return jsonify({"status": "ok", "user": dict(user)})
+    if not telegram_id:
+        return jsonify({"status": "error", "message": "telegram_id required"}), 400
+    user = get_or_create_user(telegram_id, name, phone)
+    return jsonify({"status": "ok", "user": user})
+
 
 @app.route('/api/services', methods=['GET'])
 def get_services():
@@ -147,7 +187,9 @@ def get_services():
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM services WHERE is_active = 1")
     services = cursor.fetchall()
+    conn.close()
     return jsonify({"status": "ok", "services": [dict(s) for s in services]})
+
 
 @app.route('/api/appointments/user/<int:telegram_id>', methods=['GET'])
 def get_user_appointments(telegram_id):
@@ -162,7 +204,9 @@ def get_user_appointments(telegram_id):
         ORDER BY a.appointment_date DESC
     ''', (telegram_id,))
     appointments = cursor.fetchall()
+    conn.close()
     return jsonify({"status": "ok", "appointments": [dict(a) for a in appointments]})
+
 
 @app.route('/api/appointments', methods=['POST'])
 def create_appointment():
@@ -171,18 +215,23 @@ def create_appointment():
     service_id = data.get('service_id')
     app_date = data.get('date')
     app_time = data.get('time')
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM users WHERE telegram_id = ?", (telegram_id,))
     user = cursor.fetchone()
     if not user:
+        conn.close()
         return jsonify({"status": "error", "message": "User not found"}), 404
+
     cursor.execute('''
         INSERT INTO appointments (user_id, service_id, appointment_date, appointment_time, status)
         VALUES (?, ?, ?, ?, 'pending')
     ''', (user['id'], service_id, app_date, app_time))
     conn.commit()
+    conn.close()
     return jsonify({"status": "ok", "message": "نوبت با موفقیت ثبت شد!"})
+
 
 @app.route('/api/appointments/<int:appointment_id>/cancel', methods=['POST'])
 def cancel_appointment(appointment_id):
@@ -190,7 +239,9 @@ def cancel_appointment(appointment_id):
     cursor = conn.cursor()
     cursor.execute("UPDATE appointments SET status = 'cancelled' WHERE id = ?", (appointment_id,))
     conn.commit()
+    conn.close()
     return jsonify({"status": "ok", "message": "نوبت لغو شد."})
+
 
 @app.route('/api/admin/appointments', methods=['GET'])
 def admin_get_appointments():
@@ -204,7 +255,9 @@ def admin_get_appointments():
         ORDER BY a.appointment_date DESC
     ''')
     appointments = cursor.fetchall()
+    conn.close()
     return jsonify({"status": "ok", "appointments": [dict(a) for a in appointments]})
+
 
 @app.route('/api/admin/appointments/<int:appointment_id>/status', methods=['POST'])
 def admin_update_status(appointment_id):
@@ -214,27 +267,34 @@ def admin_update_status(appointment_id):
     cursor = conn.cursor()
     cursor.execute("UPDATE appointments SET status = ? WHERE id = ?", (new_status, appointment_id))
     conn.commit()
+    conn.close()
     return jsonify({"status": "ok", "message": f"وضعیت به {new_status} تغییر کرد."})
+
 
 @app.route('/api/admin/services', methods=['POST'])
 def admin_add_service():
     data = request.get_json()
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO services (name, duration, price, description) VALUES (?, ?, ?, ?)",
-                   (data['name'], data['duration'], data['price'], data.get('description', '')))
+    cursor.execute(
+        "INSERT INTO services (name, duration, price, description) VALUES (?, ?, ?, ?)",
+        (data['name'], data['duration'], data['price'], data.get('description', ''))
+    )
     conn.commit()
+    conn.close()
     return jsonify({"status": "ok", "message": "خدمت اضافه شد."})
+
 
 # ========== سرو فایل‌های استاتیک ==========
 @app.route('/static/<path:path>')
 def serve_static(path):
-    from flask import send_from_directory
     return send_from_directory('static', path)
+
 
 @app.route('/')
 def home():
     return "✅ ربات رزرو آرایشگاه روشن است!"
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
