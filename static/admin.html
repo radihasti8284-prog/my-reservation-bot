@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پنل ادمین</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📊 پنل مدیریت</h1>
+
+        <h2>📋 همه نوبت‌ها</h2>
+        <div id="appointments"></div>
+
+        <h2>➕ افزودن خدمت جدید</h2>
+        <form id="serviceForm">
+            <input type="text" id="sname" placeholder="نام خدمت" required>
+            <input type="number" id="sduration" placeholder="مدت زمان (دقیقه)" required>
+            <input type="number" id="sprice" placeholder="قیمت (تومان)" required>
+            <input type="text" id="sdesc" placeholder="توضیحات">
+            <button type="submit">افزودن خدمت</button>
+        </form>
+
+        <button onclick="Telegram.WebApp.close()" class="btn-close">❌ بستن</button>
+    </div>
+    <script>
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.is_admin !== 1) window.location.href = '/static/index.html';
+
+        // بارگیری همه نوبت‌ها
+        async function loadAppointments() {
+            const res = await fetch('/api/admin/appointments');
+            const data = await res.json();
+            const div = document.getElementById('appointments');
+            if (data.appointments.length === 0) {
+                div.innerHTML = '<p>هیچ نوبتی ثبت نشده است.</p>';
+                return;
+            }
+            div.innerHTML = data.appointments.map(a => `
+                <div class="appointment ${a.status}">
+                    <strong>${a.service_name}</strong><br>
+                    👤 ${a.user_name} | 📞 ${a.phone}<br>
+                    📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
+                    وضعیت: ${a.status}
+                    <select onchange="updateStatus(${a.id}, this.value)">
+                        <option value="pending" ${a.status === 'pending' ? 'selected' : ''}>در انتظار</option>
+                        <option value="confirmed" ${a.status === 'confirmed' ? 'selected' : ''}>تأیید شده</option>
+                        <option value="completed" ${a.status === 'completed' ? 'selected' : ''}>انجام شده</option>
+                        <option value="cancelled" ${a.status === 'cancelled' ? 'selected' : ''}>لغو شده</option>
+                    </select>
+                </div>
+            `).join('');
+        }
+        loadAppointments();
+
+        // تغییر وضعیت نوبت
+        async function updateStatus(appId, newStatus) {
+            const res = await fetch(`/api/admin/appointments/${appId}/status`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({status: newStatus})
+            });
+            const result = await res.json();
+            alert(result.message);
+            loadAppointments();
+        }
+
+        // افزودن خدمت
+        document.getElementById('serviceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('sname').value;
+            const duration = document.getElementById('sduration').value;
+            const price = document.getElementById('sprice').value;
+            const description = document.getElementById('sdesc').value;
+
+            const res = await fetch('/api/admin/services', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name, duration, price, description})
+            });
+            const result = await res.json();
+            alert(result.message);
+            this.reset();
+        });
+    </script>
+</body>
+</html>

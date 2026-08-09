@@ -1,0 +1,77 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Vazir', Tahoma, Arial, sans-serif;
+}
+
+body {
+    background: #f0f2f5;
+    padding: 20px;
+    direction: rtl;
+}
+
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+h1, h2 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+input, select, button {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+button {
+    background: #0088cc;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: #006699;
+}
+
+.btn-close {
+    background: #e74c3c;
+    margin-top: 15px;
+}
+
+.btn-close:hover {
+    background: #c0392b;
+}
+
+.appointment {
+    background: #f8f9fa;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border-right: 4px solid #0088cc;
+}
+
+.appointment.pending { border-color: #f39c12; }
+.appointment.confirmed { border-color: #2ecc71; }
+.appointment.cancelled { border-color: #e74c3c; }
+.appointment.completed { border-color: #3498db; }
+
+.error {
+    color: #e74c3c;
+    margin: 10px 0;
+    text-align: center;
+}

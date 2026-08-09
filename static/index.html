@@ -5,104 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>رزرو آرایشگاه</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            font-family: 'Vazir', Tahoma, Arial, sans-serif;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        h1 {
-            color: #2c3e50;
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        p {
-            color: #7f8c8d;
-            margin-bottom: 20px;
-        }
-        .btn {
-            background-color: #0088cc;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-            transition: background-color 0.3s;
-        }
-        .btn:hover {
-            background-color: #006699;
-        }
-        .btn-close {
-            background-color: #e74c3c;
-            margin-top: 10px;
-        }
-        .btn-close:hover {
-            background-color: #c0392b;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>💇‍♂️ رزرو آرایشگاه</h1>
-        <p>برای رزرو نوبت، اطلاعات زیر را تکمیل کنید:</p>
-
-        <!-- فرم ساده رزرو -->
-        <form id="reservationForm">
-            <div style="margin-bottom: 15px; text-align: right;">
-                <label style="display: block; margin-bottom: 5px; font-weight: bold;">نام و نام خانوادگی:</label>
-                <input type="text" id="name" placeholder="مثلاً: علی محمدی" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
-            </div>
-            <div style="margin-bottom: 15px; text-align: right;">
-                <label style="display: block; margin-bottom: 5px; font-weight: bold;">تاریخ مورد نظر:</label>
-                <input type="date" id="date" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
-            </div>
-            <div style="margin-bottom: 20px; text-align: right;">
-                <label style="display: block; margin-bottom: 5px; font-weight: bold;">ساعت:</label>
-                <input type="time" id="time" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
-            </div>
-
-            <button type="submit" class="btn">📅 ثبت رزرو</button>
+        <h1>💇‍♂️ به آرایشگاه خوش آمدید</h1>
+        <p>لطفاً اطلاعات خود را وارد کنید</p>
+        <form id="authForm">
+            <input type="text" id="name" placeholder="نام و نام خانوادگی" required>
+            <input type="text" id="phone" placeholder="شماره تماس" required>
+            <button type="submit">ورود / ثبت‌نام</button>
         </form>
-
-        <button onclick="Telegram.WebApp.close()" class="btn btn-close">❌ بستن</button>
+        <div id="error" class="error"></div>
     </div>
-
     <script>
-        document.getElementById('reservationForm').addEventListener('submit', function(e) {
+        document.getElementById('authForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-
             const name = document.getElementById('name').value;
-            const date = document.getElementById('date').value;
-            const time = document.getElementById('time').value;
+            const phone = document.getElementById('phone').value;
+            const telegram_id = Telegram.WebApp.initDataUnsafe.user?.id;
 
-            if (!name || !date || !time) {
-                alert('لطفاً همه فیلدها را پر کنید!');
+            if (!telegram_id) {
+                document.getElementById('error').textContent = 'لطفاً از داخل تلگرام وارد شوید.';
                 return;
             }
 
-            // نمایش پیام موفقیت (در نسخه واقعی، اطلاعات به سرور ارسال می‌شود)
-            alert(`✅ رزرو شما با موفقیت ثبت شد!\n\nنام: ${name}\nتاریخ: ${date}\nساعت: ${time}`);
+            const response = await fetch('/api/auth', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({telegram_id, name, phone})
+            });
 
-            // بستن مینی‌اپ بعد از 2 ثانیه
-            setTimeout(() => {
-                Telegram.WebApp.close();
-            }, 2000);
+            const result = await response.json();
+            if (result.status === 'ok') {
+                // ذخیره کاربر در localStorage و رفتن به صفحه کاربر
+                localStorage.setItem('user', JSON.stringify(result.user));
+                if (result.user.is_admin === 1) {
+                    window.location.href = '/static/admin.html';
+                } else {
+                    window.location.href = '/static/user.html';
+                }
+            } else {
+                document.getElementById('error').textContent = result.message || 'خطایی رخ داد.';
+            }
         });
     </script>
 </body>

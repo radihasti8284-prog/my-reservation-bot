@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پنل کاربری</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📋 پنل کاربری</h1>
+        <div id="userInfo"></div>
+
+        <h2>📅 رزرو نوبت جدید</h2>
+        <form id="bookingForm">
+            <select id="service" required></select>
+            <input type="date" id="date" required>
+            <input type="time" id="time" required>
+            <button type="submit">ثبت نوبت</button>
+        </form>
+
+        <h2>📋 نوبت‌های من</h2>
+        <div id="appointments"></div>
+
+        <button onclick="Telegram.WebApp.close()" class="btn-close">❌ بستن</button>
+    </div>
+    <script>
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) window.location.href = '/static/index.html';
+
+        document.getElementById('userInfo').innerHTML = `
+            <p>👤 ${user.name} | 📞 ${user.phone}</p>
+        `;
+
+        // بارگیری خدمات
+        async function loadServices() {
+            const res = await fetch('/api/services');
+            const data = await res.json();
+            const select = document.getElementById('service');
+            data.services.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = `${s.name} (${s.duration} دقیقه - ${s.price.toLocaleString()} تومان)`;
+                select.appendChild(opt);
+            });
+        }
+        loadServices();
+
+        // بارگیری نوبت‌ها
+        async function loadAppointments() {
+            const res = await fetch(`/api/appointments/user/${user.telegram_id}`);
+            const data = await res.json();
+            const div = document.getElementById('appointments');
+            if (data.appointments.length === 0) {
+                div.innerHTML = '<p>هیچ نوبتی ثبت نشده است.</p>';
+                return;
+            }
+            div.innerHTML = data.appointments.map(a => `
+                <div class="appointment ${a.status}">
+                    <strong>${a.service_name}</strong><br>
+                    📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
+                    وضعیت: ${a.status === 'pending' ? 'در انتظار تأیید' : a.status === 'confirmed' ? 'تأیید شده' : a.status === 'cancelled' ? 'لغو شده' : 'انجام شده'}
+                    ${a.status === 'pending' ? `<button onclick="cancelApp(${a.id})">لغو</button>` : ''}
+                </div>
+            `).join('');
+        }
+        loadAppointments();
+
+        // ثبت نوبت
+        document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const service_id = document.getElementById('service').value;
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+
+            const res = await fetch('/api/appointments', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({telegram_id: user.telegram_id, service_id, date, time})
+            });
+            const result = await res.json();
+            alert(result.message);
+            if (result.status === 'ok') loadAppointments();
+        });
+
+        // لغو نوبت
+        async function cancelApp(appId) {
+            if (!confirm('آیا از لغو این نوبت مطمئن هستید؟')) return;
+            const res = await fetch(`/api/appointments/${appId}/cancel`, {method: 'POST'});
+            const result = await res.json();
+            alert(result.message);
+            loadAppointments();
+        }
+    </script>
+</body>
+</html>
