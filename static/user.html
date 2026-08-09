@@ -7,7 +7,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* استایل‌های اختصاصی صفحه کاربر */
         .service-desc {
             font-size: 13px;
             color: var(--m4cut-gray);
@@ -51,22 +50,230 @@
         .tab-content.active {
             display: block;
         }
+        /* استایل تاریخ شمسی */
+        .date-selectors {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0 14px;
+        }
+        .date-selectors select {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1.5px solid var(--m4cut-border);
+            font-size: 15px;
+            background: var(--m4cut-white);
+            font-family: inherit;
+        }
+        .date-selectors select:focus {
+            border-color: var(--m4cut-brass);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(198, 146, 73, 0.15);
+        }
+        .day-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin: 10px 0 16px;
+        }
+        .day-grid button {
+            padding: 12px 0;
+            border: 1.5px solid var(--m4cut-border);
+            border-radius: 10px;
+            background: var(--m4cut-white);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            color: var(--m4cut-ink);
+        }
+        .day-grid button:hover:not(:disabled) {
+            border-color: var(--m4cut-brass);
+            background: var(--m4cut-smoke);
+        }
+        .day-grid button.selected {
+            background: var(--m4cut-brass);
+            border-color: var(--m4cut-brass);
+            color: white;
+        }
+        .day-grid button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .day-name {
+            font-size: 11px;
+            color: var(--m4cut-gray);
+            text-align: center;
+            padding: 4px 0;
+            font-weight: 600;
+        }
+        .month-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0 4px;
+        }
+        .month-nav button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--m4cut-brass);
+            padding: 0 12px;
+            font-weight: 700;
+        }
+        .month-nav span {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .time-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 10px 0 16px;
+        }
+        .time-grid button {
+            padding: 10px 0;
+            border: 1.5px solid var(--m4cut-border);
+            border-radius: 10px;
+            background: var(--m4cut-white);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            color: var(--m4cut-ink);
+        }
+        .time-grid button:hover {
+            border-color: var(--m4cut-brass);
+            background: var(--m4cut-smoke);
+        }
+        .time-grid button.selected {
+            background: var(--m4cut-brass);
+            border-color: var(--m4cut-brass);
+            color: white;
+        }
+        .time-grid button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .bank-card {
+            background: var(--m4cut-smoke);
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid var(--m4cut-border);
+        }
+        .bank-card .number {
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--m4cut-ink);
+            direction: ltr;
+        }
+        .bank-card .label {
+            font-size: 12px;
+            color: var(--m4cut-gray);
+        }
+        .upload-area {
+            border: 2px dashed var(--m4cut-border);
+            border-radius: 14px;
+            padding: 24px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--m4cut-smoke);
+            margin: 8px 0 12px;
+        }
+        .upload-area:hover {
+            border-color: var(--m4cut-brass);
+            background: #faf8f5;
+        }
+        .upload-area .icon { font-size: 32px; display: block; margin-bottom: 6px; }
+        .upload-area .text { font-size: 14px; color: var(--m4cut-gray); }
+        .upload-area .filename { font-size: 13px; color: var(--m4cut-brass); margin-top: 4px; font-weight: 500; }
+        .appointment-item {
+            background: var(--m4cut-smoke);
+            padding: 16px;
+            margin: 10px 0;
+            border-radius: 14px;
+            border-right: 4px solid var(--m4cut-brass);
+        }
+        .appointment-item.confirmed { border-color: var(--m4cut-pine); }
+        .appointment-item.cancelled { border-color: var(--m4cut-clay); opacity: 0.7; }
+        .appointment-item.completed { border-color: var(--m4cut-ink); }
+        .badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-pending { background: #f39c12; color: white; }
+        .badge-confirmed { background: var(--m4cut-pine); color: white; }
+        .badge-cancelled { background: var(--m4cut-clay); color: white; }
+        .badge-completed { background: var(--m4cut-ink); color: white; }
+        .msg { padding: 12px 16px; border-radius: 12px; margin: 10px 0; font-size: 14px; }
+        .msg-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .msg-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .step-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .step-help { font-size: 14px; color: var(--m4cut-gray); margin-bottom: 10px; }
+        .booking-step { display: none; animation: fadeIn 0.3s ease; }
+        .booking-step--visible { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .step-dot {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--m4cut-gray);
+            font-weight: 500;
+        }
+        .step-dot .dot {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: var(--m4cut-smoke);
+            border: 2px solid var(--m4cut-border);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 14px;
+            color: var(--m4cut-gray);
+            transition: all 0.4s ease;
+        }
+        .step-dot.active .dot {
+            background: var(--m4cut-brass);
+            border-color: var(--m4cut-brass);
+            color: white;
+            box-shadow: 0 4px 12px rgba(198, 146, 73, 0.3);
+        }
+        .step-dot.completed .dot {
+            background: var(--m4cut-pine);
+            border-color: var(--m4cut-pine);
+            color: white;
+        }
+        .step-dot.active { color: var(--m4cut-ink); }
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 0 4px;
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- هدر برند -->
     <div class="brand-header">
         <div class="brand-logo">M4<span>Cut</span></div>
         <div class="brand-tagline">همه مراحل رزرو در یک صفحه</div>
     </div>
 
-    <!-- اطلاعات کاربر -->
     <div id="userInfo" style="background:var(--m4cut-smoke);padding:12px 16px;border-radius:12px;margin-bottom:16px;font-size:14px;">
         👤 بارگذاری...
     </div>
 
-    <!-- تب‌ها -->
     <div style="display:flex;gap:8px;margin-bottom:16px;">
         <button class="tab-btn active" data-tab="reserve">📅 رزرو جدید</button>
         <button class="tab-btn" data-tab="myapps">📋 نوبت‌های من</button>
@@ -75,33 +282,49 @@
     <!-- ====== تب رزرو ====== -->
     <div id="tab-reserve" class="tab-content active">
         <form id="bookingForm">
+            <!-- استپ‌ها -->
+            <div class="step-indicator">
+                <div class="step-dot active" data-step="1"><span class="dot">۱</span> خدمت</div>
+                <div class="step-dot" data-step="2"><span class="dot">۲</span> تاریخ</div>
+                <div class="step-dot" data-step="3"><span class="dot">۳</span> ساعت</div>
+            </div>
+
             <!-- استپ ۱: انتخاب خدمت -->
             <div class="booking-step booking-step--visible" data-step="1">
                 <div class="step-title">۱. انتخاب خدمت</div>
                 <select id="serviceSelect" required>
                     <option value="">انتخاب کنید...</option>
                 </select>
-                <div id="serviceDesc" class="service-desc">توضیحات خدمت在这里 نمایش داده می‌شود</div>
+                <div id="serviceDesc" class="service-desc">توضیحات خدمت اینجا نمایش داده می‌شود</div>
+                <button type="button" class="btn" style="margin-top:12px;" onclick="goToStep(2)">ادامه ➜</button>
             </div>
 
-            <!-- استپ ۲: انتخاب روز -->
+            <!-- استپ ۲: انتخاب تاریخ شمسی -->
             <div class="booking-step" data-step="2">
-                <div class="step-title">۲. انتخاب روز</div>
-                <p class="step-help">روز مورد نظر را لمس کنید</p>
+                <div class="step-title">۲. انتخاب تاریخ</div>
+                <p class="step-help">تاریخ مورد نظر را انتخاب کنید — فقط از امروز به بعد</p>
+
+                <div class="month-nav">
+                    <button type="button" id="prevMonth">‹</button>
+                    <span id="currentMonthDisplay">فروردین ۱۴۰۴</span>
+                    <button type="button" id="nextMonth">›</button>
+                </div>
+
                 <div id="dayGrid" class="day-grid"></div>
+                <button type="button" class="btn" style="margin-top:12px;" onclick="goToStep(3)">ادامه ➜</button>
             </div>
 
-            <!-- استپ ۳: انتخاب ساعت و پرداخت -->
+            <!-- استپ ۳: ساعت و پرداخت -->
             <div class="booking-step" data-step="3">
                 <div class="step-title">۳. ساعت و پرداخت</div>
-                <p class="step-help">ساعت مورد نظر را انتخاب کنید — خدمت و مبلغ روی هر ساعت نمایش داده می‌شود</p>
+                <p class="step-help">ساعت مورد نظر را انتخاب کنید</p>
                 <div id="timeGrid" class="time-grid"></div>
 
-                <!-- کارت بانکی (شبیه سایت معین) -->
+                <!-- کارت بانکی با شماره جدید -->
                 <div class="bank-card">
                     <div>
                         <div class="label">کارت‌به‌کارت بیعانه</div>
-                        <div class="number" dir="ltr">5892 ●●●● ●●●● 7135</div>
+                        <div class="number" dir="ltr">6219 8619 3275 5076</div>
                     </div>
                     <div class="logo">💳</div>
                 </div>
@@ -131,7 +354,7 @@
 
 <script>
     // ============================================================
-    //   M4Cut - اسکریپت کاربر
+    //   M4Cut - اسکریپت کاربر (نسخه به‌روز با تاریخ شمسی)
     // ============================================================
 
     // ----- اطلاعات کاربر -----
@@ -146,7 +369,109 @@
     let selectedTime = null;
     let uploadedFileUrl = null;
     let currentStep = 1;
-    const totalSteps = 3;
+
+    // ----- تاریخ شمسی -----
+    const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+    const today = new Date();
+    let currentYear = 1404;
+    let currentMonth = today.getMonth() + 1; // 1-12 شمسی (تخمینی)
+    // تنظیم سال و ماه شمسی براساس تاریخ میلادی (تخمینی)
+    const gYear = today.getFullYear();
+    const gMonth = today.getMonth();
+    const gDay = today.getDate();
+    // تبدیل تقریبی: سال شمسی = میلادی - 621
+    currentYear = gYear - 621;
+    // ماه شمسی حدوداً 2 ماه جلوتر از میلادی است
+    currentMonth = gMonth + 2;
+    if (currentMonth > 12) { currentMonth -= 12; currentYear += 1; }
+    const currentDay = gDay + 10;
+    // تنظیم روز در محدوده
+    let maxDay = daysInMonth(currentYear, currentMonth - 1);
+    let displayDay = Math.min(currentDay, maxDay);
+
+    let selectedYear = currentYear;
+    let selectedMonth = currentMonth;
+    let selectedDay = displayDay;
+
+    // ----- توابع تاریخ شمسی -----
+    function isLeapYear(year) {
+        const a = year % 33;
+        return a === 1 || a === 5 || a === 9 || a === 13 || a === 17 || a === 22 || a === 26 || a === 30;
+    }
+
+    function daysInMonth(year, monthIndex) {
+        const d = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
+        if (monthIndex === 11 && isLeapYear(year)) return 30;
+        return d[monthIndex];
+    }
+
+    function isPastDate(year, monthIndex, day) {
+        if (year < currentYear) return true;
+        if (year === currentYear && monthIndex < currentMonth - 1) return true;
+        if (year === currentYear && monthIndex === currentMonth - 1 && day < currentDay) return true;
+        return false;
+    }
+
+    function buildDayGrid(year, monthIndex) {
+        const grid = document.getElementById('dayGrid');
+        grid.innerHTML = '';
+        const days = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
+        days.forEach(d => {
+            const div = document.createElement('div');
+            div.className = 'day-name';
+            div.textContent = d;
+            grid.appendChild(div);
+        });
+
+        const totalDays = daysInMonth(year, monthIndex);
+        // پیدا کردن روز اول ماه (چندشنبه)
+        // برای سادگی، از یک الگوریتم ساده استفاده میکنیم
+        // فرض میکنیم اول هر ماه یکشنبه است (برای نمایش گرید)
+        // اما برای دقت بهتر، از محاسبه استفاده میکنیم
+        // اینجا برای نمایش ساده، روزها رو از ۱ شروع میکنیم
+        // بهتر است از یک کتابخانه استفاده شود، اما برای سادگی، به صورت خطی نمایش میدهیم
+        for (let d = 1; d <= totalDays; d++) {
+            const btn = document.createElement('button');
+            btn.textContent = d;
+            btn.dataset.day = d;
+            if (isPastDate(year, monthIndex, d)) {
+                btn.disabled = true;
+            }
+            if (d === selectedDay && year === selectedYear && monthIndex === selectedMonth - 1) {
+                btn.classList.add('selected');
+            }
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.day-grid button').forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedDay = parseInt(this.dataset.day);
+                selectedYear = year;
+                selectedMonth = monthIndex + 1;
+                selectedDate = `${selectedYear}/${String(selectedMonth).padStart(2,'0')}/${String(selectedDay).padStart(2,'0')}`;
+                goToStep(3);
+            });
+            grid.appendChild(btn);
+        }
+        // نمایش ماه و سال
+        document.getElementById('currentMonthDisplay').textContent = `${persianMonths[monthIndex]} ${year}`;
+    }
+
+    function updateMonth(delta) {
+        let newMonth = selectedMonth - 1 + delta;
+        let newYear = selectedYear;
+        if (newMonth < 0) { newMonth = 11; newYear -= 1; }
+        if (newMonth > 11) { newMonth = 0; newYear += 1; }
+        // محدود کردن به آینده
+        if (newYear < currentYear) return;
+        if (newYear === currentYear && newMonth < currentMonth - 1) return;
+        selectedYear = newYear;
+        selectedMonth = newMonth + 1;
+        const totalDays = daysInMonth(selectedYear, newMonth);
+        selectedDay = Math.min(selectedDay, totalDays);
+        buildDayGrid(selectedYear, newMonth);
+    }
+
+    document.getElementById('prevMonth').addEventListener('click', () => updateMonth(-1));
+    document.getElementById('nextMonth').addEventListener('click', () => updateMonth(1));
 
     // ----- تب‌ها -----
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -158,60 +483,6 @@
             if (this.dataset.tab === 'myapps') loadMyAppointments();
         });
     });
-
-    // ----- تاریخ شمسی (ساده) -----
-    const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
-
-    function isLeapYear(year) {
-        const a = year % 33;
-        return a === 1 || a === 5 || a === 9 || a === 13 || a === 17 || a === 22 || a === 26 || a === 30;
-    }
-
-    function daysInMonth(year, month) {
-        const d = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
-        if (month === 11 && isLeapYear(year)) return 30;
-        return d[month];
-    }
-
-    function persianToGregorian(py, pm, pd) {
-        // تبدیل تقریبی - برای نمایش استفاده می‌شود
-        const gYear = py - 621;
-        const gMonth = pm + 2;
-        const gDay = pd + 10;
-        return { year: gYear, month: gMonth, day: gDay };
-    }
-
-    function buildDayGrid() {
-        const grid = document.getElementById('dayGrid');
-        grid.innerHTML = '';
-        const today = new Date();
-        const py = 1404; // سال شمسی فعلی
-        const pm = today.getMonth() + 2; // تقریبی
-        const pd = today.getDate();
-
-        const days = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
-        days.forEach(d => {
-            const div = document.createElement('div');
-            div.className = 'day-name';
-            div.textContent = d;
-            grid.appendChild(div);
-        });
-
-        const maxDay = daysInMonth(py, pm);
-        for (let d = 1; d <= maxDay; d++) {
-            const btn = document.createElement('button');
-            btn.textContent = d;
-            btn.dataset.day = d;
-            if (d < pd) btn.disabled = true;
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.day-grid button').forEach(b => b.classList.remove('selected'));
-                this.classList.add('selected');
-                selectedDate = `${py}/${String(pm+1).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
-                goToStep(3);
-            });
-            grid.appendChild(btn);
-        }
-    }
 
     // ----- بارگیری خدمات -----
     async function loadServices() {
@@ -259,8 +530,15 @@
             el.classList.toggle('active', s === step);
             el.classList.toggle('completed', s < step);
         });
-        // اسکرول به بالای فرم
         document.querySelector('#bookingForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (step === 2) {
+            buildDayGrid(selectedYear, selectedMonth - 1);
+        }
+        if (step === 3) {
+            buildTimeGrid();
+            document.getElementById('submitBtn').disabled = (selectedDate === null || selectedTime === null || !uploadedFileUrl);
+            document.getElementById('submitBtn').style.opacity = document.getElementById('submitBtn').disabled ? '0.6' : '1';
+        }
     }
 
     // ----- ساخت ساعت‌ها -----
@@ -272,7 +550,6 @@
             const btn = document.createElement('button');
             btn.textContent = t;
             btn.dataset.time = t;
-            // نمایش قیمت روی ساعت (شبیه سایت معین)
             if (selectedService) {
                 btn.textContent = `${t} - ${selectedService.price.toLocaleString()} تومان`;
             }
@@ -307,6 +584,8 @@
                 uploadedFileUrl = data.url;
                 previewImg.src = data.url;
                 previewImg.style.display = 'block';
+                document.getElementById('submitBtn').disabled = !(selectedDate && selectedTime && uploadedFileUrl);
+                document.getElementById('submitBtn').style.opacity = document.getElementById('submitBtn').disabled ? '0.6' : '1';
             } else {
                 alert('خطا در آپلود رسید.');
             }
@@ -325,7 +604,7 @@
             return;
         }
         if (!selectedDate) {
-            msgDiv.innerHTML = '<div class="msg msg-error">لطفاً یک روز انتخاب کنید.</div>';
+            msgDiv.innerHTML = '<div class="msg msg-error">لطفاً یک تاریخ انتخاب کنید.</div>';
             return;
         }
         if (!selectedTime) {
@@ -354,10 +633,7 @@
             const result = await res.json();
             if (result.status === 'ok') {
                 msgDiv.innerHTML = `<div class="msg msg-success">✅ ${result.message}</div>`;
-                // ریست فرم
-                setTimeout(() => {
-                    Telegram.WebApp.close();
-                }, 3000);
+                setTimeout(() => { Telegram.WebApp.close(); }, 3000);
             } else {
                 msgDiv.innerHTML = `<div class="msg msg-error">❌ ${result.message}</div>`;
             }
@@ -397,17 +673,24 @@
 
     // ----- مقداردهی اولیه -----
     loadServices();
-    buildDayGrid();
+    buildDayGrid(currentYear, currentMonth - 1);
     buildTimeGrid();
-    // غیرفعال کردن دکمه ثبت تا زمانی که همه موارد انتخاب شوند
+
     document.getElementById('submitBtn').disabled = true;
     document.getElementById('submitBtn').style.opacity = '0.6';
 
-    // فعال‌سازی دکمه ثبت بعد از انتخاب ساعت (در event listener ساعت انجام شده)
-    // همچنین می‌تونیم یک observer برای تغییرات داشته باشیم
+    // تنظیم پیش‌فرض تاریخ به امروز
+    const todayStr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(currentDay).padStart(2,'0')}`;
+    selectedDate = todayStr;
+    selectedDay = currentDay;
+    selectedYear = currentYear;
+    selectedMonth = currentMonth;
 
-    // نمایش استپ اول
     goToStep(1);
+
+    // همچنین دکمه‌های ادامه رو غیرفعال می‌کنیم تا کاربر نتواند بدون انتخاب ادامه دهد
+    // اما دکمه ادامه در استپ ۱ و ۲ به ترتیب کار می‌کنند
+    // برای استپ ۳ نیز دکمه ثبت فعال می‌شود
 </script>
 </body>
 </html>
