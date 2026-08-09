@@ -5,18 +5,17 @@ import sqlite3
 import json
 import time
 from werkzeug.utils import secure_filename
+from datetime import datetime
 
 app = Flask(__name__)
 TOKEN = "8971000707:AAESYFI--ALKEXQgDN7c0yb9SjEBbQQN3BM"
 
-# تنظیمات آپلود
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 ADMIN_IDS = [int(x.strip()) for x in os.environ.get("ADMIN_IDS", "").split(",") if x.strip().isdigit()]
-print(f"👑 Admin IDs: {ADMIN_IDS}")
 
 
 # ========== دیتابیس ==========
@@ -29,6 +28,8 @@ def get_db():
 def init_db():
     conn = get_db()
     cursor = conn.cursor()
+
+    # جدول users
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,6 +40,8 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+
+    # جدول services
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS services (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,6 +52,8 @@ def init_db():
             is_active INTEGER DEFAULT 1
         )
     ''')
+
+    # جدول appointments
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS appointments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,26 +63,78 @@ def init_db():
             appointment_time TEXT,
             status TEXT DEFAULT 'pending',
             receipt TEXT,
+            notification_sent INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id),
             FOREIGN KEY (service_id) REFERENCES services(id)
         )
     ''')
-    # اضافه کردن ستون receipt اگه وجود نداره
+
+    # جدول work_schedule
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS work_schedule (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            day_of_week INTEGER NOT NULL,
+            start_time TEXT NOT NULL,
+            end_time TEXT NOT NULL,
+            is_active INTEGER DEFAULT 1
+        )
+    ''')
+
+    # جدول broadcasts
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS broadcasts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            message TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # اضافه کردن ستون‌های جدید به جدول appointments
     cursor.execute("PRAGMA table_info(appointments)")
     cols = [c[1] for c in cursor.fetchall()]
-    if 'receipt' not in cols:
-        cursor.execute("ALTER TABLE appointments ADD COLUMN receipt TEXT")
+    if 'notification_sent' not in cols:
+        cursor.execute("ALTER TABLE appointments ADD COLUMN notification_sent INTEGER DEFAULT 0")
 
+    # اضافه کردن ستون description به services (اگه وجود نداره)
+    cursor.execute("PRAGMA table_info(services)")
+    cols = [c[1] for c in cursor.fetchall()]
+    if 'description' not in cols:
+        cursor.execute("ALTER TABLE services ADD COLUMN description TEXT")
+
+    # خدمات پیش‌فرض با توضیحات کامل
     cursor.execute("SELECT COUNT(*) FROM services")
     if cursor.fetchone()[0] == 0:
         services = [
-            ('کوتاهی موی مردانه', 30, 150000, 'کوتاهی و اصلاح مو'),
-            ('اصلاح صورت', 20, 100000, 'اصلاح ریش و سبیل'),
-            ('کوتاهی موی زنانه', 45, 250000, 'کوتاهی و لایه‌لایه'),
-            ('رنگ مو', 60, 350000, 'رنگ‌آمیزی حرفه‌ای'),
+            ('کوتاهی موی مردانه', 30, 150000,
+             '⭐ کوتاهی و اصلاح مو با جدیدترین متدهای روز دنیا. شامل شامپو و حالت‌دهی.'),
+            ('اصلاح صورت', 20, 100000, '✨ اصلاح حرفه‌ای ریش و سبیل با استفاده از تیغ‌های استریل و محصولات با کیفیت.'),
+            ('کوتاهی موی زنانه', 45, 250000, '🌸 کوتاهی و لایه‌لایه‌سازی مو با توجه به فرم صورت. شامل مشاوره رایگان.'),
+            ('رنگ مو', 60, 350000, '🎨 رنگ‌آمیزی حرفه‌ای با بهترین برندهای دنیا. شامل تونر و براق‌کننده.'),
+            ('ماساژ سر و گردن', 30, 180000, '💆‍♂️ ماساژ تخصصی سر و گردن برای رفع خستگی و افزایش گردش خون.'),
         ]
-        cursor.executemany("INSERT INTO services (name, duration, price, description) VALUES (?, ?, ?, ?)", services)
+        cursor.executemany(
+            "INSERT INTO services (name, duration, price, description) VALUES (?, ?, ?, ?)",
+            services
+        )
+
+    # تنظیمات پیش‌فرض ساعات کاری
+    cursor.execute("SELECT COUNT(*) FROM work_schedule")
+    if cursor.fetchone()[0] == 0:
+        default_schedule = [
+            (0, '09:00', '18:00', 1),  # شنبه
+            (1, '09:00', '18:00', 1),  # یکشنبه
+            (2, '09:00', '18:00', 1),  # دوشنبه
+            (3, '09:00', '18:00', 1),  # سه‌شنبه
+            (4, '09:00', '18:00', 1),  # چهارشنبه
+            (5, '09:00', '14:00', 0),  # پنجشنبه
+            (6, '09:00', '14:00', 0),  # جمعه
+        ]
+        cursor.executemany(
+            "INSERT INTO work_schedule (day_of_week, start_time, end_time, is_active) VALUES (?, ?, ?, ?)",
+            default_schedule
+        )
+
     conn.commit()
     conn.close()
     print("✅ دیتابیس راه‌اندازی شد.")
@@ -103,13 +160,11 @@ def get_or_create_user(telegram_id, name, phone):
         return None
     conn = get_db()
     cursor = conn.cursor()
-    # بررسی وجود کاربر
     cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (telegram_id,))
     user = cursor.fetchone()
     if user:
         conn.close()
         return dict(user)
-    # ایجاد کاربر جدید
     is_admin = 1 if telegram_id in ADMIN_IDS else 0
     cursor.execute(
         "INSERT INTO users (telegram_id, name, phone, is_admin) VALUES (?, ?, ?, ?)",
@@ -126,6 +181,29 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+def get_all_users():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT telegram_id FROM users")
+    users = cursor.fetchall()
+    conn.close()
+    return [u['telegram_id'] for u in users]
+
+
+def send_broadcast(message):
+    """ارسال پیام به همه کاربران"""
+    users = get_all_users()
+    success_count = 0
+    for chat_id in users:
+        try:
+            send_message(chat_id, f"📢 اعلان همگانی:\n\n{message}")
+            success_count += 1
+            time.sleep(0.1)  # جلوگیری از محدودیت تلگرام
+        except Exception as e:
+            print(f"⚠️ Failed to send to {chat_id}: {e}")
+    return success_count
+
+
 # ========== وب‌هوک ==========
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -139,7 +217,6 @@ def webhook():
             user = msg.get('from', {})
             telegram_id = user.get('id')
             full_name = f"{user.get('first_name', '')} {user.get('last_name', '')}".strip()
-            # ثبت خودکار کاربر هنگام اولین پیام
             get_or_create_user(telegram_id, full_name, "")
 
             if text == '/start':
@@ -182,11 +259,9 @@ def webhook():
 @app.route('/api/auth', methods=['POST'])
 def auth_user():
     data = request.get_json()
-    if not data or not data.get('telegram_id'):
-        return jsonify({"status": "error", "message": "telegram_id required"}), 400
     user = get_or_create_user(data['telegram_id'], data['name'], data['phone'])
     if not user:
-        return jsonify({"status": "error", "message": "Failed to create user"}), 500
+        return jsonify({"status": "error", "message": "Failed"}), 500
     return jsonify({"status": "ok", "user": user})
 
 
@@ -219,58 +294,34 @@ def upload_file():
 @app.route('/api/appointments', methods=['POST'])
 def create_appointment():
     data = request.get_json()
-    if not data:
-        return jsonify({"status": "error", "message": "Invalid request"}), 400
-
     telegram_id = data.get('telegram_id')
-    if not telegram_id:
-        return jsonify({"status": "error", "message": "Telegram ID missing"}), 400
-
     service_id = data.get('service_id')
     app_date = data.get('date')
     app_time = data.get('time')
     receipt_url = data.get('receipt')
 
-    # پیدا کردن کاربر (با دیباگ)
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM users WHERE telegram_id = ?", (telegram_id,))
     user = cursor.fetchone()
+    if not user:
+        # تلاش برای ایجاد خودکار
+        user_dict = get_or_create_user(telegram_id, "کاربر", "")
+        if user_dict:
+            cursor.execute("SELECT id FROM users WHERE telegram_id = ?", (telegram_id,))
+            user = cursor.fetchone()
 
     if not user:
-        # تلاش برای ایجاد کاربر (اگر به هر دلیلی وجود نداشت)
-        # چون نام و شماره نداریم، با نام پیش‌فرض ایجاد می‌کنیم
-        print(f"⚠️ User {telegram_id} not found. Trying to create...")
-        try:
-            # دریافت اطلاعات از تلگرام
-            url = f"https://api.telegram.org/bot{TOKEN}/getChat?chat_id={telegram_id}"
-            resp = requests.get(url, timeout=10)
-            if resp.status_code == 200:
-                chat_data = resp.json().get('result', {})
-                first_name = chat_data.get('first_name', 'کاربر')
-                last_name = chat_data.get('last_name', '')
-                full_name = f"{first_name} {last_name}".strip()
-                user_dict = get_or_create_user(telegram_id, full_name, "")
-                if user_dict:
-                    cursor.execute("SELECT id FROM users WHERE telegram_id = ?", (telegram_id,))
-                    user = cursor.fetchone()
-            else:
-                return jsonify({"status": "error", "message": "User not found. Please use /start first."}), 404
-        except Exception as e:
-            print(f"❌ Error creating user: {e}")
-            return jsonify({"status": "error", "message": "User not found. Please use /start first."}), 404
-
-    if not user:
+        conn.close()
         return jsonify({"status": "error", "message": "User not found. Please use /start first."}), 404
 
-    # ثبت نوبت
     cursor.execute('''
         INSERT INTO appointments (user_id, service_id, appointment_date, appointment_time, status, receipt)
         VALUES (?, ?, ?, ?, 'pending', ?)
     ''', (user['id'], service_id, app_date, app_time, receipt_url))
     conn.commit()
     conn.close()
-    return jsonify({"status": "ok", "message": "نوبت با موفقیت ثبت شد! منتظر تأیید ادمین باشید."})
+    return jsonify({"status": "ok", "message": "نوبت ثبت شد! منتظر تأیید ادمین باشید."})
 
 
 @app.route('/api/appointments/user/<int:telegram_id>', methods=['GET'])
@@ -278,7 +329,7 @@ def get_user_appointments(telegram_id):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
-        SELECT a.*, s.name as service_name
+        SELECT a.*, s.name as service_name, s.description as service_description
         FROM appointments a
         JOIN users u ON a.user_id = u.id
         JOIN services s ON a.service_id = s.id
@@ -295,7 +346,7 @@ def admin_get_appointments():
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
-        SELECT a.*, u.name as user_name, u.phone, s.name as service_name
+        SELECT a.*, u.name as user_name, u.phone, u.telegram_id, s.name as service_name
         FROM appointments a
         JOIN users u ON a.user_id = u.id
         JOIN services s ON a.service_id = s.id
@@ -312,10 +363,88 @@ def admin_update_status(appointment_id):
     new_status = data.get('status')
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("UPDATE appointments SET status = ? WHERE id = ?", (new_status, appointment_id))
+
+    # گرفتن اطلاعات نوبت برای ارسال اعلان
+    cursor.execute('''
+        SELECT a.user_id, u.telegram_id, a.appointment_date, a.appointment_time, s.name as service_name
+        FROM appointments a
+        JOIN users u ON a.user_id = u.id
+        JOIN services s ON a.service_id = s.id
+        WHERE a.id = ?
+    ''', (appointment_id,))
+    appointment = cursor.fetchone()
+
+    cursor.execute("UPDATE appointments SET status = ?, notification_sent = 0 WHERE id = ?",
+                   (new_status, appointment_id))
     conn.commit()
     conn.close()
+
+    # ارسال اعلان به کاربر
+    if appointment and new_status == 'confirmed':
+        user_telegram_id = appointment['telegram_id']
+        msg = f"✅ نوبت شما با موفقیت تأیید شد!\n\n📅 تاریخ: {appointment['appointment_date']}\n🕐 ساعت: {appointment['appointment_time']}\n💇 خدمت: {appointment['service_name']}\n\nلطفاً در زمان مقرر حضور داشته باشید."
+        send_message(user_telegram_id, msg)
+
     return jsonify({"status": "ok", "message": f"وضعیت به {new_status} تغییر کرد."})
+
+
+@app.route('/api/admin/users', methods=['GET'])
+def admin_get_users():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, telegram_id, name, phone, is_admin, created_at FROM users ORDER BY created_at DESC")
+    users = cursor.fetchall()
+    conn.close()
+    return jsonify({"status": "ok", "users": [dict(u) for u in users]})
+
+
+@app.route('/api/admin/broadcast', methods=['POST'])
+def admin_broadcast():
+    data = request.get_json()
+    message = data.get('message')
+    if not message:
+        return jsonify({"status": "error", "message": "Message required"}), 400
+
+    count = send_broadcast(message)
+
+    # ذخیره در دیتابیس
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO broadcasts (message) VALUES (?)", (message,))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "ok", "message": f"پیام به {count} کاربر ارسال شد."})
+
+
+@app.route('/api/admin/schedule', methods=['GET'])
+def get_schedule():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM work_schedule ORDER BY day_of_week")
+    schedule = cursor.fetchall()
+    conn.close()
+    return jsonify({"status": "ok", "schedule": [dict(s) for s in schedule]})
+
+
+@app.route('/api/admin/schedule', methods=['POST'])
+def update_schedule():
+    data = request.get_json()
+    day_of_week = data.get('day_of_week')
+    start_time = data.get('start_time')
+    end_time = data.get('end_time')
+    is_active = data.get('is_active', 1)
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE work_schedule 
+        SET start_time = ?, end_time = ?, is_active = ? 
+        WHERE day_of_week = ?
+    ''', (start_time, end_time, is_active, day_of_week))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "ok", "message": "ساعت کاری به‌روز شد."})
 
 
 @app.route('/api/admin/services', methods=['POST'])

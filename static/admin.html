@@ -7,50 +7,115 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        .receipt-img { max-width: 100px; max-height: 100px; border-radius: 8px; cursor: pointer; border: 1px solid #ddd; margin: 5px 0; }
-        .appointment-box { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-right: 4px solid #0088cc; }
-        .appointment-box.pending { border-color: #f39c12; }
+        .tab-buttons { display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 0; }
+        .tab-buttons button { flex: 1; min-width: 80px; padding: 10px; border: none; border-radius: 8px; cursor: pointer; background: #e9ecef; font-size: 12px; }
+        .tab-buttons button.active { background: #0088cc; color: white; }
+        .appointment-box { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-right: 4px solid #f39c12; }
         .appointment-box.confirmed { border-color: #2ecc71; }
         .appointment-box.cancelled { border-color: #e74c3c; }
         .appointment-box.completed { border-color: #3498db; }
-        .btn-approve { background: #2ecc71; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; }
-        .btn-approve:hover { background: #27ae60; }
-        select { padding: 5px; border-radius: 5px; border: 1px solid #ddd; }
+        .appointment-box .receipt-img { max-width: 80px; max-height: 80px; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; }
+        .user-item { background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .user-item .admin-badge { background: #0088cc; color: white; padding: 2px 10px; border-radius: 20px; font-size: 12px; }
+        .schedule-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .schedule-item input[type="time"] { width: 100px; padding: 5px; border-radius: 5px; border: 1px solid #ddd; }
+        .schedule-item .day-name { width: 80px; font-weight: bold; }
+        .schedule-item label { display: flex; align-items: center; gap: 5px; font-size: 14px; }
+        .btn-success { background: #2ecc71; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; }
+        .btn-success:hover { background: #27ae60; }
+        .broadcast-area { background: #f0f2f5; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .broadcast-area textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; min-height: 80px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>📊 مدیریت نوبت‌ها</h1>
-    <div id="appointments"></div>
+    <h1>📊 پنل مدیریت</h1>
+
+    <div class="tab-buttons">
+        <button id="tabAppointments" class="active">📋 نوبت‌ها</button>
+        <button id="tabUsers">👥 کاربران</button>
+        <button id="tabSchedule">⏰ ساعات کاری</button>
+        <button id="tabBroadcast">📢 اعلان</button>
+    </div>
+
+    <!-- بخش نوبت‌ها -->
+    <div id="appointmentsSection">
+        <div id="appointmentsList"></div>
+    </div>
+
+    <!-- بخش کاربران -->
+    <div id="usersSection" style="display:none;">
+        <div id="usersList"></div>
+    </div>
+
+    <!-- بخش تنظیم ساعات کاری -->
+    <div id="scheduleSection" style="display:none;">
+        <div id="scheduleList"></div>
+        <button id="saveSchedule" class="btn-success" style="margin-top:15px;width:100%;">💾 ذخیره تنظیمات</button>
+    </div>
+
+    <!-- بخش اعلان همگانی -->
+    <div id="broadcastSection" style="display:none;">
+        <div class="broadcast-area">
+            <textarea id="broadcastMessage" placeholder="متن پیام همگانی را وارد کنید..."></textarea>
+            <button id="sendBroadcast" class="btn-success" style="width:100%;">📤 ارسال به همه کاربران</button>
+            <div id="broadcastResult"></div>
+        </div>
+    </div>
+
     <button onclick="Telegram.WebApp.close()" class="btn-close">❌ بستن</button>
 </div>
+
 <script>
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user || user.is_admin !== 1) window.location.href = '/static/index.html';
 
+    // ====== Tab switching ======
+    const tabs = {
+        appointments: { btn: document.getElementById('tabAppointments'), section: document.getElementById('appointmentsSection') },
+        users: { btn: document.getElementById('tabUsers'), section: document.getElementById('usersSection') },
+        schedule: { btn: document.getElementById('tabSchedule'), section: document.getElementById('scheduleSection') },
+        broadcast: { btn: document.getElementById('tabBroadcast'), section: document.getElementById('broadcastSection') }
+    };
+
+    Object.values(tabs).forEach(t => {
+        t.btn.addEventListener('click', function() {
+            Object.values(tabs).forEach(tab => {
+                tab.btn.classList.remove('active');
+                tab.section.style.display = 'none';
+            });
+            this.classList.add('active');
+            t.section.style.display = 'block';
+            if (this.id === 'tabAppointments') loadAppointments();
+            if (this.id === 'tabUsers') loadUsers();
+            if (this.id === 'tabSchedule') loadSchedule();
+        });
+    });
+
+    // ====== بارگیری نوبت‌ها ======
     async function loadAppointments() {
         const res = await fetch('/api/admin/appointments');
         const data = await res.json();
-        const div = document.getElementById('appointments');
-        if (data.appointments.length === 0) {
-            div.innerHTML = '<p>هیچ نوبتی ثبت نشده است.</p>';
+        const div = document.getElementById('appointmentsList');
+        if (!data.appointments || data.appointments.length === 0) {
+            div.innerHTML = '<p style="color:#7f8c8d;">هیچ نوبتی ثبت نشده است.</p>';
             return;
         }
         div.innerHTML = data.appointments.map(a => `
             <div class="appointment-box ${a.status}">
                 <strong>${a.service_name}</strong><br>
-                👤 ${a.user_name} | 📞 ${a.phone}<br>
+                👤 ${a.user_name} | 📞 ${a.phone} | 🆔 ${a.telegram_id}<br>
                 📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
                 وضعیت: ${a.status}
                 ${a.receipt ? `<br><img src="${a.receipt}" class="receipt-img" onclick="window.open('${a.receipt}')" />` : '<br>بدون رسید'}
-                <div style="margin-top:8px;">
+                <div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap;">
                     <select onchange="updateStatus(${a.id}, this.value)">
                         <option value="pending" ${a.status === 'pending' ? 'selected' : ''}>در انتظار</option>
                         <option value="confirmed" ${a.status === 'confirmed' ? 'selected' : ''}>تأیید شده</option>
                         <option value="completed" ${a.status === 'completed' ? 'selected' : ''}>انجام شده</option>
                         <option value="cancelled" ${a.status === 'cancelled' ? 'selected' : ''}>لغو شده</option>
                     </select>
-                    ${a.status === 'pending' ? `<button class="btn-approve" onclick="quickApprove(${a.id})">✔️ تأیید سریع</button>` : ''}
+                    ${a.status === 'pending' ? `<button class="btn-success" onclick="quickApprove(${a.id})">✔️ تأیید</button>` : ''}
                 </div>
             </div>
         `).join('');
@@ -72,6 +137,93 @@
         await updateStatus(id, 'confirmed');
     }
 
+    // ====== بارگیری کاربران ======
+    async function loadUsers() {
+        const res = await fetch('/api/admin/users');
+        const data = await res.json();
+        const div = document.getElementById('usersList');
+        if (!data.users || data.users.length === 0) {
+            div.innerHTML = '<p style="color:#7f8c8d;">هیچ کاربری ثبت نشده است.</p>';
+            return;
+        }
+        div.innerHTML = data.users.map(u => `
+            <div class="user-item">
+                <div>
+                    <strong>${u.name}</strong> | 📞 ${u.phone || '---'} | 🆔 ${u.telegram_id}
+                    ${u.is_admin === 1 ? '<span class="admin-badge">👑 ادمین</span>' : ''}
+                </div>
+                <div style="font-size:12px;color:#7f8c8d;">
+                    ${u.created_at ? new Date(u.created_at).toLocaleDateString('fa-IR') : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ====== تنظیم ساعات کاری ======
+    let scheduleData = [];
+
+    async function loadSchedule() {
+        const res = await fetch('/api/admin/schedule');
+        const data = await res.json();
+        scheduleData = data.schedule;
+        const div = document.getElementById('scheduleList');
+        const days = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'];
+        div.innerHTML = scheduleData.map(s => `
+            <div class="schedule-item">
+                <span class="day-name">${days[s.day_of_week]}</span>
+                <input type="time" value="${s.start_time}" data-day="${s.day_of_week}" class="start-time">
+                <span>تا</span>
+                <input type="time" value="${s.end_time}" data-day="${s.day_of_week}" class="end-time">
+                <label>
+                    <input type="checkbox" ${s.is_active === 1 ? 'checked' : ''} data-day="${s.day_of_week}" class="active-check">
+                    فعال
+                </label>
+            </div>
+        `).join('');
+    }
+
+    document.getElementById('saveSchedule').addEventListener('click', async function() {
+        const items = document.querySelectorAll('.schedule-item');
+        const updates = [];
+        items.forEach(item => {
+            const day = parseInt(item.querySelector('.start-time').dataset.day);
+            const start = item.querySelector('.start-time').value;
+            const end = item.querySelector('.end-time').value;
+            const active = item.querySelector('.active-check').checked ? 1 : 0;
+            updates.push({ day_of_week: day, start_time: start, end_time: end, is_active: active });
+        });
+
+        for (const update of updates) {
+            await fetch('/api/admin/schedule', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(update)
+            });
+        }
+        alert('✅ ساعات کاری با موفقیت ذخیره شد!');
+        loadSchedule();
+    });
+
+    // ====== ارسال اعلان همگانی ======
+    document.getElementById('sendBroadcast').addEventListener('click', async function() {
+        const message = document.getElementById('broadcastMessage').value.trim();
+        if (!message) {
+            alert('لطفاً متن پیام را وارد کنید.');
+            return;
+        }
+        if (!confirm(`آیا از ارسال این پیام به همه کاربران مطمئن هستید؟\n\n${message}`)) return;
+
+        const res = await fetch('/api/admin/broadcast', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message})
+        });
+        const result = await res.json();
+        document.getElementById('broadcastResult').innerHTML = `<div class="status-msg">✅ ${result.message}</div>`;
+        document.getElementById('broadcastMessage').value = '';
+    });
+
+    // بارگیری اولیه
     loadAppointments();
 </script>
 </body>

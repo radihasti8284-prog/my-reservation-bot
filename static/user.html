@@ -7,13 +7,28 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
+        .service-item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .service-item h4 { margin: 0 0 5px 0; color: #2c3e50; }
+        .service-item p { margin: 0; font-size: 14px; color: #7f8c8d; }
+        .service-item .price { color: #27ae60; font-weight: bold; }
         .shamsi-selects { display: flex; gap: 10px; margin: 8px 0; }
         .shamsi-selects select { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
         .file-upload { border: 2px dashed #ddd; padding: 15px; text-align: center; border-radius: 8px; margin: 8px 0; cursor: pointer; }
         .file-upload:hover { background: #f9f9f9; }
-        #fileName { font-size: 14px; color: #0088cc; }
         .receipt-preview { max-width: 100%; max-height: 150px; margin: 10px 0; border-radius: 8px; }
+        .appointment-item { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-right: 4px solid #f39c12; }
+        .appointment-item.confirmed { border-color: #2ecc71; }
+        .appointment-item.cancelled { border-color: #e74c3c; }
+        .appointment-item.completed { border-color: #3498db; }
+        .appointment-item .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
+        .badge-pending { background: #f39c12; color: white; }
+        .badge-confirmed { background: #2ecc71; color: white; }
+        .badge-cancelled { background: #e74c3c; color: white; }
+        .badge-completed { background: #3498db; color: white; }
         .status-msg { background: #fff3cd; padding: 10px; border-radius: 8px; margin: 10px 0; color: #856404; }
+        .tab-buttons { display: flex; gap: 10px; margin: 15px 0; }
+        .tab-buttons button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; background: #e9ecef; }
+        .tab-buttons button.active { background: #0088cc; color: white; }
     </style>
 </head>
 <body>
@@ -21,46 +36,67 @@
     <h1>💇‍♂️ رزرو نوبت</h1>
     <div id="userInfo" style="background:#f0f2f5;padding:10px;border-radius:8px;margin-bottom:15px;"></div>
 
-    <form id="bookingForm">
-        <select id="service" required></select>
+    <div class="tab-buttons">
+        <button id="tabReserve" class="active">📅 رزرو جدید</button>
+        <button id="tabMyAppointments">📋 نوبت‌های من</button>
+    </div>
 
-        <div class="shamsi-selects">
-            <select id="year"></select>
-            <select id="month"></select>
-            <select id="day"></select>
-        </div>
+    <!-- بخش رزرو -->
+    <div id="reserveSection">
+        <p style="color:#7f8c8d;font-size:14px;">👇 خدمت مورد نظر را انتخاب کنید:</p>
+        <form id="bookingForm">
+            <select id="service" required></select>
 
-        <input type="time" id="time" required placeholder="ساعت">
+            <div class="shamsi-selects">
+                <select id="year"></select>
+                <select id="month"></select>
+                <select id="day"></select>
+            </div>
 
-        <div class="file-upload" id="uploadBox">
-            <span>📎 برای آپلود رسید کلیک کنید</span>
-            <input type="file" id="receiptInput" accept="image/*" style="display:none;">
-            <div id="fileName">هیچ فایلی انتخاب نشده</div>
-        </div>
-        <img id="previewImg" class="receipt-preview" style="display:none;" />
+            <input type="time" id="time" required placeholder="ساعت">
 
-        <button type="submit">📅 ثبت نوبت</button>
-    </form>
-    <div id="message"></div>
+            <div class="file-upload" id="uploadBox">
+                <span>📎 برای آپلود رسید کلیک کنید</span>
+                <input type="file" id="receiptInput" accept="image/*" style="display:none;">
+                <div id="fileName">هیچ فایلی انتخاب نشده</div>
+            </div>
+            <img id="previewImg" class="receipt-preview" style="display:none;" />
+
+            <button type="submit">📅 ثبت نوبت</button>
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <!-- بخش نوبت‌های من -->
+    <div id="myAppointmentsSection" style="display:none;">
+        <div id="myAppointmentsList"></div>
+    </div>
+
     <button onclick="Telegram.WebApp.close()" class="btn-close">❌ بستن</button>
 </div>
 
 <script>
-    // ====== اعتبارسنجی کاربر ======
     const userStr = localStorage.getItem('user');
-    if (!userStr) {
-        alert('لطفاً ابتدا ثبت‌نام کنید.');
-        window.location.href = '/static/index.html';
-    }
+    if (!userStr) window.location.href = '/static/index.html';
     const user = JSON.parse(userStr);
-    if (!user || !user.telegram_id) {
-        alert('اطلاعات کاربر نامعتبر است. لطفاً مجدداً ثبت‌نام کنید.');
-        localStorage.removeItem('user');
-        window.location.href = '/static/index.html';
-    }
     document.getElementById('userInfo').innerHTML = `👤 ${user.name} | 📞 ${user.phone}`;
 
-    // ====== ساخت تاریخ شمسی ======
+    // ====== Tab switching ======
+    document.getElementById('tabReserve').addEventListener('click', function() {
+        document.getElementById('reserveSection').style.display = 'block';
+        document.getElementById('myAppointmentsSection').style.display = 'none';
+        document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+    });
+    document.getElementById('tabMyAppointments').addEventListener('click', function() {
+        document.getElementById('reserveSection').style.display = 'none';
+        document.getElementById('myAppointmentsSection').style.display = 'block';
+        document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        loadMyAppointments();
+    });
+
+    // ====== تاریخ شمسی ======
     const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
     const yearSelect = document.getElementById('year');
     const monthSelect = document.getElementById('month');
@@ -107,12 +143,11 @@
             daySelect.appendChild(opt);
         }
     }
-
     yearSelect.addEventListener('change', updateDays);
     monthSelect.addEventListener('change', updateDays);
     populateDates();
 
-    // ====== بارگیری خدمات ======
+    // ====== بارگیری خدمات با توضیحات ======
     async function loadServices() {
         const res = await fetch('/api/services');
         const data = await res.json();
@@ -121,8 +156,18 @@
             const opt = document.createElement('option');
             opt.value = s.id;
             opt.textContent = `${s.name} (${s.duration} دقیقه - ${s.price.toLocaleString()} تومان)`;
+            opt.dataset.desc = s.description;
             sel.appendChild(opt);
         });
+        // نمایش توضیحات هنگام انتخاب
+        sel.addEventListener('change', function() {
+            const desc = this.options[this.selectedIndex]?.dataset.desc || '';
+            document.getElementById('serviceDescription').textContent = desc;
+        });
+        // نمایش توضیحات اولین گزینه
+        if (sel.options.length) {
+            document.getElementById('serviceDescription').textContent = sel.options[0].dataset.desc || '';
+        }
     }
     loadServices();
 
@@ -138,7 +183,6 @@
         const file = this.files[0];
         if (!file) return;
         fileName.textContent = file.name;
-
         const formData = new FormData();
         formData.append('file', file);
         const res = await fetch('/api/upload', { method: 'POST', body: formData });
@@ -192,6 +236,34 @@
             document.getElementById('message').innerHTML = `<div class="status-msg">❌ ${result.message}</div>`;
         }
     });
+
+    // ====== نمایش نوبت‌های من ======
+    async function loadMyAppointments() {
+        const res = await fetch(`/api/appointments/user/${user.telegram_id}`);
+        const data = await res.json();
+        const div = document.getElementById('myAppointmentsList');
+        if (!data.appointments || data.appointments.length === 0) {
+            div.innerHTML = '<p style="color:#7f8c8d;">هیچ نوبتی ثبت نشده است.</p>';
+            return;
+        }
+        div.innerHTML = data.appointments.map(a => {
+            const statusMap = {
+                'pending': '<span class="badge badge-pending">در انتظار تأیید</span>',
+                'confirmed': '<span class="badge badge-confirmed">✅ تأیید شده</span>',
+                'cancelled': '<span class="badge badge-cancelled">لغو شده</span>',
+                'completed': '<span class="badge badge-completed">انجام شده</span>'
+            };
+            const statusClass = a.status;
+            return `
+                <div class="appointment-item ${statusClass}">
+                    <strong>${a.service_name}</strong><br>
+                    📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
+                    وضعیت: ${statusMap[a.status] || a.status}
+                    ${a.receipt ? `<br><img src="${a.receipt}" style="max-height:60px;border-radius:5px;margin-top:5px;" />` : ''}
+                </div>
+            `;
+        }).join('');
+    }
 </script>
 </body>
 </html>
