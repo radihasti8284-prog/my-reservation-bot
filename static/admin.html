@@ -6,84 +6,73 @@
     <title>پنل ادمین</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .receipt-img { max-width: 100px; max-height: 100px; border-radius: 8px; cursor: pointer; border: 1px solid #ddd; margin: 5px 0; }
+        .appointment-box { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-right: 4px solid #0088cc; }
+        .appointment-box.pending { border-color: #f39c12; }
+        .appointment-box.confirmed { border-color: #2ecc71; }
+        .appointment-box.cancelled { border-color: #e74c3c; }
+        .appointment-box.completed { border-color: #3498db; }
+        .btn-approve { background: #2ecc71; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; }
+        .btn-approve:hover { background: #27ae60; }
+        select { padding: 5px; border-radius: 5px; border: 1px solid #ddd; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📊 پنل مدیریت</h1>
+<div class="container">
+    <h1>📊 مدیریت نوبت‌ها</h1>
+    <div id="appointments"></div>
+    <button onclick="Telegram.WebApp.close()" class="btn-close">❌ بستن</button>
+</div>
+<script>
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user || user.is_admin !== 1) window.location.href = '/static/index.html';
 
-        <h2>📋 همه نوبت‌ها</h2>
-        <div id="appointments"></div>
-
-        <h2>➕ افزودن خدمت جدید</h2>
-        <form id="serviceForm">
-            <input type="text" id="sname" placeholder="نام خدمت" required>
-            <input type="number" id="sduration" placeholder="مدت زمان (دقیقه)" required>
-            <input type="number" id="sprice" placeholder="قیمت (تومان)" required>
-            <input type="text" id="sdesc" placeholder="توضیحات">
-            <button type="submit">افزودن خدمت</button>
-        </form>
-
-        <button onclick="Telegram.WebApp.close()" class="btn-close">❌ بستن</button>
-    </div>
-    <script>
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (!user || user.is_admin !== 1) window.location.href = '/static/index.html';
-
-        // بارگیری همه نوبت‌ها
-        async function loadAppointments() {
-            const res = await fetch('/api/admin/appointments');
-            const data = await res.json();
-            const div = document.getElementById('appointments');
-            if (data.appointments.length === 0) {
-                div.innerHTML = '<p>هیچ نوبتی ثبت نشده است.</p>';
-                return;
-            }
-            div.innerHTML = data.appointments.map(a => `
-                <div class="appointment ${a.status}">
-                    <strong>${a.service_name}</strong><br>
-                    👤 ${a.user_name} | 📞 ${a.phone}<br>
-                    📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
-                    وضعیت: ${a.status}
+    async function loadAppointments() {
+        const res = await fetch('/api/admin/appointments');
+        const data = await res.json();
+        const div = document.getElementById('appointments');
+        if (data.appointments.length === 0) {
+            div.innerHTML = '<p>هیچ نوبتی ثبت نشده است.</p>';
+            return;
+        }
+        div.innerHTML = data.appointments.map(a => `
+            <div class="appointment-box ${a.status}">
+                <strong>${a.service_name}</strong><br>
+                👤 ${a.user_name} | 📞 ${a.phone}<br>
+                📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
+                وضعیت: ${a.status}
+                ${a.receipt ? `<br><img src="${a.receipt}" class="receipt-img" onclick="window.open('${a.receipt}')" />` : '<br>بدون رسید'}
+                <div style="margin-top:8px;">
                     <select onchange="updateStatus(${a.id}, this.value)">
                         <option value="pending" ${a.status === 'pending' ? 'selected' : ''}>در انتظار</option>
                         <option value="confirmed" ${a.status === 'confirmed' ? 'selected' : ''}>تأیید شده</option>
                         <option value="completed" ${a.status === 'completed' ? 'selected' : ''}>انجام شده</option>
                         <option value="cancelled" ${a.status === 'cancelled' ? 'selected' : ''}>لغو شده</option>
                     </select>
+                    ${a.status === 'pending' ? `<button class="btn-approve" onclick="quickApprove(${a.id})">✔️ تأیید سریع</button>` : ''}
                 </div>
-            `).join('');
-        }
-        loadAppointments();
+            </div>
+        `).join('');
+    }
 
-        // تغییر وضعیت نوبت
-        async function updateStatus(appId, newStatus) {
-            const res = await fetch(`/api/admin/appointments/${appId}/status`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({status: newStatus})
-            });
-            const result = await res.json();
-            alert(result.message);
-            loadAppointments();
-        }
-
-        // افزودن خدمت
-        document.getElementById('serviceForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const name = document.getElementById('sname').value;
-            const duration = document.getElementById('sduration').value;
-            const price = document.getElementById('sprice').value;
-            const description = document.getElementById('sdesc').value;
-
-            const res = await fetch('/api/admin/services', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({name, duration, price, description})
-            });
-            const result = await res.json();
-            alert(result.message);
-            this.reset();
+    async function updateStatus(id, status) {
+        const res = await fetch(`/api/admin/appointments/${id}/status`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({status})
         });
-    </script>
+        const result = await res.json();
+        alert(result.message);
+        loadAppointments();
+    }
+
+    async function quickApprove(id) {
+        if (!confirm('آیا از تأیید این نوبت مطمئن هستید؟')) return;
+        await updateStatus(id, 'confirmed');
+    }
+
+    loadAppointments();
+</script>
 </body>
 </html>

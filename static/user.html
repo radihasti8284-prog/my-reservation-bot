@@ -3,95 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>پنل کاربری</title>
+    <title>رزرو آرایشگاه</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .shamsi-selects { display: flex; gap: 10px; margin: 8px 0; }
+        .shamsi-selects select { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
+        .file-upload { border: 2px dashed #ddd; padding: 15px; text-align: center; border-radius: 8px; margin: 8px 0; cursor: pointer; }
+        .file-upload:hover { background: #f9f9f9; }
+        #fileName { font-size: 14px; color: #0088cc; }
+        .receipt-preview { max-width: 100%; max-height: 150px; margin: 10px 0; border-radius: 8px; }
+        .status-msg { background: #fff3cd; padding: 10px; border-radius: 8px; margin: 10px 0; color: #856404; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📋 پنل کاربری</h1>
-        <div id="userInfo"></div>
+<div class="container">
+    <h1>💇‍♂️ رزرو نوبت</h1>
+    <div id="userInfo" style="background:#f0f2f5;padding:10px;border-radius:8px;margin-bottom:15px;"></div>
 
-        <h2>📅 رزرو نوبت جدید</h2>
-        <form id="bookingForm">
-            <select id="service" required></select>
-            <input type="date" id="date" required>
-            <input type="time" id="time" required>
-            <button type="submit">ثبت نوبت</button>
-        </form>
+    <form id="bookingForm">
+        <select id="service" required></select>
 
-        <h2>📋 نوبت‌های من</h2>
-        <div id="appointments"></div>
+        <div class="shamsi-selects">
+            <select id="year"></select>
+            <select id="month"></select>
+            <select id="day"></select>
+        </div>
 
-        <button onclick="Telegram.WebApp.close()" class="btn-close">❌ بستن</button>
-    </div>
-    <script>
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (!user) window.location.href = '/static/index.html';
+        <input type="time" id="time" required placeholder="ساعت">
 
-        document.getElementById('userInfo').innerHTML = `
-            <p>👤 ${user.name} | 📞 ${user.phone}</p>
-        `;
+        <div class="file-upload" id="uploadBox">
+            <span>📎 برای آپلود رسید کلیک کنید</span>
+            <input type="file" id="receiptInput" accept="image/*" style="display:none;">
+            <div id="fileName">هیچ فایلی انتخاب نشده</div>
+        </div>
+        <img id="previewImg" class="receipt-preview" style="display:none;" />
 
-        // بارگیری خدمات
-        async function loadServices() {
-            const res = await fetch('/api/services');
-            const data = await res.json();
-            const select = document.getElementById('service');
-            data.services.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s.id;
-                opt.textContent = `${s.name} (${s.duration} دقیقه - ${s.price.toLocaleString()} تومان)`;
-                select.appendChild(opt);
-            });
+        <button type="submit">📅 ثبت نوبت</button>
+    </form>
+    <div id="message"></div>
+    <button onclick="Telegram.WebApp.close()" class="btn-close">❌ بستن</button>
+</div>
+
+<script>
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) window.location.href = '/static/index.html';
+    document.getElementById('userInfo').innerHTML = `👤 ${user.name} | 📞 ${user.phone}`;
+
+    // ====== ساخت تاریخ شمسی ======
+    const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+    const yearSelect = document.getElementById('year');
+    const monthSelect = document.getElementById('month');
+    const daySelect = document.getElementById('day');
+
+    function isLeapYear(year) {
+        const a = year % 33;
+        return a === 1 || a === 5 || a === 9 || a === 13 || a === 17 || a === 22 || a === 26 || a === 30;
+    }
+
+    function buildDays(year, month) {
+        const daysInMonth = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
+        if (month === 11 && isLeapYear(year)) return 30;
+        return daysInMonth[month];
+    }
+
+    function populateDates() {
+        const currentYear = 1404;
+        for (let y = currentYear; y <= currentYear + 5; y++) {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y;
+            yearSelect.appendChild(opt);
         }
-        loadServices();
-
-        // بارگیری نوبت‌ها
-        async function loadAppointments() {
-            const res = await fetch(`/api/appointments/user/${user.telegram_id}`);
-            const data = await res.json();
-            const div = document.getElementById('appointments');
-            if (data.appointments.length === 0) {
-                div.innerHTML = '<p>هیچ نوبتی ثبت نشده است.</p>';
-                return;
-            }
-            div.innerHTML = data.appointments.map(a => `
-                <div class="appointment ${a.status}">
-                    <strong>${a.service_name}</strong><br>
-                    📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
-                    وضعیت: ${a.status === 'pending' ? 'در انتظار تأیید' : a.status === 'confirmed' ? 'تأیید شده' : a.status === 'cancelled' ? 'لغو شده' : 'انجام شده'}
-                    ${a.status === 'pending' ? `<button onclick="cancelApp(${a.id})">لغو</button>` : ''}
-                </div>
-            `).join('');
+        for (let m = 0; m < 12; m++) {
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = persianMonths[m];
+            monthSelect.appendChild(opt);
         }
-        loadAppointments();
+        yearSelect.value = currentYear;
+        updateDays();
+    }
 
-        // ثبت نوبت
-        document.getElementById('bookingForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const service_id = document.getElementById('service').value;
-            const date = document.getElementById('date').value;
-            const time = document.getElementById('time').value;
+    function updateDays() {
+        const year = parseInt(yearSelect.value);
+        const month = parseInt(monthSelect.value);
+        const max = buildDays(year, month);
+        daySelect.innerHTML = '';
+        for (let d = 1; d <= max; d++) {
+            const opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            daySelect.appendChild(opt);
+        }
+    }
 
-            const res = await fetch('/api/appointments', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({telegram_id: user.telegram_id, service_id, date, time})
-            });
-            const result = await res.json();
-            alert(result.message);
-            if (result.status === 'ok') loadAppointments();
+    yearSelect.addEventListener('change', updateDays);
+    monthSelect.addEventListener('change', updateDays);
+    populateDates();
+
+    // ====== بارگیری خدمات ======
+    async function loadServices() {
+        const res = await fetch('/api/services');
+        const data = await res.json();
+        const sel = document.getElementById('service');
+        data.services.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = `${s.name} (${s.duration} دقیقه - ${s.price.toLocaleString()} تومان)`;
+            sel.appendChild(opt);
         });
+    }
+    loadServices();
 
-        // لغو نوبت
-        async function cancelApp(appId) {
-            if (!confirm('آیا از لغو این نوبت مطمئن هستید؟')) return;
-            const res = await fetch(`/api/appointments/${appId}/cancel`, {method: 'POST'});
-            const result = await res.json();
-            alert(result.message);
-            loadAppointments();
+    // ====== آپلود رسید ======
+    const fileInput = document.getElementById('receiptInput');
+    const fileName = document.getElementById('fileName');
+    const previewImg = document.getElementById('previewImg');
+    let uploadedFileUrl = null;
+
+    document.getElementById('uploadBox').addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', async function(e) {
+        const file = this.files[0];
+        if (!file) return;
+        fileName.textContent = file.name;
+
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.status === 'ok') {
+            uploadedFileUrl = data.url;
+            previewImg.src = data.url;
+            previewImg.style.display = 'block';
+        } else {
+            alert('خطا در آپلود رسید.');
         }
-    </script>
+    });
+
+    // ====== ثبت نوبت ======
+    document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const service_id = document.getElementById('service').value;
+        const time = document.getElementById('time').value;
+        const year = yearSelect.value;
+        const month = parseInt(monthSelect.value) + 1;
+        const day = daySelect.value;
+        const shamsiDate = `${year}/${month}/${day}`;
+
+        if (!uploadedFileUrl) {
+            document.getElementById('message').innerHTML = '<div class="status-msg">⚠️ لطفاً رسید تراکنش را آپلود کنید.</div>';
+            return;
+        }
+
+        const payload = {
+            telegram_id: user.telegram_id,
+            service_id: service_id,
+            date: shamsiDate,
+            time: time,
+            receipt: uploadedFileUrl
+        };
+
+        const res = await fetch('/api/appointments', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        document.getElementById('message').innerHTML = `<div class="status-msg">✅ ${result.message}</div>`;
+        if (result.status === 'ok') {
+            document.getElementById('bookingForm').reset();
+            previewImg.style.display = 'none';
+            uploadedFileUrl = null;
+            fileName.textContent = 'هیچ فایلی انتخاب نشده';
+            setTimeout(() => Telegram.WebApp.close(), 3000);
+        }
+    });
+</script>
 </body>
 </html>
