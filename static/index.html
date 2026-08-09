@@ -3,52 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>رزرو آرایشگاه</title>
+    <title>ثبت‌نام</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>💇‍♂️ به آرایشگاه خوش آمدید</h1>
-        <p>لطفاً اطلاعات خود را وارد کنید</p>
-        <form id="authForm">
-            <input type="text" id="name" placeholder="نام و نام خانوادگی" required>
-            <input type="text" id="phone" placeholder="شماره تماس" required>
-            <button type="submit">ورود / ثبت‌نام</button>
-        </form>
-        <div id="error" class="error"></div>
-    </div>
-    <script>
-        document.getElementById('authForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const name = document.getElementById('name').value;
-            const phone = document.getElementById('phone').value;
-            const telegram_id = Telegram.WebApp.initDataUnsafe.user?.id;
+<div class="container">
+    <h1>💇‍♂️ ثبت‌نام در آرایشگاه</h1>
+    <p>لطفاً اطلاعات خود را وارد کنید</p>
+    <form id="authForm">
+        <input type="text" id="name" placeholder="نام و نام خانوادگی" required>
+        <input type="text" id="phone" placeholder="شماره تماس" required>
+        <button type="submit">ثبت‌نام و ورود</button>
+    </form>
+    <div id="error" class="error"></div>
+</div>
+<script>
+    document.getElementById('authForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const name = document.getElementById('name').value;
+        const phone = document.getElementById('phone').value;
 
-            if (!telegram_id) {
-                document.getElementById('error').textContent = 'لطفاً از داخل تلگرام وارد شوید.';
-                return;
-            }
+        // دریافت اطلاعات از تلگرام
+        const tgUser = Telegram.WebApp.initDataUnsafe.user;
+        if (!tgUser) {
+            document.getElementById('error').textContent = 'لطفاً از داخل تلگرام وارد شوید.';
+            return;
+        }
 
-            const response = await fetch('/api/auth', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({telegram_id, name, phone})
-            });
-
-            const result = await response.json();
-            if (result.status === 'ok') {
-                // ذخیره کاربر در localStorage و رفتن به صفحه کاربر
-                localStorage.setItem('user', JSON.stringify(result.user));
-                if (result.user.is_admin === 1) {
-                    window.location.href = '/static/admin.html';
-                } else {
-                    window.location.href = '/static/user.html';
-                }
-            } else {
-                document.getElementById('error').textContent = result.message || 'خطایی رخ داد.';
-            }
+        const telegram_id = tgUser.id;
+        const response = await fetch('/api/auth', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({telegram_id, name, phone})
         });
-    </script>
+
+        const result = await response.json();
+        if (result.status === 'ok') {
+            localStorage.setItem('user', JSON.stringify(result.user));
+            if (result.user.is_admin === 1) {
+                window.location.href = '/static/admin.html';
+            } else {
+                window.location.href = '/static/user.html';
+            }
+        } else {
+            document.getElementById('error').textContent = result.message || 'خطایی رخ داد.';
+        }
+    });
+</script>
 </body>
 </html>

@@ -46,8 +46,18 @@
 </div>
 
 <script>
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user) window.location.href = '/static/index.html';
+    // ====== اعتبارسنجی کاربر ======
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+        alert('لطفاً ابتدا ثبت‌نام کنید.');
+        window.location.href = '/static/index.html';
+    }
+    const user = JSON.parse(userStr);
+    if (!user || !user.telegram_id) {
+        alert('اطلاعات کاربر نامعتبر است. لطفاً مجدداً ثبت‌نام کنید.');
+        localStorage.removeItem('user');
+        window.location.href = '/static/index.html';
+    }
     document.getElementById('userInfo').innerHTML = `👤 ${user.name} | 📞 ${user.phone}`;
 
     // ====== ساخت تاریخ شمسی ======
@@ -171,13 +181,15 @@
             body: JSON.stringify(payload)
         });
         const result = await res.json();
-        document.getElementById('message').innerHTML = `<div class="status-msg">✅ ${result.message}</div>`;
         if (result.status === 'ok') {
+            document.getElementById('message').innerHTML = `<div class="status-msg">✅ ${result.message}</div>`;
             document.getElementById('bookingForm').reset();
             previewImg.style.display = 'none';
             uploadedFileUrl = null;
             fileName.textContent = 'هیچ فایلی انتخاب نشده';
             setTimeout(() => Telegram.WebApp.close(), 3000);
+        } else {
+            document.getElementById('message').innerHTML = `<div class="status-msg">❌ ${result.message}</div>`;
         }
     });
 </script>

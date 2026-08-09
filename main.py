@@ -16,6 +16,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 ADMIN_IDS = [int(x.strip()) for x in os.environ.get("ADMIN_IDS", "").split(",") if x.strip().isdigit()]
+print(f"👑 Admin IDs: {ADMIN_IDS}")
 
 
 # ========== دیتابیس ==========
@@ -68,7 +69,6 @@ def init_db():
     if 'receipt' not in cols:
         cursor.execute("ALTER TABLE appointments ADD COLUMN receipt TEXT")
 
-    # خدمات پیش‌فرض
     cursor.execute("SELECT COUNT(*) FROM services")
     if cursor.fetchone()[0] == 0:
         services = [
@@ -80,6 +80,7 @@ def init_db():
         cursor.executemany("INSERT INTO services (name, duration, price, description) VALUES (?, ?, ?, ?)", services)
     conn.commit()
     conn.close()
+    print("✅ دیتابیس راه‌اندازی شد.")
 
 
 init_db()
@@ -98,16 +99,22 @@ def send_message(chat_id, text, reply_markup=None):
 
 
 def get_or_create_user(telegram_id, name, phone):
+    if not telegram_id:
+        return None
     conn = get_db()
     cursor = conn.cursor()
+    # بررسی وجود کاربر
     cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (telegram_id,))
     user = cursor.fetchone()
     if user:
         conn.close()
         return dict(user)
+    # ایجاد کاربر جدید
     is_admin = 1 if telegram_id in ADMIN_IDS else 0
-    cursor.execute("INSERT INTO users (telegram_id, name, phone, is_admin) VALUES (?, ?, ?, ?)",
-                   (telegram_id, name, phone, is_admin))
+    cursor.execute(
+        "INSERT INTO users (telegram_id, name, phone, is_admin) VALUES (?, ?, ?, ?)",
+        (telegram_id, name, phone, is_admin)
+    )
     conn.commit()
     cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (telegram_id,))
     user = cursor.fetchone()
@@ -132,6 +139,7 @@ def webhook():
             user = msg.get('from', {})
             telegram_id = user.get('id')
             full_name = f"{user.get('first_name', '')} {user.get('last_name', '')}".strip()
+            # ثبت خودکار کاربر هنگام اولین پیام
             get_or_create_user(telegram_id, full_name, "")
 
             if text == '/start':
@@ -174,7 +182,11 @@ def webhook():
 @app.route('/api/auth', methods=['POST'])
 def auth_user():
     data = request.get_json()
+    if not data or not data.get('telegram_id'):
+        return jsonify({"status": "error", "message": "telegram_id required"}), 400
     user = get_or_create_user(data['telegram_id'], data['name'], data['phone'])
+    if not user:
+        return jsonify({"status": "error", "message": "Failed to create user"}), 500
     return jsonify({"status": "ok", "user": user})
 
 
@@ -207,20 +219,51 @@ def upload_file():
 @app.route('/api/appointments', methods=['POST'])
 def create_appointment():
     data = request.get_json()
+    if not data:
+        return jsonify({"status": "error", "message": "Invalid request"}), 400
+
     telegram_id = data.get('telegram_id')
+    if not telegram_id:
+        return jsonify({"status": "error", "message": "Telegram ID missing"}), 400
+
     service_id = data.get('service_id')
     app_date = data.get('date')
     app_time = data.get('time')
     receipt_url = data.get('receipt')
 
+    # پیدا کردن کاربر (با دیباگ)
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM users WHERE telegram_id = ?", (telegram_id,))
     user = cursor.fetchone()
-    if not user:
-        conn.close()
-        return jsonify({"status": "error", "message": "User not found"}), 404
 
+    if not user:
+        # تلاش برای ایجاد کاربر (اگر به هر دلیلی وجود نداشت)
+        # چون نام و شماره نداریم، با نام پیش‌فرض ایجاد می‌کنیم
+        print(f"⚠️ User {telegram_id} not found. Trying to create...")
+        try:
+            # دریافت اطلاعات از تلگرام
+            url = f"https://api.telegram.org/bot{TOKEN}/getChat?chat_id={telegram_id}"
+            resp = requests.get(url, timeout=10)
+            if resp.status_code == 200:
+                chat_data = resp.json().get('result', {})
+                first_name = chat_data.get('first_name', 'کاربر')
+                last_name = chat_data.get('last_name', '')
+                full_name = f"{first_name} {last_name}".strip()
+                user_dict = get_or_create_user(telegram_id, full_name, "")
+                if user_dict:
+                    cursor.execute("SELECT id FROM users WHERE telegram_id = ?", (telegram_id,))
+                    user = cursor.fetchone()
+            else:
+                return jsonify({"status": "error", "message": "User not found. Please use /start first."}), 404
+        except Exception as e:
+            print(f"❌ Error creating user: {e}")
+            return jsonify({"status": "error", "message": "User not found. Please use /start first."}), 404
+
+    if not user:
+        return jsonify({"status": "error", "message": "User not found. Please use /start first."}), 404
+
+    # ثبت نوبت
     cursor.execute('''
         INSERT INTO appointments (user_id, service_id, appointment_date, appointment_time, status, receipt)
         VALUES (?, ?, ?, ?, 'pending', ?)
@@ -280,8 +323,10 @@ def admin_add_service():
     data = request.get_json()
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO services (name, duration, price, description) VALUES (?, ?, ?, ?)",
-                   (data['name'], data['duration'], data['price'], data.get('description', '')))
+    cursor.execute(
+        "INSERT INTO services (name, duration, price, description) VALUES (?, ?, ?, ?)",
+        (data['name'], data['duration'], data['price'], data.get('description', ''))
+    )
     conn.commit()
     conn.close()
     return jsonify({"status": "ok", "message": "خدمت اضافه شد."})
