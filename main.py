@@ -19,7 +19,13 @@ def webhook():
             chat_id = data['message']['chat']['id']
             text = "سلام! وب‌هوک با موفقیت کار می‌کند! 🎉"
             url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-            requests.post(url, json={'chat_id': chat_id, 'text': text})
+
+            try:
+                response = requests.post(url, json={'chat_id': chat_id, 'text': text}, timeout=10)
+                print(f"✅ Response from Telegram: {response.status_code}")
+            except Exception as e:
+                print(f"⚠️ Error sending message to Telegram: {e}")
+
             return jsonify({"status": "ok", "message": "Response sent"}), 200
 
         return jsonify({"status": "ok", "message": "No message received"}), 200
