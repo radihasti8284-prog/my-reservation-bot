@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import os
 import requests
 
@@ -6,27 +6,35 @@ app = Flask(__name__)
 TOKEN = "8971000707:AAESYFI--ALKEXQgDN7c0yb9SjEBbQQN3BM"
 
 
-@app.route('/webhook', methods=['POST', 'GET'])
+@app.route('/webhook', methods=['GET', 'POST'])
 def webhook():
     if request.method == 'GET':
-        return "Webhook is ready!"
+        return "✅ Webhook endpoint is ready for GET requests. Use POST for Telegram updates."
 
-    data = request.get_json(silent=True)
-    print(f"Data: {data}")
+    # پردازش درخواست POST (از تلگرام)
+    try:
+        data = request.get_json(silent=True)
+        print(f"📩 Received data: {data}")
 
-    if data and 'message' in data:
-        chat_id = data['message']['chat']['id']
-        url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-        requests.post(url, json={'chat_id': chat_id, 'text': 'سلام! این یه پاسخ تستیه!'})
+        if data and 'message' in data:
+            chat_id = data['message']['chat']['id']
+            text = "سلام! وب‌هوک با موفقیت کار می‌کند! 🎉"
+            url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+            requests.post(url, json={'chat_id': chat_id, 'text': text})
+            return jsonify({"status": "ok", "message": "Response sent"}), 200
 
-    return "OK", 200
+        return jsonify({"status": "ok", "message": "No message received"}), 200
+
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 @app.route('/')
-def root():
-    return "ربات روشن است!"
+def home():
+    return "✅ ربات روشن است!"
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=False)
