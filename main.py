@@ -162,6 +162,21 @@ def cancel_appointment(appointment_id):
     return jsonify({"status": "ok", "message": "نوبت لغو شد."})
 
 
+@app.route('/api/make_admin', methods=['GET'])
+def make_admin():
+    telegram_id = request.args.get('telegram_id')
+    if not telegram_id:
+        return jsonify({"status": "error", "message": "telegram_id required"}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET is_admin = 1 WHERE telegram_id = ?", (telegram_id,))
+    conn.commit()
+
+    if cursor.rowcount > 0:
+        return jsonify({"status": "ok", "message": f"User {telegram_id} is now admin!"})
+    else:
+        return jsonify({"status": "error", "message": "User not found. Please use /start first."}), 404
 # ---- ادمین: دریافت همه نوبت‌ها ----
 @app.route('/api/admin/appointments', methods=['GET'])
 def admin_get_appointments():
