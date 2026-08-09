@@ -7,18 +7,88 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        .service-desc {
-            font-size: 13px;
-            color: var(--m4cut-gray);
+        /* تمام استایل‌های قبلی به‌علاوه موارد جدید */
+        .service-card {
             background: var(--m4cut-smoke);
-            padding: 10px 14px;
-            border-radius: 10px;
-            margin: -4px 0 12px;
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin: 10px 0 16px;
+            border: 2px solid var(--m4cut-brass);
+            text-align: center;
         }
-        .price-tag {
+        .service-card .icon {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .service-card .name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--m4cut-ink);
+        }
+        .service-card .price {
+            font-size: 20px;
             font-weight: 700;
             color: var(--m4cut-brass);
+            margin: 4px 0;
         }
+        .service-card .desc {
+            font-size: 13px;
+            color: var(--m4cut-gray);
+            margin-top: 6px;
+            line-height: 1.6;
+        }
+        .service-card .note {
+            background: #fff3cd;
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #856404;
+            border-right: 3px solid #f39c12;
+        }
+        .service-card .note strong {
+            color: #e74c3c;
+        }
+        .bank-card {
+            background: var(--m4cut-smoke);
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid var(--m4cut-border);
+        }
+        .bank-card .number {
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--m4cut-ink);
+            direction: ltr;
+        }
+        .bank-card .label {
+            font-size: 12px;
+            color: var(--m4cut-gray);
+        }
+        .upload-area {
+            border: 2px dashed var(--m4cut-border);
+            border-radius: 14px;
+            padding: 24px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--m4cut-smoke);
+            margin: 8px 0 12px;
+        }
+        .upload-area:hover {
+            border-color: var(--m4cut-brass);
+            background: #faf8f5;
+        }
+        .upload-area .icon { font-size: 32px; display: block; margin-bottom: 6px; }
+        .upload-area .text { font-size: 14px; color: var(--m4cut-gray); }
+        .upload-area .filename { font-size: 13px; color: var(--m4cut-brass); margin-top: 4px; font-weight: 500; }
         .receipt-preview {
             max-width: 100%;
             max-height: 140px;
@@ -26,31 +96,6 @@
             margin: 8px 0;
             border: 1px solid var(--m4cut-border);
         }
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 10px;
-            background: var(--m4cut-smoke);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: inherit;
-            color: var(--m4cut-gray);
-        }
-        .tab-btn.active {
-            background: var(--m4cut-brass);
-            color: white;
-        }
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        /* استایل تاریخ شمسی */
         .date-selectors {
             display: flex;
             gap: 10px;
@@ -158,45 +203,30 @@
             opacity: 0.3;
             cursor: not-allowed;
         }
-        .bank-card {
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
             background: var(--m4cut-smoke);
-            border-radius: 14px;
-            padding: 16px 20px;
-            margin: 12px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid var(--m4cut-border);
-        }
-        .bank-card .number {
-            font-family: monospace;
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            color: var(--m4cut-ink);
-            direction: ltr;
-        }
-        .bank-card .label {
-            font-size: 12px;
-            color: var(--m4cut-gray);
-        }
-        .upload-area {
-            border: 2px dashed var(--m4cut-border);
-            border-radius: 14px;
-            padding: 24px 16px;
-            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: var(--m4cut-smoke);
-            margin: 8px 0 12px;
+            font-family: inherit;
+            color: var(--m4cut-gray);
         }
-        .upload-area:hover {
-            border-color: var(--m4cut-brass);
-            background: #faf8f5;
+        .tab-btn.active {
+            background: var(--m4cut-brass);
+            color: white;
         }
-        .upload-area .icon { font-size: 32px; display: block; margin-bottom: 6px; }
-        .upload-area .text { font-size: 14px; color: var(--m4cut-gray); }
-        .upload-area .filename { font-size: 13px; color: var(--m4cut-brass); margin-top: 4px; font-weight: 500; }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
         .appointment-item {
             background: var(--m4cut-smoke);
             padding: 16px;
@@ -261,6 +291,96 @@
             margin-bottom: 20px;
             padding: 0 4px;
         }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--m4cut-brass);
+            color: white;
+            font-family: inherit;
+        }
+        .btn:hover {
+            background: #b07d3a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(198, 146, 73, 0.3);
+        }
+        .btn-close {
+            background: var(--m4cut-smoke);
+            color: var(--m4cut-ink);
+            margin-top: 12px;
+        }
+        .btn-close:hover {
+            background: #e8e2d9;
+            box-shadow: none;
+            transform: none;
+        }
+        .container {
+            max-width: 480px;
+            width: 100%;
+            margin: 0 auto;
+            background: var(--m4cut-white);
+            border-radius: 24px;
+            padding: 28px 22px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--m4cut-border);
+        }
+        .brand-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--m4cut-smoke);
+            margin-bottom: 22px;
+        }
+        .brand-logo {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: var(--m4cut-ink);
+        }
+        .brand-logo span {
+            color: var(--m4cut-brass);
+        }
+        .brand-tagline {
+            font-size: 13px;
+            color: var(--m4cut-gray);
+            margin-top: 4px;
+        }
+        .btn-secondary {
+            background: var(--m4cut-pine);
+        }
+        .btn-secondary:hover {
+            background: #0f2d26;
+        }
+        :root {
+            --m4cut-ink: #161513;
+            --m4cut-smoke: #f4f0ea;
+            --m4cut-brass: #c69249;
+            --m4cut-clay: #9e5541;
+            --m4cut-pine: #154038;
+            --m4cut-white: #ffffff;
+            --m4cut-gray: #7f8c8d;
+            --m4cut-border: #e0dcd5;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'IRANYekanXVF', Tahoma, Arial, sans-serif;
+        }
+        body {
+            background: var(--m4cut-smoke);
+            color: var(--m4cut-ink);
+            padding: 20px;
+            direction: rtl;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
     </style>
 </head>
 <body>
@@ -289,13 +409,20 @@
                 <div class="step-dot" data-step="3"><span class="dot">۳</span> ساعت</div>
             </div>
 
-            <!-- استپ ۱: انتخاب خدمت -->
+            <!-- استپ ۱: نمایش خدمت (فقط کوتاهی مو) -->
             <div class="booking-step booking-step--visible" data-step="1">
-                <div class="step-title">۱. انتخاب خدمت</div>
-                <select id="serviceSelect" required>
-                    <option value="">انتخاب کنید...</option>
-                </select>
-                <div id="serviceDesc" class="service-desc">توضیحات خدمت اینجا نمایش داده می‌شود</div>
+                <div class="step-title">۱. نوع آرایش</div>
+                <p class="step-help">تنها گزینه موجود:</p>
+                <div class="service-card" id="serviceDisplay">
+                    <div class="icon">✂️</div>
+                    <div class="name">کوتاهی مو</div>
+                    <div class="price">۲۰۰,۰۰۰ تومان</div>
+                    <div class="desc">✨ کوتاهی و اصلاح مو با جدیدترین متدها</div>
+                    <div class="note">
+                        <strong>⚠️ نکته مهم:</strong> در صورت عدم حضور در وقت تعیین‌شده،
+                        نوبت شما از بین خواهد رفت.
+                    </div>
+                </div>
                 <button type="button" class="btn" style="margin-top:12px;" onclick="goToStep(2)">ادامه ➜</button>
             </div>
 
@@ -320,13 +447,19 @@
                 <p class="step-help">ساعت مورد نظر را انتخاب کنید</p>
                 <div id="timeGrid" class="time-grid"></div>
 
-                <!-- کارت بانکی با شماره جدید -->
+                <!-- کارت بانکی -->
                 <div class="bank-card">
                     <div>
                         <div class="label">کارت‌به‌کارت بیعانه</div>
                         <div class="number" dir="ltr">6219 8619 3275 5076</div>
                     </div>
                     <div class="logo">💳</div>
+                </div>
+
+                <!-- نمایش مبلغ بیعانه -->
+                <div style="background:var(--m4cut-smoke);padding:10px 16px;border-radius:10px;margin:6px 0;text-align:center;">
+                    <span style="font-size:14px;color:var(--m4cut-gray);">مبلغ بیعانه:</span>
+                    <span style="font-size:18px;font-weight:700;color:var(--m4cut-brass);">۲۰۰,۰۰۰ تومان</span>
                 </div>
 
                 <!-- آپلود رسید -->
@@ -354,17 +487,16 @@
 
 <script>
     // ============================================================
-    //   M4Cut - اسکریپت کاربر (نسخه به‌روز با تاریخ شمسی)
+    //   M4Cut - اسکریپت کاربر (فقط کوتاهی مو)
     // ============================================================
 
-    // ----- اطلاعات کاربر -----
     const userStr = localStorage.getItem('user');
     if (!userStr) window.location.href = '/static/index.html';
     const user = JSON.parse(userStr);
     document.getElementById('userInfo').innerHTML = `👤 ${user.name} | 📞 ${user.phone}`;
 
     // ----- متغیرهای عمومی -----
-    let selectedService = null;
+    let selectedService = { id: null, name: 'کوتاهی مو', price: 200000 };
     let selectedDate = null;
     let selectedTime = null;
     let uploadedFileUrl = null;
@@ -374,18 +506,14 @@
     const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
     const today = new Date();
     let currentYear = 1404;
-    let currentMonth = today.getMonth() + 1; // 1-12 شمسی (تخمینی)
-    // تنظیم سال و ماه شمسی براساس تاریخ میلادی (تخمینی)
+    let currentMonth = today.getMonth() + 1;
     const gYear = today.getFullYear();
     const gMonth = today.getMonth();
     const gDay = today.getDate();
-    // تبدیل تقریبی: سال شمسی = میلادی - 621
     currentYear = gYear - 621;
-    // ماه شمسی حدوداً 2 ماه جلوتر از میلادی است
     currentMonth = gMonth + 2;
     if (currentMonth > 12) { currentMonth -= 12; currentYear += 1; }
     const currentDay = gDay + 10;
-    // تنظیم روز در محدوده
     let maxDay = daysInMonth(currentYear, currentMonth - 1);
     let displayDay = Math.min(currentDay, maxDay);
 
@@ -393,7 +521,6 @@
     let selectedMonth = currentMonth;
     let selectedDay = displayDay;
 
-    // ----- توابع تاریخ شمسی -----
     function isLeapYear(year) {
         const a = year % 33;
         return a === 1 || a === 5 || a === 9 || a === 13 || a === 17 || a === 22 || a === 26 || a === 30;
@@ -424,12 +551,6 @@
         });
 
         const totalDays = daysInMonth(year, monthIndex);
-        // پیدا کردن روز اول ماه (چندشنبه)
-        // برای سادگی، از یک الگوریتم ساده استفاده میکنیم
-        // فرض میکنیم اول هر ماه یکشنبه است (برای نمایش گرید)
-        // اما برای دقت بهتر، از محاسبه استفاده میکنیم
-        // اینجا برای نمایش ساده، روزها رو از ۱ شروع میکنیم
-        // بهتر است از یک کتابخانه استفاده شود، اما برای سادگی، به صورت خطی نمایش میدهیم
         for (let d = 1; d <= totalDays; d++) {
             const btn = document.createElement('button');
             btn.textContent = d;
@@ -451,7 +572,6 @@
             });
             grid.appendChild(btn);
         }
-        // نمایش ماه و سال
         document.getElementById('currentMonthDisplay').textContent = `${persianMonths[monthIndex]} ${year}`;
     }
 
@@ -460,7 +580,6 @@
         let newYear = selectedYear;
         if (newMonth < 0) { newMonth = 11; newYear -= 1; }
         if (newMonth > 11) { newMonth = 0; newYear += 1; }
-        // محدود کردن به آینده
         if (newYear < currentYear) return;
         if (newYear === currentYear && newMonth < currentMonth - 1) return;
         selectedYear = newYear;
@@ -484,38 +603,19 @@
         });
     });
 
-    // ----- بارگیری خدمات -----
-    async function loadServices() {
+    // ----- بارگیری خدمات (فقط برای دریافت ID خدمت) -----
+    async function loadServiceId() {
         try {
             const res = await fetch('/api/services');
             const data = await res.json();
-            const sel = document.getElementById('serviceSelect');
-            sel.innerHTML = '<option value="">انتخاب کنید...</option>';
-            data.services.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s.id;
-                opt.textContent = `${s.name} (${s.duration} دقیقه - ${s.price.toLocaleString()} تومان)`;
-                opt.dataset.desc = s.description || '';
-                opt.dataset.price = s.price;
-                opt.dataset.duration = s.duration;
-                sel.appendChild(opt);
-            });
-            sel.addEventListener('change', function() {
-                const opt = this.options[this.selectedIndex];
-                if (opt && opt.value) {
-                    selectedService = {
-                        id: parseInt(opt.value),
-                        name: opt.textContent.split('(')[0].trim(),
-                        price: parseInt(opt.dataset.price),
-                        duration: parseInt(opt.dataset.duration),
-                        desc: opt.dataset.desc
-                    };
-                    document.getElementById('serviceDesc').textContent = opt.dataset.desc || 'توضیحاتی برای این خدمت موجود نیست.';
-                    goToStep(2);
-                }
-            });
+            if (data.services && data.services.length > 0) {
+                selectedService.id = data.services[0].id;
+            } else {
+                // اگر خدمتی نبود، خطا
+                alert('خطا: هیچ خدمتی در دیتابیس وجود ندارد.');
+            }
         } catch(e) {
-            console.error('Error loading services:', e);
+            console.error('Error loading service:', e);
         }
     }
 
@@ -548,11 +648,8 @@
         const times = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
         times.forEach(t => {
             const btn = document.createElement('button');
-            btn.textContent = t;
+            btn.textContent = `${t} - ۲۰۰,۰۰۰ تومان`;
             btn.dataset.time = t;
-            if (selectedService) {
-                btn.textContent = `${t} - ${selectedService.price.toLocaleString()} تومان`;
-            }
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.time-grid button').forEach(b => b.classList.remove('selected'));
                 this.classList.add('selected');
@@ -599,16 +696,16 @@
         e.preventDefault();
         const msgDiv = document.getElementById('formMessage');
 
-        if (!selectedService) {
-            msgDiv.innerHTML = '<div class="msg msg-error">لطفاً یک خدمت انتخاب کنید.</div>';
+        if (!selectedService.id) {
+            msgDiv.innerHTML = '<div class="msg msg-error">❌ خطا در شناسایی خدمت. لطفاً دوباره تلاش کنید.</div>';
             return;
         }
         if (!selectedDate) {
-            msgDiv.innerHTML = '<div class="msg msg-error">لطفاً یک تاریخ انتخاب کنید.</div>';
+            msgDiv.innerHTML = '<div class="msg msg-error">❌ لطفاً یک تاریخ انتخاب کنید.</div>';
             return;
         }
         if (!selectedTime) {
-            msgDiv.innerHTML = '<div class="msg msg-error">لطفاً یک ساعت انتخاب کنید.</div>';
+            msgDiv.innerHTML = '<div class="msg msg-error">❌ لطفاً یک ساعت انتخاب کنید.</div>';
             return;
         }
         if (!uploadedFileUrl) {
@@ -672,14 +769,13 @@
     }
 
     // ----- مقداردهی اولیه -----
-    loadServices();
+    loadServiceId();
     buildDayGrid(currentYear, currentMonth - 1);
     buildTimeGrid();
 
     document.getElementById('submitBtn').disabled = true;
     document.getElementById('submitBtn').style.opacity = '0.6';
 
-    // تنظیم پیش‌فرض تاریخ به امروز
     const todayStr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(currentDay).padStart(2,'0')}`;
     selectedDate = todayStr;
     selectedDay = currentDay;
@@ -687,10 +783,6 @@
     selectedMonth = currentMonth;
 
     goToStep(1);
-
-    // همچنین دکمه‌های ادامه رو غیرفعال می‌کنیم تا کاربر نتواند بدون انتخاب ادامه دهد
-    // اما دکمه ادامه در استپ ۱ و ۲ به ترتیب کار می‌کنند
-    // برای استپ ۳ نیز دکمه ثبت فعال می‌شود
 </script>
 </body>
 </html>
