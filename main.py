@@ -1,100 +1,146 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 import os
 import requests
-import json
-from datetime import datetime, date
 import sqlite3
-from database import get_db, init_db
+import json
+from datetime import datetime
+import time
 
 app = Flask(__name__)
 TOKEN = "8971000707:AAESYFI--ALKEXQgDN7c0yb9SjEBbQQN3BM"
+ADMIN_IDS = [int(x.strip()) for x in os.environ.get("ADMIN_IDS", "").split(",") if x.strip().isdigit()]
 
-# ========== راه‌اندازی اولیه ==========
+# ========== دیتابیس ==========
+def get_db():
+    conn = sqlite3.connect('data.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            telegram_id INTEGER UNIQUE,
+            name TEXT,
+            phone TEXT,
+            is_admin INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS services (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            duration INTEGER DEFAULT 30,
+            price INTEGER DEFAULT 0,
+            description TEXT,
+            is_active INTEGER DEFAULT 1
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS appointments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            service_id INTEGER,
+            appointment_date TEXT,
+            appointment_time TEXT,
+            status TEXT DEFAULT 'pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (service_id) REFERENCES services(id)
+        )
+    ''')
+    cursor.execute("SELECT COUNT(*) FROM services")
+    if cursor.fetchone()[0] == 0:
+        services = [
+            ('کوتاهی موی مردانه', 30, 150000, 'کوتاهی و اصلاح مو'),
+            ('اصلاح صورت', 20, 100000, 'اصلاح ریش و سبیل'),
+            ('کوتاهی موی زنانه', 45, 250000, 'کوتاهی و لایه‌لایه'),
+            ('رنگ مو', 60, 350000, 'رنگ‌آمیزی حرفه‌ای'),
+        ]
+        cursor.executemany("INSERT INTO services (name, duration, price, description) VALUES (?, ?, ?, ?)", services)
+    conn.commit()
+    conn.close()
+
 init_db()
 
+# ========== توابع کمکی ==========
+def send_message(chat_id, text, reply_markup=None):
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    payload = {"chat_id": chat_id, "text": text}
+    if reply_markup:
+        payload["reply_markup"] = json.dumps(reply_markup)
+    try:
+        requests.post(url, json=payload, timeout=10)
+    except Exception as e:
+        print(f"⚠️ Error sending message: {e}")
 
-# ========== وب‌هوک تلگرام ==========
+# ========== وب‌هوک ==========
 @app.route('/webhook', methods=['POST'])
 def webhook():
     try:
         data = request.get_json()
         print(f"📩 Received: {data}")
-
         if 'message' in data:
             msg = data['message']
             chat_id = msg['chat']['id']
             text = msg.get('text', '')
-
             if text == '/start':
                 send_message(chat_id,
-                             "👋 به ربات رزرو آرایشگاه خوش آمدید!\n"
-                             "برای رزرو نوبت، روی دکمه زیر کلیک کنید:",
-                             reply_markup={
-                                 "inline_keyboard": [[
-                                     {"text": "📅 رزرو نوبت",
-                                      "web_app": {"url": "https://my-reservation-bot.onrender.com/static/user.html"}}
-                                 ]]
-                             }
-                             )
+                    "👋 به ربات رزرو آرایشگاه خوش آمدید!\nبرای رزرو نوبت، روی دکمه زیر کلیک کنید:",
+                    reply_markup={
+                        "inline_keyboard": [[
+                            {"text": "📅 رزرو نوبت", "web_app": {"url": "https://my-reservation-bot.onrender.com/static/user.html"}}
+                        ]]
+                    }
+                )
             elif text == '/admin':
-                # بررسی ادمین بودن
-                user = get_user_by_telegram_id(chat_id)
+                conn = get_db()
+                cursor = conn.cursor()
+                cursor.execute("SELECT is_admin FROM users WHERE telegram_id = ?", (chat_id,))
+                user = cursor.fetchone()
                 if user and user['is_admin'] == 1:
                     send_message(chat_id,
-                                 "👋 به پنل ادمین خوش آمدید!",
-                                 reply_markup={
-                                     "inline_keyboard": [[
-                                         {"text": "📊 مدیریت نوبت‌ها", "web_app": {
-                                             "url": "https://my-reservation-bot.onrender.com/static/admin.html"}}
-                                     ]]
-                                 }
-                                 )
+                        "👋 به پنل ادمین خوش آمدید!",
+                        reply_markup={
+                            "inline_keyboard": [[
+                                {"text": "📊 مدیریت نوبت‌ها", "web_app": {"url": "https://my-reservation-bot.onrender.com/static/admin.html"}}
+                            ]]
+                        }
+                    )
                 else:
                     send_message(chat_id, "⛔ شما دسترسی ادمین ندارید.")
             else:
                 send_message(chat_id, "❓ دستور نامعتبر. از /start استفاده کنید.")
-
         return {"status": "ok"}, 200
     except Exception as e:
         print(f"❌ Error: {e}")
         return {"status": "error"}, 500
 
-
-# ========== API برای مینی‌اپ ==========
-
-# ---- ثبت/ورود کاربر ----
+# ========== API ==========
 @app.route('/api/auth', methods=['POST'])
 def auth_user():
     data = request.get_json()
     telegram_id = data.get('telegram_id')
     name = data.get('name')
     phone = data.get('phone')
-
-    if not telegram_id:
-        return jsonify({"status": "error", "message": "telegram_id required"}), 400
-
     conn = get_db()
     cursor = conn.cursor()
-
-    # بررسی وجود کاربر
     cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (telegram_id,))
     user = cursor.fetchone()
-
     if user:
         return jsonify({"status": "ok", "user": dict(user)})
     else:
-        # ثبت کاربر جدید
-        cursor.execute(
-            "INSERT INTO users (telegram_id, name, phone) VALUES (?, ?, ?)",
-            (telegram_id, name, phone)
-        )
+        is_admin = 1 if telegram_id in ADMIN_IDS else 0
+        cursor.execute("INSERT INTO users (telegram_id, name, phone, is_admin) VALUES (?, ?, ?, ?)",
+                       (telegram_id, name, phone, is_admin))
         conn.commit()
         cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (telegram_id,))
         user = cursor.fetchone()
         return jsonify({"status": "ok", "user": dict(user)})
 
-
-# ---- دریافت لیست خدمات ----
 @app.route('/api/services', methods=['GET'])
 def get_services():
     conn = get_db()
@@ -103,14 +149,12 @@ def get_services():
     services = cursor.fetchall()
     return jsonify({"status": "ok", "services": [dict(s) for s in services]})
 
-
-# ---- دریافت نوبت‌های یک کاربر ----
 @app.route('/api/appointments/user/<int:telegram_id>', methods=['GET'])
 def get_user_appointments(telegram_id):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
-        SELECT a.*, s.name as service_name 
+        SELECT a.*, s.name as service_name
         FROM appointments a
         JOIN users u ON a.user_id = u.id
         JOIN services s ON a.service_id = s.id
@@ -120,8 +164,6 @@ def get_user_appointments(telegram_id):
     appointments = cursor.fetchall()
     return jsonify({"status": "ok", "appointments": [dict(a) for a in appointments]})
 
-
-# ---- ثبت نوبت جدید ----
 @app.route('/api/appointments', methods=['POST'])
 def create_appointment():
     data = request.get_json()
@@ -129,30 +171,19 @@ def create_appointment():
     service_id = data.get('service_id')
     app_date = data.get('date')
     app_time = data.get('time')
-
     conn = get_db()
     cursor = conn.cursor()
-
-    # پیدا کردن کاربر
     cursor.execute("SELECT id FROM users WHERE telegram_id = ?", (telegram_id,))
     user = cursor.fetchone()
     if not user:
         return jsonify({"status": "error", "message": "User not found"}), 404
-
-    # ثبت نوبت
     cursor.execute('''
         INSERT INTO appointments (user_id, service_id, appointment_date, appointment_time, status)
         VALUES (?, ?, ?, ?, 'pending')
     ''', (user['id'], service_id, app_date, app_time))
     conn.commit()
-
-    # ارسال پیام به ادمین‌ها
-    notify_admins(f"📢 نوبت جدید ثبت شد:\nکاربر: {telegram_id}\nتاریخ: {app_date}\nساعت: {app_time}")
-
     return jsonify({"status": "ok", "message": "نوبت با موفقیت ثبت شد!"})
 
-
-# ---- لغو نوبت ----
 @app.route('/api/appointments/<int:appointment_id>/cancel', methods=['POST'])
 def cancel_appointment(appointment_id):
     conn = get_db()
@@ -161,23 +192,6 @@ def cancel_appointment(appointment_id):
     conn.commit()
     return jsonify({"status": "ok", "message": "نوبت لغو شد."})
 
-
-@app.route('/api/make_admin', methods=['GET'])
-def make_admin():
-    telegram_id = request.args.get('telegram_id')
-    if not telegram_id:
-        return jsonify({"status": "error", "message": "telegram_id required"}), 400
-
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE users SET is_admin = 1 WHERE telegram_id = ?", (telegram_id,))
-    conn.commit()
-
-    if cursor.rowcount > 0:
-        return jsonify({"status": "ok", "message": f"User {telegram_id} is now admin!"})
-    else:
-        return jsonify({"status": "error", "message": "User not found. Please use /start first."}), 404
-# ---- ادمین: دریافت همه نوبت‌ها ----
 @app.route('/api/admin/appointments', methods=['GET'])
 def admin_get_appointments():
     conn = get_db()
@@ -192,8 +206,6 @@ def admin_get_appointments():
     appointments = cursor.fetchall()
     return jsonify({"status": "ok", "appointments": [dict(a) for a in appointments]})
 
-
-# ---- ادمین: تغییر وضعیت نوبت ----
 @app.route('/api/admin/appointments/<int:appointment_id>/status', methods=['POST'])
 def admin_update_status(appointment_id):
     data = request.get_json()
@@ -204,59 +216,25 @@ def admin_update_status(appointment_id):
     conn.commit()
     return jsonify({"status": "ok", "message": f"وضعیت به {new_status} تغییر کرد."})
 
-
-# ---- ادمین: اضافه کردن خدمت ----
 @app.route('/api/admin/services', methods=['POST'])
 def admin_add_service():
     data = request.get_json()
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO services (name, duration, price, description) VALUES (?, ?, ?, ?)",
-        (data['name'], data['duration'], data['price'], data.get('description', ''))
-    )
+    cursor.execute("INSERT INTO services (name, duration, price, description) VALUES (?, ?, ?, ?)",
+                   (data['name'], data['duration'], data['price'], data.get('description', '')))
     conn.commit()
     return jsonify({"status": "ok", "message": "خدمت اضافه شد."})
-
-
-# ========== توابع کمکی ==========
-def send_message(chat_id, text, reply_markup=None):
-    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-    payload = {"chat_id": chat_id, "text": text}
-    if reply_markup:
-        payload["reply_markup"] = json.dumps(reply_markup)
-    try:
-        requests.post(url, json=payload, timeout=10)
-    except Exception as e:
-        print(f"⚠️ Error sending message: {e}")
-
-
-def get_user_by_telegram_id(telegram_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE telegram_id = ?", (telegram_id,))
-    return cursor.fetchone()
-
-
-def notify_admins(message):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT telegram_id FROM users WHERE is_admin = 1")
-    admins = cursor.fetchall()
-    for admin in admins:
-        send_message(admin['telegram_id'], message)
-
 
 # ========== سرو فایل‌های استاتیک ==========
 @app.route('/static/<path:path>')
 def serve_static(path):
+    from flask import send_from_directory
     return send_from_directory('static', path)
-
 
 @app.route('/')
 def home():
     return "✅ ربات رزرو آرایشگاه روشن است!"
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
