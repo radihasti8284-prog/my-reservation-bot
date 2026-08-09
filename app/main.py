@@ -11,7 +11,6 @@ def webhook():
     if request.method == 'GET':
         return "Webhook is ready!"
 
-    # دریافت داده
     data = request.get_json(silent=True)
     print(f"Data: {data}")
 
