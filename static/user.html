@@ -3,179 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>رزرو آرایشگاه</title>
+    <title>M4Cut - رزرو نوبت</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        .service-item { border-bottom: 1px solid #eee; padding: 10px 0; }
-        .service-item h4 { margin: 0 0 5px 0; color: #2c3e50; }
-        .service-item p { margin: 0; font-size: 14px; color: #7f8c8d; }
-        .service-item .price { color: #27ae60; font-weight: bold; }
-        .shamsi-selects { display: flex; gap: 10px; margin: 8px 0; }
-        .shamsi-selects select { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
-        .file-upload { border: 2px dashed #ddd; padding: 15px; text-align: center; border-radius: 8px; margin: 8px 0; cursor: pointer; }
-        .file-upload:hover { background: #f9f9f9; }
-        .receipt-preview { max-width: 100%; max-height: 150px; margin: 10px 0; border-radius: 8px; }
-        .appointment-item { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-right: 4px solid #f39c12; }
-        .appointment-item.confirmed { border-color: #2ecc71; }
-        .appointment-item.cancelled { border-color: #e74c3c; }
-        .appointment-item.completed { border-color: #3498db; }
-        .appointment-item .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
-        .badge-pending { background: #f39c12; color: white; }
-        .badge-confirmed { background: #2ecc71; color: white; }
-        .badge-cancelled { background: #e74c3c; color: white; }
-        .badge-completed { background: #3498db; color: white; }
-        .status-msg { background: #fff3cd; padding: 10px; border-radius: 8px; margin: 10px 0; color: #856404; }
-        .tab-buttons { display: flex; gap: 10px; margin: 15px 0; }
-        .tab-buttons button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; background: #e9ecef; }
-        .tab-buttons button.active { background: #0088cc; color: white; }
+        /* استایل‌های اختصاصی صفحه کاربر */
+        .service-desc {
+            font-size: 13px;
+            color: var(--m4cut-gray);
+            background: var(--m4cut-smoke);
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin: -4px 0 12px;
+        }
+        .price-tag {
+            font-weight: 700;
+            color: var(--m4cut-brass);
+        }
+        .receipt-preview {
+            max-width: 100%;
+            max-height: 140px;
+            border-radius: 12px;
+            margin: 8px 0;
+            border: 1px solid var(--m4cut-border);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            background: var(--m4cut-smoke);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            color: var(--m4cut-gray);
+        }
+        .tab-btn.active {
+            background: var(--m4cut-brass);
+            color: white;
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>💇‍♂️ رزرو نوبت</h1>
-    <div id="userInfo" style="background:#f0f2f5;padding:10px;border-radius:8px;margin-bottom:15px;"></div>
-
-    <div class="tab-buttons">
-        <button id="tabReserve" class="active">📅 رزرو جدید</button>
-        <button id="tabMyAppointments">📋 نوبت‌های من</button>
+    <!-- هدر برند -->
+    <div class="brand-header">
+        <div class="brand-logo">M4<span>Cut</span></div>
+        <div class="brand-tagline">همه مراحل رزرو در یک صفحه</div>
     </div>
 
-    <!-- بخش رزرو -->
-    <div id="reserveSection">
-        <p style="color:#7f8c8d;font-size:14px;">👇 خدمت مورد نظر را انتخاب کنید:</p>
+    <!-- اطلاعات کاربر -->
+    <div id="userInfo" style="background:var(--m4cut-smoke);padding:12px 16px;border-radius:12px;margin-bottom:16px;font-size:14px;">
+        👤 بارگذاری...
+    </div>
+
+    <!-- تب‌ها -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <button class="tab-btn active" data-tab="reserve">📅 رزرو جدید</button>
+        <button class="tab-btn" data-tab="myapps">📋 نوبت‌های من</button>
+    </div>
+
+    <!-- ====== تب رزرو ====== -->
+    <div id="tab-reserve" class="tab-content active">
         <form id="bookingForm">
-            <select id="service" required></select>
-
-            <div class="shamsi-selects">
-                <select id="year"></select>
-                <select id="month"></select>
-                <select id="day"></select>
+            <!-- استپ ۱: انتخاب خدمت -->
+            <div class="booking-step booking-step--visible" data-step="1">
+                <div class="step-title">۱. انتخاب خدمت</div>
+                <select id="serviceSelect" required>
+                    <option value="">انتخاب کنید...</option>
+                </select>
+                <div id="serviceDesc" class="service-desc">توضیحات خدمت在这里 نمایش داده می‌شود</div>
             </div>
 
-            <input type="time" id="time" required placeholder="ساعت">
-
-            <div class="file-upload" id="uploadBox">
-                <span>📎 برای آپلود رسید کلیک کنید</span>
-                <input type="file" id="receiptInput" accept="image/*" style="display:none;">
-                <div id="fileName">هیچ فایلی انتخاب نشده</div>
+            <!-- استپ ۲: انتخاب روز -->
+            <div class="booking-step" data-step="2">
+                <div class="step-title">۲. انتخاب روز</div>
+                <p class="step-help">روز مورد نظر را لمس کنید</p>
+                <div id="dayGrid" class="day-grid"></div>
             </div>
-            <img id="previewImg" class="receipt-preview" style="display:none;" />
 
-            <button type="submit">📅 ثبت نوبت</button>
+            <!-- استپ ۳: انتخاب ساعت و پرداخت -->
+            <div class="booking-step" data-step="3">
+                <div class="step-title">۳. ساعت و پرداخت</div>
+                <p class="step-help">ساعت مورد نظر را انتخاب کنید — خدمت و مبلغ روی هر ساعت نمایش داده می‌شود</p>
+                <div id="timeGrid" class="time-grid"></div>
+
+                <!-- کارت بانکی (شبیه سایت معین) -->
+                <div class="bank-card">
+                    <div>
+                        <div class="label">کارت‌به‌کارت بیعانه</div>
+                        <div class="number" dir="ltr">5892 ●●●● ●●●● 7135</div>
+                    </div>
+                    <div class="logo">💳</div>
+                </div>
+
+                <!-- آپلود رسید -->
+                <div class="upload-area" id="uploadBox">
+                    <span class="icon">📎</span>
+                    <div class="text">برای آپلود رسید کلیک کنید</div>
+                    <input type="file" id="receiptInput" accept="image/*" style="display:none;">
+                    <div class="filename" id="fileName">هیچ فایلی انتخاب نشده</div>
+                </div>
+                <img id="previewImg" class="receipt-preview" style="display:none;" />
+
+                <button type="submit" class="btn" id="submitBtn">📅 ثبت نوبت</button>
+                <div id="formMessage"></div>
+            </div>
         </form>
-        <div id="message"></div>
     </div>
 
-    <!-- بخش نوبت‌های من -->
-    <div id="myAppointmentsSection" style="display:none;">
+    <!-- ====== تب نوبت‌های من ====== -->
+    <div id="tab-myapps" class="tab-content">
         <div id="myAppointmentsList"></div>
     </div>
 
-    <button onclick="Telegram.WebApp.close()" class="btn-close">❌ بستن</button>
+    <button onclick="Telegram.WebApp.close()" class="btn btn-close">❌ بستن</button>
 </div>
 
 <script>
+    // ============================================================
+    //   M4Cut - اسکریپت کاربر
+    // ============================================================
+
+    // ----- اطلاعات کاربر -----
     const userStr = localStorage.getItem('user');
     if (!userStr) window.location.href = '/static/index.html';
     const user = JSON.parse(userStr);
     document.getElementById('userInfo').innerHTML = `👤 ${user.name} | 📞 ${user.phone}`;
 
-    // ====== Tab switching ======
-    document.getElementById('tabReserve').addEventListener('click', function() {
-        document.getElementById('reserveSection').style.display = 'block';
-        document.getElementById('myAppointmentsSection').style.display = 'none';
-        document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-    });
-    document.getElementById('tabMyAppointments').addEventListener('click', function() {
-        document.getElementById('reserveSection').style.display = 'none';
-        document.getElementById('myAppointmentsSection').style.display = 'block';
-        document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        loadMyAppointments();
+    // ----- متغیرهای عمومی -----
+    let selectedService = null;
+    let selectedDate = null;
+    let selectedTime = null;
+    let uploadedFileUrl = null;
+    let currentStep = 1;
+    const totalSteps = 3;
+
+    // ----- تب‌ها -----
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+            if (this.dataset.tab === 'myapps') loadMyAppointments();
+        });
     });
 
-    // ====== تاریخ شمسی ======
+    // ----- تاریخ شمسی (ساده) -----
     const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
-    const yearSelect = document.getElementById('year');
-    const monthSelect = document.getElementById('month');
-    const daySelect = document.getElementById('day');
 
     function isLeapYear(year) {
         const a = year % 33;
         return a === 1 || a === 5 || a === 9 || a === 13 || a === 17 || a === 22 || a === 26 || a === 30;
     }
 
-    function buildDays(year, month) {
-        const daysInMonth = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
+    function daysInMonth(year, month) {
+        const d = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
         if (month === 11 && isLeapYear(year)) return 30;
-        return daysInMonth[month];
+        return d[month];
     }
 
-    function populateDates() {
-        const currentYear = 1404;
-        for (let y = currentYear; y <= currentYear + 5; y++) {
-            const opt = document.createElement('option');
-            opt.value = y;
-            opt.textContent = y;
-            yearSelect.appendChild(opt);
-        }
-        for (let m = 0; m < 12; m++) {
-            const opt = document.createElement('option');
-            opt.value = m;
-            opt.textContent = persianMonths[m];
-            monthSelect.appendChild(opt);
-        }
-        yearSelect.value = currentYear;
-        updateDays();
+    function persianToGregorian(py, pm, pd) {
+        // تبدیل تقریبی - برای نمایش استفاده می‌شود
+        const gYear = py - 621;
+        const gMonth = pm + 2;
+        const gDay = pd + 10;
+        return { year: gYear, month: gMonth, day: gDay };
     }
 
-    function updateDays() {
-        const year = parseInt(yearSelect.value);
-        const month = parseInt(monthSelect.value);
-        const max = buildDays(year, month);
-        daySelect.innerHTML = '';
-        for (let d = 1; d <= max; d++) {
-            const opt = document.createElement('option');
-            opt.value = d;
-            opt.textContent = d;
-            daySelect.appendChild(opt);
+    function buildDayGrid() {
+        const grid = document.getElementById('dayGrid');
+        grid.innerHTML = '';
+        const today = new Date();
+        const py = 1404; // سال شمسی فعلی
+        const pm = today.getMonth() + 2; // تقریبی
+        const pd = today.getDate();
+
+        const days = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
+        days.forEach(d => {
+            const div = document.createElement('div');
+            div.className = 'day-name';
+            div.textContent = d;
+            grid.appendChild(div);
+        });
+
+        const maxDay = daysInMonth(py, pm);
+        for (let d = 1; d <= maxDay; d++) {
+            const btn = document.createElement('button');
+            btn.textContent = d;
+            btn.dataset.day = d;
+            if (d < pd) btn.disabled = true;
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.day-grid button').forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedDate = `${py}/${String(pm+1).padStart(2,'0')}/${String(d).padStart(2,'0')}`;
+                goToStep(3);
+            });
+            grid.appendChild(btn);
         }
     }
-    yearSelect.addEventListener('change', updateDays);
-    monthSelect.addEventListener('change', updateDays);
-    populateDates();
 
-    // ====== بارگیری خدمات با توضیحات ======
+    // ----- بارگیری خدمات -----
     async function loadServices() {
-        const res = await fetch('/api/services');
-        const data = await res.json();
-        const sel = document.getElementById('service');
-        data.services.forEach(s => {
-            const opt = document.createElement('option');
-            opt.value = s.id;
-            opt.textContent = `${s.name} (${s.duration} دقیقه - ${s.price.toLocaleString()} تومان)`;
-            opt.dataset.desc = s.description;
-            sel.appendChild(opt);
-        });
-        // نمایش توضیحات هنگام انتخاب
-        sel.addEventListener('change', function() {
-            const desc = this.options[this.selectedIndex]?.dataset.desc || '';
-            document.getElementById('serviceDescription').textContent = desc;
-        });
-        // نمایش توضیحات اولین گزینه
-        if (sel.options.length) {
-            document.getElementById('serviceDescription').textContent = sel.options[0].dataset.desc || '';
+        try {
+            const res = await fetch('/api/services');
+            const data = await res.json();
+            const sel = document.getElementById('serviceSelect');
+            sel.innerHTML = '<option value="">انتخاب کنید...</option>';
+            data.services.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = `${s.name} (${s.duration} دقیقه - ${s.price.toLocaleString()} تومان)`;
+                opt.dataset.desc = s.description || '';
+                opt.dataset.price = s.price;
+                opt.dataset.duration = s.duration;
+                sel.appendChild(opt);
+            });
+            sel.addEventListener('change', function() {
+                const opt = this.options[this.selectedIndex];
+                if (opt && opt.value) {
+                    selectedService = {
+                        id: parseInt(opt.value),
+                        name: opt.textContent.split('(')[0].trim(),
+                        price: parseInt(opt.dataset.price),
+                        duration: parseInt(opt.dataset.duration),
+                        desc: opt.dataset.desc
+                    };
+                    document.getElementById('serviceDesc').textContent = opt.dataset.desc || 'توضیحاتی برای این خدمت موجود نیست.';
+                    goToStep(2);
+                }
+            });
+        } catch(e) {
+            console.error('Error loading services:', e);
         }
     }
-    loadServices();
 
-    // ====== آپلود رسید ======
+    // ----- استپ‌ها -----
+    function goToStep(step) {
+        currentStep = step;
+        document.querySelectorAll('.booking-step').forEach(el => {
+            el.classList.toggle('booking-step--visible', parseInt(el.dataset.step) === step);
+        });
+        document.querySelectorAll('.step-dot').forEach(el => {
+            const s = parseInt(el.dataset.step);
+            el.classList.toggle('active', s === step);
+            el.classList.toggle('completed', s < step);
+        });
+        // اسکرول به بالای فرم
+        document.querySelector('#bookingForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ----- ساخت ساعت‌ها -----
+    function buildTimeGrid() {
+        const grid = document.getElementById('timeGrid');
+        grid.innerHTML = '';
+        const times = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
+        times.forEach(t => {
+            const btn = document.createElement('button');
+            btn.textContent = t;
+            btn.dataset.time = t;
+            // نمایش قیمت روی ساعت (شبیه سایت معین)
+            if (selectedService) {
+                btn.textContent = `${t} - ${selectedService.price.toLocaleString()} تومان`;
+            }
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.time-grid button').forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedTime = this.dataset.time;
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('submitBtn').style.opacity = '1';
+            });
+            grid.appendChild(btn);
+        });
+    }
+
+    // ----- آپلود رسید -----
     const fileInput = document.getElementById('receiptInput');
     const fileName = document.getElementById('fileName');
     const previewImg = document.getElementById('previewImg');
-    let uploadedFileUrl = null;
 
     document.getElementById('uploadBox').addEventListener('click', () => fileInput.click());
 
@@ -185,85 +300,114 @@
         fileName.textContent = file.name;
         const formData = new FormData();
         formData.append('file', file);
-        const res = await fetch('/api/upload', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.status === 'ok') {
-            uploadedFileUrl = data.url;
-            previewImg.src = data.url;
-            previewImg.style.display = 'block';
-        } else {
-            alert('خطا در آپلود رسید.');
+        try {
+            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.status === 'ok') {
+                uploadedFileUrl = data.url;
+                previewImg.src = data.url;
+                previewImg.style.display = 'block';
+            } else {
+                alert('خطا در آپلود رسید.');
+            }
+        } catch(e) {
+            alert('خطا در ارتباط با سرور.');
         }
     });
 
-    // ====== ثبت نوبت ======
+    // ----- ثبت نوبت -----
     document.getElementById('bookingForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        const service_id = document.getElementById('service').value;
-        const time = document.getElementById('time').value;
-        const year = yearSelect.value;
-        const month = parseInt(monthSelect.value) + 1;
-        const day = daySelect.value;
-        const shamsiDate = `${year}/${month}/${day}`;
+        const msgDiv = document.getElementById('formMessage');
 
+        if (!selectedService) {
+            msgDiv.innerHTML = '<div class="msg msg-error">لطفاً یک خدمت انتخاب کنید.</div>';
+            return;
+        }
+        if (!selectedDate) {
+            msgDiv.innerHTML = '<div class="msg msg-error">لطفاً یک روز انتخاب کنید.</div>';
+            return;
+        }
+        if (!selectedTime) {
+            msgDiv.innerHTML = '<div class="msg msg-error">لطفاً یک ساعت انتخاب کنید.</div>';
+            return;
+        }
         if (!uploadedFileUrl) {
-            document.getElementById('message').innerHTML = '<div class="status-msg">⚠️ لطفاً رسید تراکنش را آپلود کنید.</div>';
+            msgDiv.innerHTML = '<div class="msg msg-error">⚠️ لطفاً رسید تراکنش را آپلود کنید.</div>';
             return;
         }
 
         const payload = {
             telegram_id: user.telegram_id,
-            service_id: service_id,
-            date: shamsiDate,
-            time: time,
+            service_id: selectedService.id,
+            date: selectedDate,
+            time: selectedTime,
             receipt: uploadedFileUrl
         };
 
-        const res = await fetch('/api/appointments', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
-        });
-        const result = await res.json();
-        if (result.status === 'ok') {
-            document.getElementById('message').innerHTML = `<div class="status-msg">✅ ${result.message}</div>`;
-            document.getElementById('bookingForm').reset();
-            previewImg.style.display = 'none';
-            uploadedFileUrl = null;
-            fileName.textContent = 'هیچ فایلی انتخاب نشده';
-            setTimeout(() => Telegram.WebApp.close(), 3000);
-        } else {
-            document.getElementById('message').innerHTML = `<div class="status-msg">❌ ${result.message}</div>`;
+        try {
+            const res = await fetch('/api/appointments', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (result.status === 'ok') {
+                msgDiv.innerHTML = `<div class="msg msg-success">✅ ${result.message}</div>`;
+                // ریست فرم
+                setTimeout(() => {
+                    Telegram.WebApp.close();
+                }, 3000);
+            } else {
+                msgDiv.innerHTML = `<div class="msg msg-error">❌ ${result.message}</div>`;
+            }
+        } catch(e) {
+            msgDiv.innerHTML = '<div class="msg msg-error">❌ خطا در ارتباط با سرور.</div>';
         }
     });
 
-    // ====== نمایش نوبت‌های من ======
+    // ----- بارگیری نوبت‌های من -----
     async function loadMyAppointments() {
-        const res = await fetch(`/api/appointments/user/${user.telegram_id}`);
-        const data = await res.json();
         const div = document.getElementById('myAppointmentsList');
-        if (!data.appointments || data.appointments.length === 0) {
-            div.innerHTML = '<p style="color:#7f8c8d;">هیچ نوبتی ثبت نشده است.</p>';
-            return;
-        }
-        div.innerHTML = data.appointments.map(a => {
+        try {
+            const res = await fetch(`/api/appointments/user/${user.telegram_id}`);
+            const data = await res.json();
+            if (!data.appointments || data.appointments.length === 0) {
+                div.innerHTML = '<p style="color:var(--m4cut-gray);text-align:center;padding:20px;">هیچ نوبتی ثبت نشده است.</p>';
+                return;
+            }
             const statusMap = {
                 'pending': '<span class="badge badge-pending">در انتظار تأیید</span>',
                 'confirmed': '<span class="badge badge-confirmed">✅ تأیید شده</span>',
                 'cancelled': '<span class="badge badge-cancelled">لغو شده</span>',
                 'completed': '<span class="badge badge-completed">انجام شده</span>'
             };
-            const statusClass = a.status;
-            return `
-                <div class="appointment-item ${statusClass}">
+            div.innerHTML = data.appointments.map(a => `
+                <div class="appointment-item ${a.status}">
                     <strong>${a.service_name}</strong><br>
                     📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
                     وضعیت: ${statusMap[a.status] || a.status}
-                    ${a.receipt ? `<br><img src="${a.receipt}" style="max-height:60px;border-radius:5px;margin-top:5px;" />` : ''}
+                    ${a.receipt ? `<br><img src="${a.receipt}" style="max-height:60px;border-radius:8px;margin-top:6px;" />` : ''}
                 </div>
-            `;
-        }).join('');
+            `).join('');
+        } catch(e) {
+            div.innerHTML = '<p style="color:var(--m4cut-gray);">خطا در بارگیری نوبت‌ها.</p>';
+        }
     }
+
+    // ----- مقداردهی اولیه -----
+    loadServices();
+    buildDayGrid();
+    buildTimeGrid();
+    // غیرفعال کردن دکمه ثبت تا زمانی که همه موارد انتخاب شوند
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('submitBtn').style.opacity = '0.6';
+
+    // فعال‌سازی دکمه ثبت بعد از انتخاب ساعت (در event listener ساعت انجام شده)
+    // همچنین می‌تونیم یک observer برای تغییرات داشته باشیم
+
+    // نمایش استپ اول
+    goToStep(1);
 </script>
 </body>
 </html>

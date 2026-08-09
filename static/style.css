@@ -1,77 +1,574 @@
+/* ========================================
+   تم M4Cut - برگرفته از طراحی Moein Kh
+   ======================================== */
+
+/* ----- فونت ----- */
+@font-face {
+    font-family: 'IRANYekanXVF';
+    src: url('assets/fonts/IRANYekanXVF.woff2') format('woff2-variations'),
+         url('assets/fonts/IRANYekanXVF.woff2') format('woff2');
+    font-weight: 100 1000;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ----- متغیرهای رنگ ----- */
+:root {
+    --m4cut-ink: #161513;
+    --m4cut-smoke: #f4f0ea;
+    --m4cut-brass: #c69249;
+    --m4cut-clay: #9e5541;
+    --m4cut-pine: #154038;
+    --m4cut-white: #ffffff;
+    --m4cut-gray: #7f8c8d;
+    --m4cut-border: #e0dcd5;
+}
+
+/* ----- ریست عمومی ----- */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Vazir', Tahoma, Arial, sans-serif;
+    font-family: 'IRANYekanXVF', Tahoma, Arial, sans-serif;
 }
 
 body {
-    background: #f0f2f5;
+    background: var(--m4cut-smoke);
+    color: var(--m4cut-ink);
     padding: 20px;
     direction: rtl;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
 }
 
+/* ----- کانتینر اصلی ----- */
 .container {
-    max-width: 400px;
-    margin: 0 auto;
-    background: #fff;
-    border-radius: 16px;
-    padding: 25px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-h1, h2 {
-    color: #2c3e50;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-input, select, button {
+    max-width: 480px;
     width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 16px;
-    box-sizing: border-box;
+    margin: 0 auto;
+    background: var(--m4cut-white);
+    border-radius: 24px;
+    padding: 28px 22px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--m4cut-border);
 }
 
-button {
-    background: #0088cc;
-    color: white;
+/* ----- هدر و لوگو ----- */
+.brand-header {
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--m4cut-smoke);
+    margin-bottom: 22px;
+}
+
+.brand-logo {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    color: var(--m4cut-ink);
+}
+
+.brand-logo span {
+    color: var(--m4cut-brass);
+}
+
+.brand-tagline {
+    font-size: 13px;
+    color: var(--m4cut-gray);
+    margin-top: 4px;
+}
+
+/* ----- عنوان‌ها ----- */
+h1, h2, h3 {
+    color: var(--m4cut-ink);
+    font-weight: 700;
+}
+
+h1 { font-size: 24px; }
+h2 { font-size: 18px; margin: 16px 0 10px; }
+
+/* ----- دکمه‌ها ----- */
+.btn {
+    width: 100%;
+    padding: 14px;
     border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.3s ease;
+    background: var(--m4cut-brass);
+    color: white;
 }
 
-button:hover {
-    background: #006699;
+.btn:hover {
+    background: #b07d3a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(198, 146, 73, 0.3);
 }
 
 .btn-close {
-    background: #e74c3c;
-    margin-top: 15px;
+    background: var(--m4cut-smoke);
+    color: var(--m4cut-ink);
+    margin-top: 12px;
 }
 
 .btn-close:hover {
-    background: #c0392b;
+    background: #e8e2d9;
+    box-shadow: none;
+    transform: none;
 }
 
-.appointment {
-    background: #f8f9fa;
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 8px;
-    border-right: 4px solid #0088cc;
+.btn-success {
+    background: var(--m4cut-pine);
 }
 
-.appointment.pending { border-color: #f39c12; }
-.appointment.confirmed { border-color: #2ecc71; }
-.appointment.cancelled { border-color: #e74c3c; }
-.appointment.completed { border-color: #3498db; }
+.btn-success:hover {
+    background: #0f2d26;
+}
 
-.error {
-    color: #e74c3c;
-    margin: 10px 0;
+/* ----- فرم و ورودی‌ها ----- */
+input, select, textarea {
+    width: 100%;
+    padding: 12px 16px;
+    margin: 6px 0 12px;
+    border: 1.5px solid var(--m4cut-border);
+    border-radius: 12px;
+    font-size: 15px;
+    background: var(--m4cut-white);
+    color: var(--m4cut-ink);
+    transition: border-color 0.3s ease;
+    font-family: inherit;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--m4cut-brass);
+    box-shadow: 0 0 0 3px rgba(198, 146, 73, 0.15);
+}
+
+label {
+    font-weight: 500;
+    font-size: 14px;
+    display: block;
+    margin-bottom: 2px;
+    color: var(--m4cut-ink);
+}
+
+/* ----- استپ‌های رزرو (شبیه سایت معین) ----- */
+.step-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 0 4px;
+}
+
+.step-dot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--m4cut-gray);
+    font-weight: 500;
+}
+
+.step-dot .dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--m4cut-smoke);
+    border: 2px solid var(--m4cut-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--m4cut-gray);
+    transition: all 0.4s ease;
+}
+
+.step-dot.active .dot {
+    background: var(--m4cut-brass);
+    border-color: var(--m4cut-brass);
+    color: white;
+    box-shadow: 0 4px 12px rgba(198, 146, 73, 0.3);
+}
+
+.step-dot.completed .dot {
+    background: var(--m4cut-pine);
+    border-color: var(--m4cut-pine);
+    color: white;
+}
+
+.step-dot.active { color: var(--m4cut-ink); }
+
+.step-guide {
     text-align: center;
+    font-size: 14px;
+    color: var(--m4cut-gray);
+    margin-bottom: 16px;
+    padding: 8px 12px;
+    background: var(--m4cut-smoke);
+    border-radius: 10px;
+}
+
+.booking-step {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.booking-step--visible {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.step-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--m4cut-ink);
+    margin-bottom: 12px;
+}
+
+.step-help {
+    font-size: 14px;
+    color: var(--m4cut-gray);
+    margin-bottom: 14px;
+}
+
+/* ----- انتخاب روز (تقویم شمسی ساده) ----- */
+.day-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin: 10px 0 16px;
+}
+
+.day-grid button {
+    padding: 12px 0;
+    border: 1.5px solid var(--m4cut-border);
+    border-radius: 10px;
+    background: var(--m4cut-white);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    color: var(--m4cut-ink);
+}
+
+.day-grid button:hover {
+    border-color: var(--m4cut-brass);
+    background: var(--m4cut-smoke);
+}
+
+.day-grid button.selected {
+    background: var(--m4cut-brass);
+    border-color: var(--m4cut-brass);
+    color: white;
+}
+
+.day-grid button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.day-name {
+    font-size: 11px;
+    color: var(--m4cut-gray);
+    text-align: center;
+    padding: 4px 0;
+    font-weight: 600;
+}
+
+/* ----- انتخاب ساعت ----- */
+.time-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 10px 0 16px;
+}
+
+.time-grid button {
+    padding: 10px 0;
+    border: 1.5px solid var(--m4cut-border);
+    border-radius: 10px;
+    background: var(--m4cut-white);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    color: var(--m4cut-ink);
+}
+
+.time-grid button:hover {
+    border-color: var(--m4cut-brass);
+    background: var(--m4cut-smoke);
+}
+
+.time-grid button.selected {
+    background: var(--m4cut-brass);
+    border-color: var(--m4cut-brass);
+    color: white;
+}
+
+.time-grid button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* ----- آپلود رسید (شبیه سایت معین) ----- */
+.upload-area {
+    border: 2px dashed var(--m4cut-border);
+    border-radius: 14px;
+    padding: 24px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--m4cut-smoke);
+    margin: 8px 0 12px;
+}
+
+.upload-area:hover {
+    border-color: var(--m4cut-brass);
+    background: #faf8f5;
+}
+
+.upload-area .icon {
+    font-size: 32px;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.upload-area .text {
+    font-size: 14px;
+    color: var(--m4cut-gray);
+}
+
+.upload-area .filename {
+    font-size: 13px;
+    color: var(--m4cut-brass);
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.receipt-preview {
+    max-width: 100%;
+    max-height: 160px;
+    border-radius: 12px;
+    margin: 10px 0;
+    border: 1px solid var(--m4cut-border);
+}
+
+/* ----- کارت بانکی (شبیه سایت معین) ----- */
+.bank-card {
+    background: var(--m4cut-smoke);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--m4cut-border);
+}
+
+.bank-card .number {
+    font-family: monospace;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--m4cut-ink);
+    direction: ltr;
+}
+
+.bank-card .label {
+    font-size: 12px;
+    color: var(--m4cut-gray);
+}
+
+.bank-card .logo {
+    font-size: 24px;
+}
+
+/* ----- لیست نوبت‌ها ----- */
+.appointment-item {
+    background: var(--m4cut-smoke);
+    padding: 16px;
+    margin: 10px 0;
+    border-radius: 14px;
+    border-right: 4px solid var(--m4cut-brass);
+    transition: all 0.2s ease;
+}
+
+.appointment-item.confirmed {
+    border-color: var(--m4cut-pine);
+}
+
+.appointment-item.cancelled {
+    border-color: var(--m4cut-clay);
+    opacity: 0.7;
+}
+
+.appointment-item.completed {
+    border-color: var(--m4cut-ink);
+}
+
+.appointment-item .badge {
+    display: inline-block;
+    padding: 2px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-pending {
+    background: #f39c12;
+    color: white;
+}
+.badge-confirmed {
+    background: var(--m4cut-pine);
+    color: white;
+}
+.badge-cancelled {
+    background: var(--m4cut-clay);
+    color: white;
+}
+.badge-completed {
+    background: var(--m4cut-ink);
+    color: white;
+}
+
+/* ----- پیام‌ها ----- */
+.msg {
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.msg-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.msg-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.msg-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* ----- تب‌ها (ادمین) ----- */
+.tabs {
+    display: flex;
+    gap: 6px;
+    margin: 14px 0;
+    flex-wrap: wrap;
+}
+
+.tabs button {
+    flex: 1;
+    min-width: 70px;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 10px;
+    background: var(--m4cut-smoke);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    color: var(--m4cut-gray);
+}
+
+.tabs button.active {
+    background: var(--m4cut-brass);
+    color: white;
+    box-shadow: 0 4px 12px rgba(198, 146, 73, 0.25);
+}
+
+.tabs button:hover:not(.active) {
+    background: #e8e2d9;
+}
+
+/* ----- لیست کاربران (ادمین) ----- */
+.user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--m4cut-smoke);
+    border-radius: 12px;
+    margin: 6px 0;
+}
+
+.user-item .admin-badge {
+    background: var(--m4cut-brass);
+    color: white;
+    padding: 2px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ----- تنظیمات ساعات کاری (ادمین) ----- */
+.schedule-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--m4cut-border);
+    flex-wrap: wrap;
+}
+
+.schedule-item .day-name {
+    width: 70px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.schedule-item input[type="time"] {
+    width: 100px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--m4cut-border);
+    font-size: 14px;
+    margin: 0;
+}
+
+.schedule-item label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 400;
+    margin: 0;
+}
+
+/* ----- responsive ----- */
+@media (max-width: 400px) {
+    .container { padding: 18px 14px; }
+    .brand-logo { font-size: 26px; }
+    .time-grid { grid-template-columns: repeat(3, 1fr); }
+    .day-grid { gap: 4px; }
+    .day-grid button { padding: 10px 0; font-size: 13px; }
+    .schedule-item { flex-direction: column; align-items: stretch; gap: 6px; }
+    .schedule-item input[type="time"] { width: 100%; }
+}
+
+/* ----- اسکرول نرم ----- */
+html {
+    scroll-behavior: smooth;
 }

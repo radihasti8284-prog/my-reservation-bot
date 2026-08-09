@@ -3,51 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ثبت‌نام</title>
+    <title>M4Cut - ثبت‌نام</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
-    <h1>💇‍♂️ ثبت‌نام در آرایشگاه</h1>
-    <p>لطفاً اطلاعات خود را وارد کنید</p>
+    <div class="brand-header">
+        <div class="brand-logo">M4<span>Cut</span></div>
+        <div class="brand-tagline">ثبت‌نام و ورود</div>
+    </div>
+
+    <p style="text-align:center;color:var(--m4cut-gray);font-size:14px;margin-bottom:16px;">
+        لطفاً اطلاعات خود را وارد کنید
+    </p>
+
     <form id="authForm">
-        <input type="text" id="name" placeholder="نام و نام خانوادگی" required>
-        <input type="text" id="phone" placeholder="شماره تماس" required>
-        <button type="submit">ثبت‌نام و ورود</button>
+        <label>نام و نام خانوادگی</label>
+        <input type="text" id="name" placeholder="مثلاً: علی محمدی" required>
+
+        <label>شماره تماس</label>
+        <input type="text" id="phone" placeholder="مثلاً: 09123456789" required>
+
+        <button type="submit" class="btn">ورود / ثبت‌نام</button>
+        <div id="error" style="color:var(--m4cut-clay);margin-top:10px;text-align:center;font-size:14px;"></div>
     </form>
-    <div id="error" class="error"></div>
+
+    <button onclick="Telegram.WebApp.close()" class="btn btn-close">❌ بستن</button>
 </div>
+
 <script>
     document.getElementById('authForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        const name = document.getElementById('name').value;
-        const phone = document.getElementById('phone').value;
+        const name = document.getElementById('name').value.trim();
+        const phone = document.getElementById('phone').value.trim();
 
-        // دریافت اطلاعات از تلگرام
+        if (!name || !phone) {
+            document.getElementById('error').textContent = 'لطفاً همه فیلدها را پر کنید.';
+            return;
+        }
+
         const tgUser = Telegram.WebApp.initDataUnsafe.user;
         if (!tgUser) {
             document.getElementById('error').textContent = 'لطفاً از داخل تلگرام وارد شوید.';
             return;
         }
 
-        const telegram_id = tgUser.id;
-        const response = await fetch('/api/auth', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({telegram_id, name, phone})
-        });
-
-        const result = await response.json();
-        if (result.status === 'ok') {
-            localStorage.setItem('user', JSON.stringify(result.user));
-            if (result.user.is_admin === 1) {
-                window.location.href = '/static/admin.html';
+        try {
+            const res = await fetch('/api/auth', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    telegram_id: tgUser.id,
+                    name: name,
+                    phone: phone
+                })
+            });
+            const result = await res.json();
+            if (result.status === 'ok') {
+                localStorage.setItem('user', JSON.stringify(result.user));
+                if (result.user.is_admin === 1) {
+                    window.location.href = '/static/admin.html';
+                } else {
+                    window.location.href = '/static/user.html';
+                }
             } else {
-                window.location.href = '/static/user.html';
+                document.getElementById('error').textContent = result.message || 'خطایی رخ داد.';
             }
-        } else {
-            document.getElementById('error').textContent = result.message || 'خطایی رخ داد.';
+        } catch(e) {
+            document.getElementById('error').textContent = 'خطا در ارتباط با سرور.';
         }
     });
 </script>
