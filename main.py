@@ -115,8 +115,7 @@ def upload_file():
     except Exception as e:
         print(f"❌ upload_file critical error: {e}")
         traceback.print_exc()
-        return jsonify({"status": "error", "message": f"خطای سرور: {str(e)}"}), 500)
-
+        return jsonify({"status": "error", "message": f"خطای سرور: {str(e)}"}), 500
 
 # ============================================================
 #   توابع کمکی PDF (تبدیل فارسی)
