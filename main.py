@@ -90,45 +90,39 @@ def init_db():
         )
     ''')
 
-    # اضافه کردن ستون‌های جدید به جدول appointments
+    # اضافه کردن ستون‌های جدید
     cursor.execute("PRAGMA table_info(appointments)")
     cols = [c[1] for c in cursor.fetchall()]
     if 'notification_sent' not in cols:
         cursor.execute("ALTER TABLE appointments ADD COLUMN notification_sent INTEGER DEFAULT 0")
 
-    # اضافه کردن ستون description به services (اگه وجود نداره)
     cursor.execute("PRAGMA table_info(services)")
     cols = [c[1] for c in cursor.fetchall()]
     if 'description' not in cols:
         cursor.execute("ALTER TABLE services ADD COLUMN description TEXT")
 
-    # خدمات پیش‌فرض با توضیحات کامل
-    cursor.execute("SELECT COUNT(*) FROM services")
-    if cursor.fetchone()[0] == 0:
-        services = [
-            ('کوتاهی موی مردانه', 30, 150000,
-             '⭐ کوتاهی و اصلاح مو با جدیدترین متدهای روز دنیا. شامل شامپو و حالت‌دهی.'),
-            ('اصلاح صورت', 20, 100000, '✨ اصلاح حرفه‌ای ریش و سبیل با استفاده از تیغ‌های استریل و محصولات با کیفیت.'),
-            ('کوتاهی موی زنانه', 45, 250000, '🌸 کوتاهی و لایه‌لایه‌سازی مو با توجه به فرم صورت. شامل مشاوره رایگان.'),
-            ('رنگ مو', 60, 350000, '🎨 رنگ‌آمیزی حرفه‌ای با بهترین برندهای دنیا. شامل تونر و براق‌کننده.'),
-            ('ماساژ سر و گردن', 30, 180000, '💆‍♂️ ماساژ تخصصی سر و گردن برای رفع خستگی و افزایش گردش خون.'),
-        ]
-        cursor.executemany(
-            "INSERT INTO services (name, duration, price, description) VALUES (?, ?, ?, ?)",
-            services
-        )
+    # اضافه کردن فقط یک خدمت: کوتاهی مو
+    cursor.execute("DELETE FROM services")
+    services = [
+        ('✂️ کوتاهی مو', 30, 200000,
+         '✨ کوتاهی و اصلاح مو با جدیدترین متدها.\n\n💳 مبلغ بیعانه: ۲۰۰,۰۰۰ تومان\n⚠️ نکته: در صورت عدم حضور در وقت تعیین‌شده، نوبت شما از بین خواهد رفت.')
+    ]
+    cursor.executemany(
+        "INSERT INTO services (name, duration, price, description) VALUES (?, ?, ?, ?)",
+        services
+    )
 
     # تنظیمات پیش‌فرض ساعات کاری
     cursor.execute("SELECT COUNT(*) FROM work_schedule")
     if cursor.fetchone()[0] == 0:
         default_schedule = [
-            (0, '09:00', '18:00', 1),  # شنبه
-            (1, '09:00', '18:00', 1),  # یکشنبه
-            (2, '09:00', '18:00', 1),  # دوشنبه
-            (3, '09:00', '18:00', 1),  # سه‌شنبه
-            (4, '09:00', '18:00', 1),  # چهارشنبه
-            (5, '09:00', '14:00', 0),  # پنجشنبه
-            (6, '09:00', '14:00', 0),  # جمعه
+            (0, '09:00', '18:00', 1),
+            (1, '09:00', '18:00', 1),
+            (2, '09:00', '18:00', 1),
+            (3, '09:00', '18:00', 1),
+            (4, '09:00', '18:00', 1),
+            (5, '09:00', '14:00', 0),
+            (6, '09:00', '14:00', 0),
         ]
         cursor.executemany(
             "INSERT INTO work_schedule (day_of_week, start_time, end_time, is_active) VALUES (?, ?, ?, ?)",
@@ -137,7 +131,7 @@ def init_db():
 
     conn.commit()
     conn.close()
-    print("✅ دیتابیس راه‌اندازی شد.")
+    print("✅ دیتابیس راه‌اندازی شد")
 
 
 init_db()
@@ -191,14 +185,13 @@ def get_all_users():
 
 
 def send_broadcast(message):
-    """ارسال پیام به همه کاربران"""
     users = get_all_users()
     success_count = 0
     for chat_id in users:
         try:
             send_message(chat_id, f"📢 اعلان همگانی:\n\n{message}")
             success_count += 1
-            time.sleep(0.1)  # جلوگیری از محدودیت تلگرام
+            time.sleep(0.1)
         except Exception as e:
             print(f"⚠️ Failed to send to {chat_id}: {e}")
     return success_count
@@ -305,7 +298,6 @@ def create_appointment():
     cursor.execute("SELECT id FROM users WHERE telegram_id = ?", (telegram_id,))
     user = cursor.fetchone()
     if not user:
-        # تلاش برای ایجاد خودکار
         user_dict = get_or_create_user(telegram_id, "کاربر", "")
         if user_dict:
             cursor.execute("SELECT id FROM users WHERE telegram_id = ?", (telegram_id,))
@@ -364,7 +356,6 @@ def admin_update_status(appointment_id):
     conn = get_db()
     cursor = conn.cursor()
 
-    # گرفتن اطلاعات نوبت برای ارسال اعلان
     cursor.execute('''
         SELECT a.user_id, u.telegram_id, a.appointment_date, a.appointment_time, s.name as service_name
         FROM appointments a
@@ -379,10 +370,9 @@ def admin_update_status(appointment_id):
     conn.commit()
     conn.close()
 
-    # ارسال اعلان به کاربر
     if appointment and new_status == 'confirmed':
         user_telegram_id = appointment['telegram_id']
-        msg = f"✅ نوبت شما با موفقیت تأیید شد!\n\n📅 تاریخ: {appointment['appointment_date']}\n🕐 ساعت: {appointment['appointment_time']}\n💇 خدمت: {appointment['service_name']}\n\nلطفاً در زمان مقرر حضور داشته باشید."
+        msg = f"✅ نوبت شما با موفقیت تأیید شد!\n\n📅 تاریخ: {appointment['appointment_date']}\n🕐 ساعت: {appointment['appointment_time']}\n💇 خدمت: {appointment['service_name']}\n\n⚠️ نکته: در صورت عدم حضور در وقت تعیین‌شده، نوبت شما از بین خواهد رفت.\n\nلطفاً در زمان مقرر حضور داشته باشید."
         send_message(user_telegram_id, msg)
 
     return jsonify({"status": "ok", "message": f"وضعیت به {new_status} تغییر کرد."})
@@ -398,6 +388,58 @@ def admin_get_users():
     return jsonify({"status": "ok", "users": [dict(u) for u in users]})
 
 
+# ========== API جدید: آمار کامل ==========
+@app.route('/api/admin/stats', methods=['GET'])
+def admin_get_stats():
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # تعداد کل کاربران
+    cursor.execute("SELECT COUNT(*) FROM users")
+    total_users = cursor.fetchone()[0]
+
+    # تعداد کل نوبت‌ها
+    cursor.execute("SELECT COUNT(*) FROM appointments")
+    total_appointments = cursor.fetchone()[0]
+
+    # آمار وضعیت نوبت‌ها
+    cursor.execute("""
+        SELECT status, COUNT(*) as count 
+        FROM appointments 
+        GROUP BY status
+    """)
+    status_counts = cursor.fetchall()
+    status_stats = {row['status']: row['count'] for row in status_counts}
+
+    # تعداد نوبت‌های امروز
+    today = datetime.now().strftime("%Y/%m/%d")
+    cursor.execute("SELECT COUNT(*) FROM appointments WHERE appointment_date = ?", (today,))
+    today_appointments = cursor.fetchone()[0]
+
+    # تعداد نوبت‌های هفته جاری (۷ روز آینده)
+    # برای سادگی، فقط تاریخ‌های آینده را حساب می‌کنیم
+    cursor.execute("SELECT COUNT(*) FROM appointments WHERE appointment_date >= ?", (today,))
+    upcoming_appointments = cursor.fetchone()[0]
+
+    conn.close()
+
+    return jsonify({
+        "status": "ok",
+        "stats": {
+            "total_users": total_users,
+            "total_appointments": total_appointments,
+            "today_appointments": today_appointments,
+            "upcoming_appointments": upcoming_appointments,
+            "status": {
+                "pending": status_stats.get('pending', 0),
+                "confirmed": status_stats.get('confirmed', 0),
+                "completed": status_stats.get('completed', 0),
+                "cancelled": status_stats.get('cancelled', 0)
+            }
+        }
+    })
+
+
 @app.route('/api/admin/broadcast', methods=['POST'])
 def admin_broadcast():
     data = request.get_json()
@@ -407,7 +449,6 @@ def admin_broadcast():
 
     count = send_broadcast(message)
 
-    # ذخیره در دیتابیس
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("INSERT INTO broadcasts (message) VALUES (?)", (message,))
@@ -449,16 +490,7 @@ def update_schedule():
 
 @app.route('/api/admin/services', methods=['POST'])
 def admin_add_service():
-    data = request.get_json()
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO services (name, duration, price, description) VALUES (?, ?, ?, ?)",
-        (data['name'], data['duration'], data['price'], data.get('description', ''))
-    )
-    conn.commit()
-    conn.close()
-    return jsonify({"status": "ok", "message": "خدمت اضافه شد."})
+    return jsonify({"status": "error", "message": "افزودن خدمات جدید مجاز نیست. فقط خدمت کوتاهی مو موجود است."}), 403
 
 
 @app.route('/static/<path:path>')
@@ -468,7 +500,7 @@ def serve_static(path):
 
 @app.route('/')
 def home():
-    return "✅ ربات رزرو آرایشگاه روشن است!"
+    return "✅ ربات رزرو آرایشگاه M4Cut روشن است!"
 
 
 if __name__ == "__main__":

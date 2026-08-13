@@ -5,116 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>M4Cut - پنل مدیریت</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="style.css">
     <style>
-        .admin-box {
-            background: var(--m4cut-smoke);
-            padding: 16px;
-            border-radius: 14px;
-            margin: 10px 0;
-            border-right: 4px solid var(--m4cut-brass);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'IRANYekanXVF', Tahoma, Arial, sans-serif;
         }
-        .admin-box.confirmed { border-color: var(--m4cut-pine); }
-        .admin-box.cancelled { border-color: var(--m4cut-clay); }
-        .admin-box.completed { border-color: var(--m4cut-ink); }
-        .receipt-thumb {
-            max-width: 70px;
-            max-height: 70px;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 1px solid var(--m4cut-border);
-        }
-        .broadcast-area {
-            background: var(--m4cut-smoke);
-            padding: 16px;
-            border-radius: 14px;
-            margin: 10px 0;
-        }
-        .broadcast-area textarea {
-            min-height: 80px;
-            resize: vertical;
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid var(--m4cut-border);
-            font-family: inherit;
-        }
-        .schedule-item {
+        body {
+            background: #f4f0ea;
+            padding: 20px;
+            direction: rtl;
+            min-height: 100vh;
             display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--m4cut-border);
-            flex-wrap: wrap;
-        }
-        .schedule-item .day-name { width: 70px; font-weight: 600; }
-        .schedule-item input[type="time"] { width: 100px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--m4cut-border); margin:0; }
-        .schedule-item label { display:flex; align-items:center; gap:4px; font-size:13px; margin:0; }
-        .btn-sm { padding: 6px 14px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600; font-size: 13px; }
-        .btn-sm-success { background: var(--m4cut-pine); color: white; }
-        .btn-sm-success:hover { background: #0f2d26; }
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: var(--m4cut-brass);
-            color: white;
-            font-family: inherit;
-        }
-        .btn:hover {
-            background: #b07d3a;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(198, 146, 73, 0.3);
-        }
-        .btn-success {
-            background: var(--m4cut-pine);
-        }
-        .btn-success:hover {
-            background: #0f2d26;
-        }
-        .btn-close {
-            background: var(--m4cut-smoke);
-            color: var(--m4cut-ink);
-            margin-top: 12px;
-        }
-        .btn-close:hover {
-            background: #e8e2d9;
-            box-shadow: none;
-            transform: none;
+            justify-content: center;
+            align-items: flex-start;
         }
         .container {
             max-width: 480px;
             width: 100%;
             margin: 0 auto;
-            background: var(--m4cut-white);
+            background: #ffffff;
             border-radius: 24px;
             padding: 28px 22px;
             box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06);
-            border: 1px solid var(--m4cut-border);
+            border: 1px solid #e0dcd5;
         }
         .brand-header {
             text-align: center;
             padding-bottom: 20px;
-            border-bottom: 2px solid var(--m4cut-smoke);
+            border-bottom: 2px solid #f4f0ea;
             margin-bottom: 22px;
         }
         .brand-logo {
             font-size: 32px;
             font-weight: 900;
             letter-spacing: -1px;
-            color: var(--m4cut-ink);
+            color: #161513;
         }
         .brand-logo span {
-            color: var(--m4cut-brass);
+            color: #c69249;
         }
         .brand-tagline {
             font-size: 13px;
-            color: var(--m4cut-gray);
+            color: #7f8c8d;
             margin-top: 4px;
         }
         .tabs {
@@ -129,33 +63,157 @@
             padding: 10px 12px;
             border: none;
             border-radius: 10px;
-            background: var(--m4cut-smoke);
+            background: #f4f0ea;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             font-family: inherit;
-            color: var(--m4cut-gray);
+            color: #7f8c8d;
         }
         .tabs button.active {
-            background: var(--m4cut-brass);
+            background: #c69249;
             color: white;
             box-shadow: 0 4px 12px rgba(198, 146, 73, 0.25);
         }
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ====== کارت‌های آمار ====== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 12px 0 16px;
+        }
+        .stat-card {
+            background: #f4f0ea;
+            padding: 14px 12px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e0dcd5;
+        }
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #161513;
+            display: block;
+        }
+        .stat-card .label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 4px;
+            display: block;
+        }
+        .stat-card .sub {
+            font-size: 11px;
+            color: #c69249;
+            margin-top: 2px;
+            display: block;
+        }
+        .stat-card.gold {
+            background: #c69249;
+            border-color: #c69249;
+        }
+        .stat-card.gold .number,
+        .stat-card.gold .label,
+        .stat-card.gold .sub {
+            color: white;
+        }
+
+        /* ====== سایر استایل‌ها ====== */
+        .admin-box {
+            background: #f4f0ea;
+            padding: 16px;
+            border-radius: 14px;
+            margin: 10px 0;
+            border-right: 4px solid #c69249;
+        }
+        .admin-box.confirmed { border-color: #154038; }
+        .admin-box.cancelled { border-color: #9e5541; }
+        .admin-box.completed { border-color: #161513; }
+        .receipt-thumb {
+            max-width: 70px;
+            max-height: 70px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid #e0dcd5;
+        }
+        .broadcast-area {
+            background: #f4f0ea;
+            padding: 16px;
+            border-radius: 14px;
+            margin: 10px 0;
+        }
+        .broadcast-area textarea {
+            min-height: 80px;
+            resize: vertical;
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #e0dcd5;
+            font-family: inherit;
+        }
+        .schedule-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0dcd5;
+            flex-wrap: wrap;
+        }
+        .schedule-item .day-name { width: 70px; font-weight: 600; }
+        .schedule-item input[type="time"] { width: 100px; padding: 6px 10px; border-radius: 8px; border: 1px solid #e0dcd5; margin:0; }
+        .schedule-item label { display:flex; align-items:center; gap:4px; font-size:13px; margin:0; }
+        .btn-sm { padding: 6px 14px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600; font-size: 13px; }
+        .btn-sm-success { background: #154038; color: white; }
+        .btn-sm-success:hover { background: #0f2d26; }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #c69249;
+            color: white;
+            font-family: inherit;
+        }
+        .btn:hover {
+            background: #b07d3a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(198, 146, 73, 0.3);
+        }
+        .btn-success {
+            background: #154038;
+        }
+        .btn-success:hover {
+            background: #0f2d26;
+        }
+        .btn-close {
+            background: #f4f0ea;
+            color: #161513;
+            margin-top: 12px;
+        }
+        .btn-close:hover {
+            background: #e8e2d9;
+            box-shadow: none;
+            transform: none;
+        }
         .user-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 12px 16px;
-            background: var(--m4cut-smoke);
+            background: #f4f0ea;
             border-radius: 12px;
             margin: 6px 0;
         }
         .user-item .admin-badge {
-            background: var(--m4cut-brass);
+            background: #c69249;
             color: white;
             padding: 2px 12px;
             border-radius: 20px;
@@ -164,31 +222,34 @@
         }
         .msg { padding: 12px 16px; border-radius: 12px; margin: 10px 0; font-size: 14px; }
         .msg-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        :root {
-            --m4cut-ink: #161513;
-            --m4cut-smoke: #f4f0ea;
-            --m4cut-brass: #c69249;
-            --m4cut-clay: #9e5541;
-            --m4cut-pine: #154038;
-            --m4cut-white: #ffffff;
-            --m4cut-gray: #7f8c8d;
-            --m4cut-border: #e0dcd5;
+        .status-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
         }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'IRANYekanXVF', Tahoma, Arial, sans-serif;
+        .status-badge.pending { background: #f39c12; color: white; }
+        .status-badge.confirmed { background: #154038; color: white; }
+        .status-badge.cancelled { background: #9e5541; color: white; }
+        .status-badge.completed { background: #161513; color: white; }
+        .stats-note {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-align: center;
+            margin: 8px 0 4px;
         }
-        body {
-            background: var(--m4cut-smoke);
-            color: var(--m4cut-ink);
-            padding: 20px;
-            direction: rtl;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
+        .refresh-btn {
+            background: none;
+            border: none;
+            color: #c69249;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+        }
+        .refresh-btn:hover {
+            color: #b07d3a;
         }
     </style>
 </head>
@@ -200,29 +261,63 @@
     </div>
 
     <div class="tabs">
-        <button class="active" data-tab="apps">📋 نوبت‌ها</button>
+        <button class="active" data-tab="stats">📊 آمار</button>
+        <button data-tab="apps">📋 نوبت‌ها</button>
         <button data-tab="users">👥 کاربران</button>
         <button data-tab="schedule">⏰ ساعات کاری</button>
         <button data-tab="broadcast">📢 اعلان</button>
     </div>
 
-    <!-- نوبت‌ها -->
-    <div id="tab-apps" class="tab-content active">
+    <!-- ====== تب آمار ====== -->
+    <div id="tab-stats" class="tab-content active">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-weight:600;font-size:15px;">📊 آمار کلی</span>
+            <button class="refresh-btn" onclick="loadStats()">⟳ بروزرسانی</button>
+        </div>
+        <div id="statsGrid" class="stats-grid">
+            <div class="stat-card gold"><span class="number" id="statUsers">...</span><span class="label">👥 کاربران</span></div>
+            <div class="stat-card gold"><span class="number" id="statTotalApps">...</span><span class="label">📋 کل نوبت‌ها</span></div>
+            <div class="stat-card"><span class="number" id="statTodayApps">...</span><span class="label">📅 نوبت‌های امروز</span></div>
+            <div class="stat-card"><span class="number" id="statUpcomingApps">...</span><span class="label">📆 نوبت‌های آینده</span></div>
+        </div>
+        <div style="background:#f4f0ea;border-radius:12px;padding:14px 16px;margin:4px 0 12px;">
+            <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;">
+                <span>⏳ در انتظار تأیید</span>
+                <span><strong id="statPending">...</strong></span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;">
+                <span>✅ تأیید شده</span>
+                <span><strong id="statConfirmed">...</strong></span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;">
+                <span>✔️ انجام شده</span>
+                <span><strong id="statCompleted">...</strong></span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;">
+                <span>❌ لغو شده</span>
+                <span><strong id="statCancelled">...</strong></span>
+            </div>
+        </div>
+        <div class="stats-note">🔄 آمار هر بار ورود به این صفحه بروزرسانی می‌شود</div>
+    </div>
+
+    <!-- ====== تب نوبت‌ها ====== -->
+    <div id="tab-apps" class="tab-content">
         <div id="appointmentsList"></div>
     </div>
 
-    <!-- کاربران -->
+    <!-- ====== تب کاربران ====== -->
     <div id="tab-users" class="tab-content">
         <div id="usersList"></div>
     </div>
 
-    <!-- ساعات کاری -->
+    <!-- ====== تب ساعات کاری ====== -->
     <div id="tab-schedule" class="tab-content">
         <div id="scheduleList"></div>
         <button id="saveSchedule" class="btn btn-success" style="margin-top:12px;">💾 ذخیره تنظیمات</button>
     </div>
 
-    <!-- اعلان همگانی -->
+    <!-- ====== تب اعلان همگانی ====== -->
     <div id="tab-broadcast" class="tab-content">
         <div class="broadcast-area">
             <label>متن پیام همگانی:</label>
@@ -230,11 +325,6 @@
             <button id="sendBroadcast" class="btn btn-success">📤 ارسال به همه کاربران</button>
             <div id="broadcastResult"></div>
         </div>
-    </div>
-
-    <!-- پیام عدم امکان افزودن خدمت -->
-    <div style="background:#f8d7da;padding:10px 16px;border-radius:10px;margin:12px 0;color:#721c24;font-size:13px;text-align:center;">
-        ⚠️ تنها خدمت موجود: <strong>کوتاهی مو</strong> با بیعانه ۲۰۰,۰۰۰ تومان
     </div>
 
     <button onclick="Telegram.WebApp.close()" class="btn btn-close">❌ بستن</button>
@@ -251,11 +341,33 @@
             this.classList.add('active');
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+            if (this.dataset.tab === 'stats') loadStats();
             if (this.dataset.tab === 'apps') loadAppointments();
             if (this.dataset.tab === 'users') loadUsers();
             if (this.dataset.tab === 'schedule') loadSchedule();
         });
     });
+
+    // ====== بارگیری آمار ======
+    async function loadStats() {
+        try {
+            const res = await fetch('/api/admin/stats');
+            const data = await res.json();
+            if (data.status === 'ok') {
+                const s = data.stats;
+                document.getElementById('statUsers').textContent = s.total_users;
+                document.getElementById('statTotalApps').textContent = s.total_appointments;
+                document.getElementById('statTodayApps').textContent = s.today_appointments;
+                document.getElementById('statUpcomingApps').textContent = s.upcoming_appointments;
+                document.getElementById('statPending').textContent = s.status.pending;
+                document.getElementById('statConfirmed').textContent = s.status.confirmed;
+                document.getElementById('statCompleted').textContent = s.status.completed;
+                document.getElementById('statCancelled').textContent = s.status.cancelled;
+            }
+        } catch(e) {
+            console.error('Error loading stats:', e);
+        }
+    }
 
     // ====== نوبت‌ها ======
     async function loadAppointments() {
@@ -263,7 +375,7 @@
         const data = await res.json();
         const div = document.getElementById('appointmentsList');
         if (!data.appointments || data.appointments.length === 0) {
-            div.innerHTML = '<p style="color:var(--m4cut-gray);text-align:center;padding:20px;">هیچ نوبتی ثبت نشده است.</p>';
+            div.innerHTML = '<p style="color:#7f8c8d;text-align:center;padding:20px;">هیچ نوبتی ثبت نشده است.</p>';
             return;
         }
         div.innerHTML = data.appointments.map(a => `
@@ -271,10 +383,10 @@
                 <strong>${a.service_name}</strong><br>
                 👤 ${a.user_name} | 📞 ${a.phone} | 🆔 ${a.telegram_id}<br>
                 📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
-                وضعیت: ${a.status}
+                وضعیت: <span class="status-badge ${a.status}">${a.status === 'pending' ? 'در انتظار' : a.status === 'confirmed' ? 'تأیید شده' : a.status === 'cancelled' ? 'لغو شده' : 'انجام شده'}</span>
                 ${a.receipt ? `<br><img src="${a.receipt}" class="receipt-thumb" onclick="window.open('${a.receipt}')" />` : '<br>بدون رسید'}
                 <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
-                    <select onchange="updateStatus(${a.id}, this.value)" style="padding:6px 10px;border-radius:8px;border:1px solid var(--m4cut-border);font-family:inherit;">
+                    <select onchange="updateStatus(${a.id}, this.value)" style="padding:6px 10px;border-radius:8px;border:1px solid #e0dcd5;font-family:inherit;">
                         <option value="pending" ${a.status === 'pending' ? 'selected' : ''}>در انتظار</option>
                         <option value="confirmed" ${a.status === 'confirmed' ? 'selected' : ''}>تأیید شده</option>
                         <option value="completed" ${a.status === 'completed' ? 'selected' : ''}>انجام شده</option>
@@ -295,6 +407,7 @@
         const result = await res.json();
         alert(result.message);
         loadAppointments();
+        loadStats(); // بروزرسانی آمار بعد از تغییر وضعیت
     }
 
     async function quickApprove(id) {
@@ -308,7 +421,7 @@
         const data = await res.json();
         const div = document.getElementById('usersList');
         if (!data.users || data.users.length === 0) {
-            div.innerHTML = '<p style="color:var(--m4cut-gray);text-align:center;padding:20px;">هیچ کاربری ثبت نشده است.</p>';
+            div.innerHTML = '<p style="color:#7f8c8d;text-align:center;padding:20px;">هیچ کاربری ثبت نشده است.</p>';
             return;
         }
         div.innerHTML = data.users.map(u => `
@@ -317,7 +430,7 @@
                     <strong>${u.name}</strong> | 📞 ${u.phone || '---'} | 🆔 ${u.telegram_id}
                     ${u.is_admin === 1 ? '<span class="admin-badge">👑 ادمین</span>' : ''}
                 </div>
-                <div style="font-size:12px;color:var(--m4cut-gray);">
+                <div style="font-size:12px;color:#7f8c8d;">
                     ${u.created_at ? new Date(u.created_at).toLocaleDateString('fa-IR') : ''}
                 </div>
             </div>
@@ -325,15 +438,12 @@
     }
 
     // ====== ساعات کاری ======
-    let scheduleData = [];
-
     async function loadSchedule() {
         const res = await fetch('/api/admin/schedule');
         const data = await res.json();
-        scheduleData = data.schedule;
         const div = document.getElementById('scheduleList');
         const days = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'];
-        div.innerHTML = scheduleData.map(s => `
+        div.innerHTML = data.schedule.map(s => `
             <div class="schedule-item">
                 <span class="day-name">${days[s.day_of_week]}</span>
                 <input type="time" value="${s.start_time}" data-day="${s.day_of_week}" class="start-time">
@@ -386,7 +496,8 @@
         document.getElementById('broadcastMessage').value = '';
     });
 
-    // بارگیری اولیه
+    // ====== بارگیری اولیه ======
+    loadStats();
     loadAppointments();
 </script>
 </body>
