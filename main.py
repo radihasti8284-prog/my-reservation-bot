@@ -6,6 +6,12 @@ import json
 import time
 from werkzeug.utils import secure_filename
 from datetime import datetime
+from database import (
+    get_db, get_support_contact, update_support_contact,
+    get_daily_capacity, increment_capacity, decrement_capacity
+)
+from scheduler import start_scheduler
+import jdatetime  # برای تاریخ شمسی دقیق
 
 app = Flask(__name__)
 TOKEN = "8971000707:AAESYFI--ALKEXQgDN7c0yb9SjEBbQQN3BM"
@@ -23,110 +29,6 @@ def get_db():
     conn = sqlite3.connect('data.db')
     conn.row_factory = sqlite3.Row
     return conn
-
-
-def init_db():
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            telegram_id INTEGER UNIQUE,
-            name TEXT,
-            phone TEXT,
-            is_admin INTEGER DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS services (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            duration INTEGER DEFAULT 30,
-            price INTEGER DEFAULT 0,
-            description TEXT,
-            is_active INTEGER DEFAULT 1
-        )
-    ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS appointments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            service_id INTEGER,
-            appointment_date TEXT,
-            appointment_time TEXT,
-            status TEXT DEFAULT 'pending',
-            receipt TEXT,
-            notification_sent INTEGER DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id),
-            FOREIGN KEY (service_id) REFERENCES services(id)
-        )
-    ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS work_schedule (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            day_of_week INTEGER NOT NULL,
-            start_time TEXT NOT NULL,
-            end_time TEXT NOT NULL,
-            is_active INTEGER DEFAULT 1
-        )
-    ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS broadcasts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            message TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-
-    cursor.execute("PRAGMA table_info(appointments)")
-    cols = [c[1] for c in cursor.fetchall()]
-    if 'notification_sent' not in cols:
-        cursor.execute("ALTER TABLE appointments ADD COLUMN notification_sent INTEGER DEFAULT 0")
-
-    cursor.execute("PRAGMA table_info(services)")
-    cols = [c[1] for c in cursor.fetchall()]
-    if 'description' not in cols:
-        cursor.execute("ALTER TABLE services ADD COLUMN description TEXT")
-
-    cursor.execute("DELETE FROM services")
-    services = [
-        ('✂️ کوتاهی مو', 30, 200000,
-         '✨ کوتاهی و اصلاح مو با جدیدترین متدها.\n\n💳 مبلغ بیعانه: ۲۰۰,۰۰۰ تومان\n⚠️ نکته: در صورت عدم حضور در وقت تعیین‌شده، نوبت شما از بین خواهد رفت.')
-    ]
-    cursor.executemany(
-        "INSERT INTO services (name, duration, price, description) VALUES (?, ?, ?, ?)",
-        services
-    )
-
-    cursor.execute("SELECT COUNT(*) FROM work_schedule")
-    if cursor.fetchone()[0] == 0:
-        default_schedule = [
-            (0, '09:00', '18:00', 1),
-            (1, '09:00', '18:00', 1),
-            (2, '09:00', '18:00', 1),
-            (3, '09:00', '18:00', 1),
-            (4, '09:00', '18:00', 1),
-            (5, '09:00', '14:00', 0),
-            (6, '09:00', '14:00', 0),
-        ]
-        cursor.executemany(
-            "INSERT INTO work_schedule (day_of_week, start_time, end_time, is_active) VALUES (?, ?, ?, ?)",
-            default_schedule
-        )
-
-    conn.commit()
-    conn.close()
-    print("✅ دیتابیس راه‌اندازی شد")
-
-
-init_db()
 
 
 # ========== توابع کمکی ==========
@@ -218,7 +120,7 @@ def webhook():
                              "💳 **بیعانه:** ۲۰۰,۰۰۰ تومان (قابل بازگشت در صورت حضور)\n"
                              "⚠️ توجه: در صورت عدم حضور، نوبت شما از بین خواهد رفت.\n\n"
                              "📞 **پشتیبانی:**\n"
-                             "برای راهنمایی و ارتباط با ادمین، از دستور /admin استفاده کنید.\n\n"
+                             f"ارتباط با ادمین: {get_support_contact()}\n\n"
                              "👇 برای رزرو نوبت، روی دکمه زیر کلیک کنید:",
                              reply_markup={
                                  "inline_keyboard": [[
@@ -254,6 +156,8 @@ def webhook():
 
 
 # ========== API ==========
+
+# --- احراز هویت ---
 @app.route('/api/auth', methods=['POST'])
 def auth_user():
     data = request.get_json()
@@ -263,6 +167,7 @@ def auth_user():
     return jsonify({"status": "ok", "user": user})
 
 
+# --- دریافت خدمات ---
 @app.route('/api/services', methods=['GET'])
 def get_services():
     conn = get_db()
@@ -273,6 +178,7 @@ def get_services():
     return jsonify({"status": "ok", "services": [dict(s) for s in services]})
 
 
+# --- آپلود فایل ---
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -289,6 +195,7 @@ def upload_file():
     return jsonify({"status": "error", "message": "Invalid format"}), 400
 
 
+# --- ثبت نوبت جدید (با بررسی ظرفیت) ---
 @app.route('/api/appointments', methods=['POST'])
 def create_appointment():
     data = request.get_json()
@@ -297,6 +204,12 @@ def create_appointment():
     app_date = data.get('date')
     app_time = data.get('time')
     receipt_url = data.get('receipt')
+
+    # بررسی ظرفیت
+    remaining = get_daily_capacity(app_date, app_time)
+    if remaining <= 0:
+        return jsonify(
+            {"status": "error", "message": "ظرفیت این ساعت تکمیل شده است. لطفاً ساعت دیگری را انتخاب کنید."}), 400
 
     conn = get_db()
     cursor = conn.cursor()
@@ -318,9 +231,14 @@ def create_appointment():
     ''', (user['id'], service_id, app_date, app_time, receipt_url))
     conn.commit()
     conn.close()
+
+    # افزایش ظرفیت
+    increment_capacity(app_date, app_time)
+
     return jsonify({"status": "ok", "message": "نوبت ثبت شد! منتظر تأیید ادمین باشید."})
 
 
+# --- دریافت نوبت‌های کاربر ---
 @app.route('/api/appointments/user/<int:telegram_id>', methods=['GET'])
 def get_user_appointments(telegram_id):
     conn = get_db()
@@ -338,22 +256,107 @@ def get_user_appointments(telegram_id):
     return jsonify({"status": "ok", "appointments": [dict(a) for a in apps]})
 
 
-@app.route('/api/admin/appointments', methods=['GET'])
-def admin_get_appointments():
+# --- ویرایش نوبت (تاریخ و ساعت) ---
+@app.route('/api/appointments/<int:appointment_id>', methods=['PUT'])
+def update_appointment(appointment_id):
+    data = request.get_json()
+    new_date = data.get('date')
+    new_time = data.get('time')
+    telegram_id = data.get('telegram_id')
+
+    # بررسی ظرفیت برای زمان جدید
+    remaining = get_daily_capacity(new_date, new_time)
+    if remaining <= 0:
+        return jsonify({"status": "error", "message": "ظرفیت این ساعت تکمیل شده است."}), 400
+
     conn = get_db()
     cursor = conn.cursor()
+
+    # دریافت اطلاعات نوبت فعلی
+    cursor.execute("SELECT appointment_date, appointment_time FROM appointments WHERE id = ?", (appointment_id,))
+    old = cursor.fetchone()
+    if not old:
+        conn.close()
+        return jsonify({"status": "error", "message": "نوبت پیدا نشد."}), 404
+
+    # بروزرسانی نوبت
     cursor.execute('''
+        UPDATE appointments 
+        SET appointment_date = ?, appointment_time = ? 
+        WHERE id = ? AND status = 'pending'
+    ''', (new_date, new_time, appointment_id))
+
+    if cursor.rowcount == 0:
+        conn.close()
+        return jsonify({"status": "error", "message": "فقط نوبت‌های در انتظار قابل ویرایش هستند."}), 400
+
+    # بروزرسانی ظرفیت
+    decrement_capacity(old['appointment_date'], old['appointment_time'])
+    increment_capacity(new_date, new_time)
+
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "ok", "message": "نوبت با موفقیت ویرایش شد."})
+
+
+# --- لغو نوبت ---
+@app.route('/api/appointments/<int:appointment_id>/cancel', methods=['POST'])
+def cancel_appointment(appointment_id):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # دریافت تاریخ و ساعت برای کاهش ظرفیت
+    cursor.execute("SELECT appointment_date, appointment_time FROM appointments WHERE id = ?", (appointment_id,))
+    app = cursor.fetchone()
+
+    cursor.execute("UPDATE appointments SET status = 'cancelled' WHERE id = ?", (appointment_id,))
+    conn.commit()
+    conn.close()
+
+    if app:
+        decrement_capacity(app['appointment_date'], app['appointment_time'])
+
+    return jsonify({"status": "ok", "message": "نوبت لغو شد."})
+
+
+# --- دریافت نوبت‌های ادمین ---
+@app.route('/api/admin/appointments', methods=['GET'])
+def admin_get_appointments():
+    status_filter = request.args.get('status')
+    date_filter = request.args.get('date')
+    user_filter = request.args.get('user')
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    query = '''
         SELECT a.*, u.name as user_name, u.phone, u.telegram_id, s.name as service_name
         FROM appointments a
         JOIN users u ON a.user_id = u.id
         JOIN services s ON a.service_id = s.id
-        ORDER BY a.appointment_date DESC
-    ''')
+        WHERE 1=1
+    '''
+    params = []
+
+    if status_filter:
+        query += " AND a.status = ?"
+        params.append(status_filter)
+    if date_filter:
+        query += " AND a.appointment_date = ?"
+        params.append(date_filter)
+    if user_filter:
+        query += " AND u.telegram_id = ?"
+        params.append(user_filter)
+
+    query += " ORDER BY a.appointment_date DESC"
+
+    cursor.execute(query, params)
     apps = cursor.fetchall()
     conn.close()
     return jsonify({"status": "ok", "appointments": [dict(a) for a in apps]})
 
 
+# --- تغییر وضعیت نوبت توسط ادمین ---
 @app.route('/api/admin/appointments/<int:appointment_id>/status', methods=['POST'])
 def admin_update_status(appointment_id):
     data = request.get_json()
@@ -370,6 +373,7 @@ def admin_update_status(appointment_id):
     ''', (appointment_id,))
     appointment = cursor.fetchone()
 
+    # اگر تأیید شد، ظرفیت قبلاً در زمان ثبت افزایش یافته، نیازی به تغییر نیست
     cursor.execute("UPDATE appointments SET status = ?, notification_sent = 0 WHERE id = ?",
                    (new_status, appointment_id))
     conn.commit()
@@ -383,6 +387,7 @@ def admin_update_status(appointment_id):
     return jsonify({"status": "ok", "message": f"وضعیت به {new_status} تغییر کرد."})
 
 
+# --- مدیریت کاربران پیشرفته ---
 @app.route('/api/admin/users', methods=['GET'])
 def admin_get_users():
     conn = get_db()
@@ -393,6 +398,33 @@ def admin_get_users():
     return jsonify({"status": "ok", "users": [dict(u) for u in users]})
 
 
+@app.route('/api/admin/users/<int:telegram_id>', methods=['PUT'])
+def admin_update_user(telegram_id):
+    data = request.get_json()
+    is_admin = data.get('is_admin', 0)
+    name = data.get('name')
+
+    conn = get_db()
+    cursor = conn.cursor()
+    if name:
+        cursor.execute("UPDATE users SET name = ? WHERE telegram_id = ?", (name, telegram_id))
+    cursor.execute("UPDATE users SET is_admin = ? WHERE telegram_id = ?", (is_admin, telegram_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "ok", "message": "کاربر به‌روزرسانی شد."})
+
+
+@app.route('/api/admin/users/<int:telegram_id>', methods=['DELETE'])
+def admin_delete_user(telegram_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM users WHERE telegram_id = ?", (telegram_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "ok", "message": "کاربر حذف شد."})
+
+
+# --- آمار ---
 @app.route('/api/admin/stats', methods=['GET'])
 def admin_get_stats():
     conn = get_db()
@@ -427,21 +459,53 @@ def admin_get_stats():
     })
 
 
-@app.route('/api/admin/broadcast', methods=['POST'])
-def admin_broadcast():
+# --- نظردهی ---
+@app.route('/api/reviews', methods=['POST'])
+def add_review():
     data = request.get_json()
-    message = data.get('message')
-    if not message:
-        return jsonify({"status": "error", "message": "Message required"}), 400
-    count = send_broadcast(message)
+    user_id = data.get('user_id')
+    appointment_id = data.get('appointment_id')
+    rating = data.get('rating')
+    comment = data.get('comment', '')
+
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO broadcasts (message) VALUES (?)", (message,))
+    cursor.execute(
+        "INSERT INTO reviews (user_id, appointment_id, rating, comment) VALUES (?, ?, ?, ?)",
+        (user_id, appointment_id, rating, comment)
+    )
     conn.commit()
     conn.close()
-    return jsonify({"status": "ok", "message": f"پیام به {count} کاربر ارسال شد."})
+    return jsonify({"status": "ok", "message": "نظر شما با موفقیت ثبت شد."})
 
 
+@app.route('/api/reviews/<int:appointment_id>', methods=['GET'])
+def get_review(appointment_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM reviews WHERE appointment_id = ?", (appointment_id,))
+    review = cursor.fetchone()
+    conn.close()
+    return jsonify({"status": "ok", "review": dict(review) if review else None})
+
+
+# --- تنظیمات پشتیبانی (ادمین) ---
+@app.route('/api/admin/support', methods=['GET'])
+def get_support():
+    return jsonify({"status": "ok", "support_contact": get_support_contact()})
+
+
+@app.route('/api/admin/support', methods=['POST'])
+def update_support():
+    data = request.get_json()
+    new_value = data.get('support_contact')
+    if not new_value:
+        return jsonify({"status": "error", "message": "مقدار پشتیبانی الزامی است."}), 400
+    update_support_contact(new_value)
+    return jsonify({"status": "ok", "message": "شماره پشتیبانی به‌روزرسانی شد."})
+
+
+# --- ساعات کاری (با ظرفیت) ---
 @app.route('/api/admin/schedule', methods=['GET'])
 def get_schedule():
     conn = get_db()
@@ -458,24 +522,106 @@ def update_schedule():
     day_of_week = data.get('day_of_week')
     start_time = data.get('start_time')
     end_time = data.get('end_time')
+    capacity = data.get('capacity', 2)
     is_active = data.get('is_active', 1)
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
         UPDATE work_schedule 
-        SET start_time = ?, end_time = ?, is_active = ? 
+        SET start_time = ?, end_time = ?, capacity = ?, is_active = ? 
         WHERE day_of_week = ?
-    ''', (start_time, end_time, is_active, day_of_week))
+    ''', (start_time, end_time, capacity, is_active, day_of_week))
     conn.commit()
     conn.close()
     return jsonify({"status": "ok", "message": "ساعت کاری به‌روز شد."})
 
 
-@app.route('/api/admin/services', methods=['POST'])
-def admin_add_service():
-    return jsonify({"status": "error", "message": "افزودن خدمات جدید مجاز نیست. فقط خدمت کوتاهی مو موجود است."}), 403
+# --- اعلان همگانی ---
+@app.route('/api/admin/broadcast', methods=['POST'])
+def admin_broadcast():
+    data = request.get_json()
+    message = data.get('message')
+    if not message:
+        return jsonify({"status": "error", "message": "Message required"}), 400
+    count = send_broadcast(message)
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO broadcasts (message) VALUES (?)", (message,))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "ok", "message": f"پیام به {count} کاربر ارسال شد."})
 
 
+# --- خروجی اکسل ---
+@app.route('/api/admin/export/excel', methods=['GET'])
+def export_excel():
+    import openpyxl
+    from openpyxl.styles import Font, Alignment
+    from io import BytesIO
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT a.*, u.name as user_name, u.phone, s.name as service_name
+        FROM appointments a
+        JOIN users u ON a.user_id = u.id
+        JOIN services s ON a.service_id = s.id
+        ORDER BY a.appointment_date DESC
+    ''')
+    apps = cursor.fetchall()
+    conn.close()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "نوبت‌ها"
+
+    # هدر
+    headers = ['شناسه', 'کاربر', 'شماره تماس', 'خدمت', 'تاریخ', 'ساعت', 'وضعیت', 'تاریخ ثبت']
+    for i, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=i, value=h)
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center')
+
+    # داده‌ها
+    for row_idx, app in enumerate(apps, 2):
+        ws.cell(row=row_idx, column=1, value=app['id'])
+        ws.cell(row=row_idx, column=2, value=app['user_name'])
+        ws.cell(row=row_idx, column=3, value=app['phone'])
+        ws.cell(row=row_idx, column=4, value=app['service_name'])
+        ws.cell(row=row_idx, column=5, value=app['appointment_date'])
+        ws.cell(row=row_idx, column=6, value=app['appointment_time'])
+        ws.cell(row=row_idx, column=7, value=app['status'])
+        ws.cell(row=row_idx, column=8, value=app['created_at'])
+
+    for col in range(1, 9):
+        ws.column_dimensions[chr(64 + col)].width = 18
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name=f"nobat-ha-{datetime.now().strftime('%Y%m%d')}.xlsx",
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+
+
+# --- تاریخ شمسی دقیق (با jdatetime) ---
+@app.route('/api/persian_date', methods=['GET'])
+def get_persian_date():
+    now = jdatetime.datetime.now()
+    return jsonify({
+        "status": "ok",
+        "date": now.strftime("%Y/%m/%d"),
+        "time": now.strftime("%H:%M"),
+        "weekday": now.strftime("%A")
+    })
+
+
+# ========== سرو فایل‌های استاتیک ==========
 @app.route('/static/<path:path>')
 def serve_static(path):
     return send_from_directory('static', path)
@@ -487,5 +633,8 @@ def home():
 
 
 if __name__ == "__main__":
+    # شروع scheduler برای یادآوری خودکار
+    start_scheduler()
+
     port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port, debug=False)

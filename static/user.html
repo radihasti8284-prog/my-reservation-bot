@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M4Cut - رزرو نوبت</title>
+    <title>M4Cut - پنل کاربری</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
+        /* ========================================
+           استایل‌های اختصاصی پنل کاربری
+           ======================================== */
         .service-card {
             background: var(--luxe-bg);
             border-radius: 16px;
@@ -31,6 +34,7 @@
             text-align: right;
         }
         .service-card .note strong { color: #f1c40f; }
+
         .appointment-item {
             background: var(--luxe-bg);
             padding: 16px 18px;
@@ -44,6 +48,7 @@
         .appointment-item.cancelled { border-right-color: var(--luxe-danger); opacity: 0.6; }
         .appointment-item.completed { border-right-color: var(--luxe-text-muted); }
         .appointment-item.past { opacity: 0.5; border-right-color: var(--luxe-border); }
+
         .badge {
             display: inline-block;
             padding: 3px 14px;
@@ -58,6 +63,7 @@
         .badge-cancelled { background: rgba(178, 34, 52, 0.2); color: var(--luxe-danger); }
         .badge-completed { background: rgba(154, 165, 181, 0.2); color: var(--luxe-text-muted); }
         .badge-past { background: rgba(154, 165, 181, 0.1); color: var(--luxe-text-muted); }
+
         .filter-buttons {
             display: flex;
             gap: 8px;
@@ -85,6 +91,16 @@
             border-color: var(--luxe-gold-dark);
             color: var(--luxe-text);
         }
+
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin: 16px 0 20px;
+            background: var(--luxe-bg);
+            border-radius: 16px;
+            padding: 4px;
+            border: 1px solid var(--luxe-border);
+        }
         .tab-btn {
             flex: 1;
             padding: 10px 8px;
@@ -104,18 +120,15 @@
             box-shadow: 0 4px 12px rgba(212, 184, 124, 0.2);
         }
         .tab-btn:hover:not(.active) { color: var(--luxe-text); }
+
         .tab-content { display: none; animation: fadeSlide 0.4s ease; }
         .tab-content.active { display: block; }
-        @keyframes fadeSlide { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        .tabs {
-            display: flex;
-            gap: 6px;
-            margin: 16px 0 20px;
-            background: var(--luxe-bg);
-            border-radius: 16px;
-            padding: 4px;
-            border: 1px solid var(--luxe-border);
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+
         .month-nav {
             display: flex;
             justify-content: space-between;
@@ -134,6 +147,7 @@
         }
         .month-nav button:hover { color: var(--luxe-gold-light); transform: scale(1.1); }
         .month-nav span { font-weight: 600; font-size: 16px; color: var(--luxe-text); }
+
         .day-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -171,6 +185,7 @@
             box-shadow: 0 4px 15px rgba(212, 184, 124, 0.25);
         }
         .day-grid button:disabled { opacity: 0.25; cursor: not-allowed; }
+
         .time-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -200,6 +215,7 @@
             box-shadow: 0 4px 15px rgba(212, 184, 124, 0.2);
         }
         .time-grid button:disabled { opacity: 0.3; cursor: not-allowed; }
+
         .bank-card {
             background: var(--luxe-bg);
             border-radius: 16px;
@@ -220,6 +236,7 @@
         }
         .bank-card .label { font-size: 11px; color: var(--luxe-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .bank-card .logo { font-size: 28px; opacity: 0.8; }
+
         .upload-area {
             border: 2px dashed var(--luxe-border);
             border-radius: 16px;
@@ -234,7 +251,15 @@
         .upload-area .icon { font-size: 32px; display: block; margin-bottom: 6px; }
         .upload-area .text { font-size: 14px; color: var(--luxe-text-muted); }
         .upload-area .filename { font-size: 13px; color: var(--luxe-gold); margin-top: 4px; font-weight: 500; }
-        .receipt-preview { max-width: 100%; max-height: 160px; border-radius: 12px; margin: 8px 0; border: 1px solid var(--luxe-border); }
+
+        .receipt-preview {
+            max-width: 100%;
+            max-height: 160px;
+            border-radius: 12px;
+            margin: 8px 0;
+            border: 1px solid var(--luxe-border);
+        }
+
         .step-indicator {
             display: flex;
             justify-content: space-between;
@@ -270,14 +295,25 @@
             color: white;
         }
         .step-dot.active { color: var(--luxe-text); }
+
         .booking-step { display: none; animation: fadeSlide 0.4s ease; }
         .booking-step--visible { display: block; }
+
         .step-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--luxe-text); }
         .step-help { font-size: 14px; color: var(--luxe-text-muted); margin-bottom: 16px; }
-        .msg { padding: 14px 18px; border-radius: 14px; margin: 12px 0; font-size: 14px; font-weight: 500; border-right: 4px solid transparent; }
+
+        .msg {
+            padding: 14px 18px;
+            border-radius: 14px;
+            margin: 12px 0;
+            font-size: 14px;
+            font-weight: 500;
+            border-right: 4px solid transparent;
+        }
         .msg-success { background: rgba(46, 139, 87, 0.12); color: var(--luxe-success); border-right-color: var(--luxe-success); }
         .msg-error { background: rgba(178, 34, 52, 0.12); color: var(--luxe-danger); border-right-color: var(--luxe-danger); }
         .msg-info { background: rgba(212, 184, 124, 0.08); color: var(--luxe-gold); border-right-color: var(--luxe-gold); }
+
         .btn {
             display: inline-block;
             width: 100%;
@@ -300,6 +336,10 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 30px rgba(212, 184, 124, 0.35);
         }
+        .btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
         .btn-close {
             background: transparent;
             color: var(--luxe-text-muted);
@@ -313,6 +353,25 @@
             box-shadow: none;
             transform: none;
         }
+        .btn-sm {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            display: inline-block;
+            margin: 4px 2px;
+        }
+        .btn-sm-primary { background: var(--luxe-gold); color: #0A0E17; }
+        .btn-sm-primary:hover { background: var(--luxe-gold-light); }
+        .btn-sm-danger { background: var(--luxe-danger); color: white; }
+        .btn-sm-danger:hover { background: #c0392b; }
+        .btn-sm-success { background: var(--luxe-success); color: white; }
+        .btn-sm-success:hover { background: #3CA06A; }
+
         .container {
             max-width: 480px;
             width: 100%;
@@ -329,9 +388,65 @@
             border-bottom: 1px solid var(--luxe-border);
             margin-bottom: 24px;
         }
-        .brand-logo { font-size: 36px; font-weight: 800; letter-spacing: -0.5px; color: var(--luxe-text); display: flex; justify-content: center; align-items: center; gap: 4px; }
+        .brand-logo {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--luxe-text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+        }
         .brand-logo span { color: var(--luxe-gold); }
-        .brand-tagline { font-size: 13px; color: var(--luxe-text-muted); margin-top: 6px; letter-spacing: 1px; font-weight: 300; }
+        .brand-tagline {
+            font-size: 13px;
+            color: var(--luxe-text-muted);
+            margin-top: 6px;
+            letter-spacing: 1px;
+            font-weight: 300;
+        }
+
+        .user-info {
+            background: var(--luxe-bg);
+            padding: 12px 16px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            border: 1px solid var(--luxe-border);
+            color: var(--luxe-text-muted);
+        }
+        .user-info strong { color: var(--luxe-text); }
+
+        .price-tag {
+            background: rgba(212, 184, 124, 0.08);
+            padding: 10px 16px;
+            border-radius: 12px;
+            margin: 6px 0;
+            text-align: center;
+            border: 1px solid var(--luxe-border);
+        }
+        .price-tag span:first-child { font-size: 14px; color: var(--luxe-text-muted); }
+        .price-tag span:last-child { font-size: 18px; font-weight: 700; color: var(--luxe-gold); }
+
+        .review-box {
+            background: var(--luxe-bg);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin: 6px 0;
+            border: 1px solid var(--luxe-border);
+        }
+        .review-box .stars {
+            color: var(--luxe-gold);
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+        .review-box .comment {
+            font-size: 13px;
+            color: var(--luxe-text-muted);
+            margin-top: 4px;
+        }
+
         :root {
             --luxe-bg: #0A0E17;
             --luxe-card: #131B2A;
@@ -362,39 +477,16 @@
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
         }
-        .user-info {
-            background: var(--luxe-bg);
-            padding: 12px 16px;
-            border-radius: 14px;
-            margin-bottom: 16px;
-            font-size: 14px;
-            border: 1px solid var(--luxe-border);
-            color: var(--luxe-text-muted);
-        }
-        .user-info strong { color: var(--luxe-text); }
-        .price-tag {
-            background: rgba(212, 184, 124, 0.08);
-            padding: 10px 16px;
-            border-radius: 12px;
-            margin: 6px 0;
-            text-align: center;
-            border: 1px solid var(--luxe-border);
-        }
-        .price-tag span:first-child { font-size: 14px; color: var(--luxe-text-muted); }
-        .price-tag span:last-child { font-size: 18px; font-weight: 700; color: var(--luxe-gold); }
-        .btn[disabled] { opacity: 0.4; pointer-events: none; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="brand-header">
         <div class="brand-logo">M4<span>Cut</span></div>
-        <div class="brand-tagline">همه مراحل رزرو در یک صفحه</div>
+        <div class="brand-tagline">آرایشگاه تخصصی مردانه</div>
     </div>
 
-    <div class="user-info" id="userInfo">
-        👤 بارگذاری...
-    </div>
+    <div class="user-info" id="userInfo">👤 بارگذاری...</div>
 
     <div class="tabs">
         <button class="tab-btn active" data-tab="reserve">📅 رزرو جدید</button>
@@ -420,8 +512,7 @@
                     <div class="price">۲۰۰,۰۰۰ تومان</div>
                     <div class="desc">✨ کوتاهی و اصلاح مو با جدیدترین متدها</div>
                     <div class="note">
-                        <strong>⚠️ نکته مهم:</strong> در صورت عدم حضور در وقت تعیین‌شده،
-                        نوبت شما از بین خواهد رفت.
+                        <strong>⚠️ نکته مهم:</strong> در صورت عدم حضور در وقت تعیین‌شده، نوبت شما از بین خواهد رفت.
                     </div>
                 </div>
                 <button type="button" class="btn" style="margin-top:12px;" onclick="goToStep(2)">ادامه ➜</button>
@@ -462,7 +553,7 @@
                     <input type="file" id="receiptInput" accept="image/*" style="display:none;">
                     <div class="filename" id="fileName">هیچ فایلی انتخاب نشده</div>
                 </div>
-                <img id="previewImg" class="receipt-preview" style="display:none;" />
+                <img id="previewImg" class="receipt-preview" style="display:none;">
                 <button type="submit" class="btn" id="submitBtn">📅 ثبت نوبت</button>
                 <div id="formMessage"></div>
             </div>
@@ -484,14 +575,16 @@
 
 <script>
     // ============================================================
-    //   M4Cut - اسکریپت کاربر (تم NIGHT LUXE)
+    //   M4Cut - اسکریپت کاربر (کامل با ویرایش و نظردهی)
     // ============================================================
 
+    // ====== کاربر ======
     const userStr = localStorage.getItem('user');
     if (!userStr) window.location.href = '/static/index.html';
     const user = JSON.parse(userStr);
     document.getElementById('userInfo').innerHTML = `👤 <strong>${user.name}</strong> | 📞 ${user.phone}`;
 
+    // ====== متغیرها ======
     let selectedService = { id: null, name: 'کوتاهی مو', price: 200000 };
     let selectedDate = null;
     let selectedTime = null;
@@ -500,7 +593,7 @@
     let allAppointments = [];
     let currentFilter = 'all';
 
-    // ----- تاریخ شمسی (ساده) -----
+    // ====== تاریخ شمسی (ساده و دقیق) ======
     const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
     const today = new Date();
     let currentYear = today.getFullYear() - 621;
@@ -508,24 +601,24 @@
     if (currentMonth > 12) { currentMonth -= 12; currentYear += 1; }
     let currentDay = today.getDate() + 10;
     const maxDayInMonth = (y, m) => {
-        const d = [31,31,31,31,31,31,30,30,30,30,30,29];
+        const d = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
         if (m === 11 && ((y % 33) === 1 || (y % 33) === 5 || (y % 33) === 9 || (y % 33) === 13 || (y % 33) === 17 || (y % 33) === 22 || (y % 33) === 26 || (y % 33) === 30)) return 30;
         return d[m];
     };
-    if (currentDay > maxDayInMonth(currentYear, currentMonth-1)) currentDay = maxDayInMonth(currentYear, currentMonth-1);
+    if (currentDay > maxDayInMonth(currentYear, currentMonth - 1)) currentDay = maxDayInMonth(currentYear, currentMonth - 1);
     let selectedYear = currentYear, selectedMonth = currentMonth, selectedDay = currentDay;
 
     function isPastDate(y, m, d) {
         if (y < currentYear) return true;
-        if (y === currentYear && m < currentMonth-1) return true;
-        if (y === currentYear && m === currentMonth-1 && d < currentDay) return true;
+        if (y === currentYear && m < currentMonth - 1) return true;
+        if (y === currentYear && m === currentMonth - 1 && d < currentDay) return true;
         return false;
     }
 
     function buildDayGrid(y, m) {
         const grid = document.getElementById('dayGrid');
         grid.innerHTML = '';
-        const days = ['ش','ی','د','س','چ','پ','ج'];
+        const days = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
         days.forEach(d => {
             const div = document.createElement('div');
             div.className = 'day-name';
@@ -538,14 +631,14 @@
             btn.textContent = d;
             btn.dataset.day = d;
             if (isPastDate(y, m, d)) btn.disabled = true;
-            if (d === selectedDay && y === selectedYear && m === selectedMonth-1) btn.classList.add('selected');
+            if (d === selectedDay && y === selectedYear && m === selectedMonth - 1) btn.classList.add('selected');
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.day-grid button').forEach(b => b.classList.remove('selected'));
                 this.classList.add('selected');
                 selectedDay = parseInt(this.dataset.day);
                 selectedYear = y;
-                selectedMonth = m+1;
-                selectedDate = `${selectedYear}/${String(selectedMonth).padStart(2,'0')}/${String(selectedDay).padStart(2,'0')}`;
+                selectedMonth = m + 1;
+                selectedDate = `${selectedYear}/${String(selectedMonth).padStart(2, '0')}/${String(selectedDay).padStart(2, '0')}`;
                 goToStep(3);
             });
             grid.appendChild(btn);
@@ -559,7 +652,7 @@
         if (nm < 0) { nm = 11; ny -= 1; }
         if (nm > 11) { nm = 0; ny += 1; }
         if (ny < currentYear) return;
-        if (ny === currentYear && nm < currentMonth-1) return;
+        if (ny === currentYear && nm < currentMonth - 1) return;
         selectedYear = ny;
         selectedMonth = nm + 1;
         selectedDay = Math.min(selectedDay, maxDayInMonth(ny, nm));
@@ -568,7 +661,7 @@
     document.getElementById('prevMonth').addEventListener('click', () => updateMonth(-1));
     document.getElementById('nextMonth').addEventListener('click', () => updateMonth(1));
 
-    // ----- تب‌ها -----
+    // ====== تب‌ها ======
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -579,7 +672,7 @@
         });
     });
 
-    // ----- فیلتر نوبت‌ها -----
+    // ====== فیلتر نوبت‌ها ======
     document.querySelectorAll('.filter-buttons button').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.filter-buttons button').forEach(b => b.classList.remove('active'));
@@ -589,16 +682,18 @@
         });
     });
 
-    // ----- بارگیری ID خدمت -----
+    // ====== بارگیری ID خدمت ======
     async function loadServiceId() {
         try {
             const res = await fetch('/api/services');
             const data = await res.json();
-            if (data.services && data.services.length > 0) selectedService.id = data.services[0].id;
-        } catch(e) { console.error(e); }
+            if (data.services && data.services.length > 0) {
+                selectedService.id = data.services[0].id;
+            }
+        } catch (e) { console.error(e); }
     }
 
-    // ----- استپ‌ها -----
+    // ====== استپ‌ها ======
     function goToStep(step) {
         currentStep = step;
         document.querySelectorAll('.booking-step').forEach(el => {
@@ -610,7 +705,7 @@
             el.classList.toggle('completed', s < step);
         });
         document.querySelector('#bookingForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        if (step === 2) buildDayGrid(selectedYear, selectedMonth-1);
+        if (step === 2) buildDayGrid(selectedYear, selectedMonth - 1);
         if (step === 3) {
             buildTimeGrid();
             document.getElementById('submitBtn').disabled = !(selectedDate && selectedTime && uploadedFileUrl);
@@ -618,11 +713,11 @@
         }
     }
 
-    // ----- ساخت ساعت‌ها -----
+    // ====== ساخت ساعت‌ها ======
     function buildTimeGrid() {
         const grid = document.getElementById('timeGrid');
         grid.innerHTML = '';
-        ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'].forEach(t => {
+        ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'].forEach(t => {
             const btn = document.createElement('button');
             btn.textContent = `${t} - ۲۰۰,۰۰۰ تومان`;
             btn.dataset.time = t;
@@ -637,7 +732,7 @@
         });
     }
 
-    // ----- آپلود رسید -----
+    // ====== آپلود رسید ======
     const fileInput = document.getElementById('receiptInput');
     const fileName = document.getElementById('fileName');
     const previewImg = document.getElementById('previewImg');
@@ -658,23 +753,40 @@
                 previewImg.style.display = 'block';
                 document.getElementById('submitBtn').disabled = !(selectedDate && selectedTime && uploadedFileUrl);
                 document.getElementById('submitBtn').style.opacity = document.getElementById('submitBtn').disabled ? '0.5' : '1';
-            } else alert('خطا در آپلود رسید.');
-        } catch(e) { alert('خطا در ارتباط با سرور.'); }
+            } else {
+                alert('خطا در آپلود رسید.');
+            }
+        } catch (e) {
+            alert('خطا در ارتباط با سرور.');
+        }
     });
 
-    // ----- ثبت نوبت -----
+    // ====== ثبت نوبت ======
     document.getElementById('bookingForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const msgDiv = document.getElementById('formMessage');
-        if (!selectedService.id) return msgDiv.innerHTML = '<div class="msg msg-error">❌ خطا در شناسایی خدمت.</div>';
-        if (!selectedDate) return msgDiv.innerHTML = '<div class="msg msg-error">❌ لطفاً یک تاریخ انتخاب کنید.</div>';
-        if (!selectedTime) return msgDiv.innerHTML = '<div class="msg msg-error">❌ لطفاً یک ساعت انتخاب کنید.</div>';
-        if (!uploadedFileUrl) return msgDiv.innerHTML = '<div class="msg msg-error">⚠️ لطفاً رسید را آپلود کنید.</div>';
+
+        if (!selectedService.id) {
+            msgDiv.innerHTML = '<div class="msg msg-error">❌ خطا در شناسایی خدمت.</div>';
+            return;
+        }
+        if (!selectedDate) {
+            msgDiv.innerHTML = '<div class="msg msg-error">❌ لطفاً یک تاریخ انتخاب کنید.</div>';
+            return;
+        }
+        if (!selectedTime) {
+            msgDiv.innerHTML = '<div class="msg msg-error">❌ لطفاً یک ساعت انتخاب کنید.</div>';
+            return;
+        }
+        if (!uploadedFileUrl) {
+            msgDiv.innerHTML = '<div class="msg msg-error">⚠️ لطفاً رسید را آپلود کنید.</div>';
+            return;
+        }
 
         try {
             const res = await fetch('/api/appointments', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     telegram_id: user.telegram_id,
                     service_id: selectedService.id,
@@ -687,27 +799,35 @@
             if (result.status === 'ok') {
                 msgDiv.innerHTML = `<div class="msg msg-success">✅ ${result.message}</div>`;
                 setTimeout(() => Telegram.WebApp.close(), 3000);
-            } else msgDiv.innerHTML = `<div class="msg msg-error">❌ ${result.message}</div>`;
-        } catch(e) { msgDiv.innerHTML = '<div class="msg msg-error">❌ خطا در ارتباط با سرور.</div>'; }
+            } else {
+                msgDiv.innerHTML = `<div class="msg msg-error">❌ ${result.message}</div>`;
+            }
+        } catch (e) {
+            msgDiv.innerHTML = '<div class="msg msg-error">❌ خطا در ارتباط با سرور.</div>';
+        }
     });
 
-    // ----- بارگیری نوبت‌ها -----
+    // ====== بارگیری نوبت‌ها ======
     async function loadMyAppointments() {
         try {
             const res = await fetch(`/api/appointments/user/${user.telegram_id}`);
             const data = await res.json();
             allAppointments = data.appointments || [];
             renderAppointments();
-        } catch(e) {
+        } catch (e) {
             document.getElementById('myAppointmentsList').innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:20px;">خطا در بارگیری نوبت‌ها.</p>';
         }
     }
 
+    // ====== رندر نوبت‌ها با دکمه‌های ویرایش و نظردهی ======
     function renderAppointments() {
         const div = document.getElementById('myAppointmentsList');
         let filtered = allAppointments;
-        if (currentFilter === 'upcoming') filtered = allAppointments.filter(a => a.status !== 'cancelled' && a.status !== 'completed');
-        else if (currentFilter === 'past') filtered = allAppointments.filter(a => a.status === 'cancelled' || a.status === 'completed');
+        if (currentFilter === 'upcoming') {
+            filtered = allAppointments.filter(a => a.status !== 'cancelled' && a.status !== 'completed');
+        } else if (currentFilter === 'past') {
+            filtered = allAppointments.filter(a => a.status === 'cancelled' || a.status === 'completed');
+        }
 
         if (filtered.length === 0) {
             div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:20px;">هیچ نوبتی در این دسته‌بندی وجود ندارد.</p>';
@@ -723,6 +843,9 @@
 
         div.innerHTML = filtered.map(a => {
             const isPast = a.status === 'cancelled' || a.status === 'completed';
+            const isPending = a.status === 'pending';
+            const isConfirmed = a.status === 'confirmed';
+
             return `
                 <div class="appointment-item ${a.status} ${isPast ? 'past' : ''}">
                     <strong>${a.service_name}</strong><br>
@@ -730,19 +853,114 @@
                     وضعیت: ${statusMap[a.status] || a.status}
                     ${a.receipt ? `<br><img src="${a.receipt}" style="max-height:60px;border-radius:8px;margin-top:6px;border:1px solid var(--luxe-border);" />` : ''}
                     ${isPast ? '<br><span style="font-size:11px;color:var(--luxe-text-muted);opacity:0.6;">📆 نوبت گذشته</span>' : ''}
+                    <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;">
+                        ${isPending ? `
+                            <button class="btn-sm btn-sm-primary" onclick="editAppointment(${a.id})">✏️ ویرایش</button>
+                            <button class="btn-sm btn-sm-danger" onclick="cancelAppointment(${a.id})">🗑️ لغو</button>
+                        ` : ''}
+                        ${isConfirmed ? `
+                            <button class="btn-sm btn-sm-primary" onclick="rateAppointment(${a.id})">⭐ نظردهی</button>
+                        ` : ''}
+                        ${a.status === 'completed' ? `
+                            <button class="btn-sm btn-sm-primary" onclick="viewReview(${a.id})">📝 مشاهده نظر</button>
+                        ` : ''}
+                    </div>
                 </div>
             `;
         }).join('');
     }
 
-    // ----- مقداردهی اولیه -----
+    // ====== ویرایش نوبت ======
+    async function editAppointment(appointmentId) {
+        const newDate = prompt('تاریخ جدید (مثلاً 1404/05/20):');
+        if (!newDate) return;
+        const newTime = prompt('ساعت جدید (مثلاً 16:00):');
+        if (!newTime) return;
+
+        try {
+            const res = await fetch(`/api/appointments/${appointmentId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    telegram_id: user.telegram_id,
+                    date: newDate,
+                    time: newTime
+                })
+            });
+            const result = await res.json();
+            alert(result.message);
+            loadMyAppointments();
+        } catch (e) {
+            alert('خطا در ویرایش نوبت.');
+        }
+    }
+
+    // ====== لغو نوبت ======
+    async function cancelAppointment(appointmentId) {
+        if (!confirm('آیا از لغو این نوبت مطمئن هستید؟')) return;
+        try {
+            const res = await fetch(`/api/appointments/${appointmentId}/cancel`, { method: 'POST' });
+            const result = await res.json();
+            alert(result.message);
+            loadMyAppointments();
+        } catch (e) {
+            alert('خطا در لغو نوبت.');
+        }
+    }
+
+    // ====== نظردهی ======
+    async function rateAppointment(appointmentId) {
+        const rating = prompt('امتیاز خود را از ۱ تا ۵ وارد کنید:');
+        if (!rating || isNaN(rating) || rating < 1 || rating > 5) {
+            alert('لطفاً عددی بین ۱ تا ۵ وارد کنید.');
+            return;
+        }
+        const comment = prompt('نظر خود را وارد کنید (اختیاری):');
+
+        try {
+            const res = await fetch('/api/reviews', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: user.id,
+                    appointment_id: appointmentId,
+                    rating: parseInt(rating),
+                    comment: comment || ''
+                })
+            });
+            const result = await res.json();
+            alert(result.message);
+        } catch (e) {
+            alert('خطا در ثبت نظر.');
+        }
+    }
+
+    // ====== مشاهده نظر ======
+    async function viewReview(appointmentId) {
+        try {
+            const res = await fetch(`/api/reviews/${appointmentId}`);
+            const data = await res.json();
+            if (data.review) {
+                const r = data.review;
+                const stars = '⭐'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+                alert(`امتیاز: ${r.rating}/5\n${stars}\n\nنظر: ${r.comment || 'نظری ثبت نشده است.'}`);
+            } else {
+                alert('هنوز نظری برای این نوبت ثبت نشده است.');
+            }
+        } catch (e) {
+            alert('خطا در دریافت نظر.');
+        }
+    }
+
+    // ====== مقداردهی اولیه ======
     loadServiceId();
-    buildDayGrid(currentYear, currentMonth-1);
+    buildDayGrid(currentYear, currentMonth - 1);
     buildTimeGrid();
+
     document.getElementById('submitBtn').disabled = true;
     document.getElementById('submitBtn').style.opacity = '0.5';
 
-    selectedDate = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(currentDay).padStart(2,'0')}`;
+    selectedDate = `${currentYear}/${String(currentMonth).padStart(2, '0')}/${String(currentDay).padStart(2, '0')}`;
     selectedDay = currentDay;
     selectedYear = currentYear;
     selectedMonth = currentMonth;
