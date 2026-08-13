@@ -35,7 +35,6 @@
             text-align: center;
             min-height: 44px;
             touch-action: manipulation;
-            position: relative;
             border: 1px solid transparent;
         }
         .admin-tabs button:hover {
@@ -53,16 +52,99 @@
         .admin-tabs button:active {
             transform: scale(0.96);
         }
-        .admin-tabs button .badge-tab {
-            display: inline-block;
-            background: var(--luxe-danger);
-            color: white;
-            font-size: 10px;
-            font-weight: 700;
-            padding: 1px 8px;
+
+        /* ====== بخش ساعات کاری (رفع مشکل فعال/غیرفعال) ====== */
+        .schedule-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid var(--luxe-border);
+            flex-wrap: wrap;
+            border-radius: var(--radius-sm);
+            transition: all 0.3s ease;
+            background: var(--luxe-bg);
+            margin: 2px 0;
+        }
+        .schedule-item.inactive {
+            opacity: 0.5;
+            background: rgba(178, 34, 52, 0.05);
+            border-right: 3px solid var(--luxe-danger);
+        }
+        .schedule-item .day-name {
+            width: 70px;
+            font-weight: 600;
+            font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+            color: var(--luxe-text);
+        }
+        .schedule-item.inactive .day-name {
+            color: var(--luxe-text-muted);
+        }
+        .schedule-item input[type="time"] {
+            width: 90px;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--luxe-border);
+            background: var(--luxe-bg);
+            color: var(--luxe-text);
+            font-family: inherit;
+            margin: 0;
+            min-height: 30px;
+            transition: all 0.3s ease;
+        }
+        .schedule-item.inactive input[type="time"] {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .schedule-item input[type="number"] {
+            width: 45px;
+            padding: 4px 4px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--luxe-border);
+            background: var(--luxe-bg);
+            color: var(--luxe-text);
+            font-family: inherit;
+            margin: 0;
+            min-height: 30px;
+        }
+        .schedule-item.inactive input[type="number"] {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .schedule-item label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: clamp(0.65rem, 1.6vw, 0.75rem);
+            font-weight: 400;
+            color: var(--luxe-text-muted);
+            margin: 0;
+            cursor: pointer;
+        }
+        .schedule-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--luxe-gold);
+            margin: 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .schedule-item input[type="checkbox"]:checked {
+            accent-color: var(--luxe-success);
+        }
+        .schedule-item .status-badge {
+            font-size: clamp(0.55rem, 1.4vw, 0.65rem);
+            padding: 2px 10px;
             border-radius: 20px;
-            margin-right: 4px;
-            vertical-align: top;
+            font-weight: 700;
+        }
+        .status-active {
+            background: rgba(46, 139, 87, 0.15);
+            color: var(--luxe-success);
+        }
+        .status-inactive {
+            background: rgba(178, 34, 52, 0.15);
+            color: var(--luxe-danger);
         }
 
         /* سایر استایل‌های قبلی */
@@ -205,16 +287,200 @@
             text-align: center;
         }
 
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 0.75rem 0;
+        }
+        .stat-card {
+            background: var(--luxe-bg);
+            padding: 0.8rem 0.5rem;
+            border-radius: var(--radius);
+            text-align: center;
+            border: 1px solid var(--luxe-border);
+        }
+        .stat-card .number {
+            font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+            font-weight: 800;
+            color: var(--luxe-gold);
+            display: block;
+        }
+        .stat-card .label {
+            font-size: clamp(0.6rem, 1.4vw, 0.7rem);
+            color: var(--luxe-text-muted);
+            margin-top: 2px;
+            display: block;
+        }
+        .stat-card.gold {
+            background: var(--luxe-gold);
+            border-color: var(--luxe-gold);
+        }
+        .stat-card.gold .number,
+        .stat-card.gold .label {
+            color: #0A0E17;
+        }
+
+        .stats-detail {
+            background: var(--luxe-bg);
+            border-radius: var(--radius);
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--luxe-border);
+        }
+        .stats-detail .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
+            border-bottom: 1px solid var(--luxe-border);
+        }
+        .stats-detail .row:last-child {
+            border-bottom: none;
+        }
+        .stats-detail .row .label {
+            color: var(--luxe-text-muted);
+        }
+        .stats-detail .row .value {
+            font-weight: 600;
+            color: var(--luxe-text);
+        }
+
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.7rem 0.8rem;
+            background: var(--luxe-bg);
+            border-radius: var(--radius-sm);
+            margin: 4px 0;
+            border: 1px solid var(--luxe-border);
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .user-item .admin-badge {
+            background: var(--luxe-gold);
+            color: #0A0E17;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: clamp(0.55rem, 1.4vw, 0.65rem);
+            font-weight: 700;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+            border-radius: var(--radius-sm);
+            width: auto;
+            min-height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-sm-primary { background: var(--luxe-gold); color: #0A0E17; }
+        .btn-sm-primary:hover { background: var(--luxe-gold-light); }
+        .btn-sm-success { background: var(--luxe-success); color: white; }
+        .btn-sm-success:hover { background: #3CA06A; }
+        .btn-sm-danger { background: var(--luxe-danger); color: white; }
+        .btn-sm-danger:hover { background: #c0392b; }
+        .btn { width: 100%; padding: 0.9rem; border: none; border-radius: var(--radius); font-size: clamp(0.9rem, 2.2vw, 1.05rem); font-weight: 600; cursor: pointer; font-family: inherit; background: var(--luxe-gold); color: #0A0E17; transition: all 0.3s; }
+        .btn:hover { background: var(--luxe-gold-light); transform: translateY(-2px); }
+        .btn-success { background: var(--luxe-success); color: white; }
+        .btn-success:hover { background: #3CA06A; }
+        .btn-close { background: transparent; color: var(--luxe-text-muted); border: 1px solid var(--luxe-border); margin-top: 1rem; }
+        .btn-close:hover { background: var(--luxe-border); color: var(--luxe-text); transform: none; }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+            margin: 0 auto;
+            background: var(--luxe-card);
+            border-radius: 28px;
+            padding: 2rem 1.5rem;
+            box-shadow: var(--luxe-shadow), var(--luxe-glow);
+            border: 1px solid var(--luxe-border);
+            overflow: hidden;
+        }
+        .brand-header {
+            text-align: center;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--luxe-border);
+            margin-bottom: 1.5rem;
+        }
+        .brand-logo {
+            font-size: clamp(1.8rem, 5vw, 2.4rem);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--luxe-text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .brand-logo span { color: var(--luxe-gold); }
+        .brand-tagline {
+            font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+            color: var(--luxe-text-muted);
+            margin-top: 0.25rem;
+            letter-spacing: 0.5px;
+            font-weight: 300;
+        }
+        .msg { padding: 0.7rem 1rem; border-radius: var(--radius-sm); margin: 0.6rem 0; font-size: clamp(0.75rem, 2vw, 0.9rem); font-weight: 500; border-right: 4px solid transparent; }
+        .msg-success { background: rgba(46, 139, 87, 0.1); color: var(--luxe-success); border-right-color: var(--luxe-success); }
+
+        :root {
+            --luxe-bg: #0A0E17;
+            --luxe-card: #131B2A;
+            --luxe-card-hover: #1A2438;
+            --luxe-gold: #D4B87C;
+            --luxe-gold-light: #E8C98A;
+            --luxe-gold-dark: #B8995E;
+            --luxe-text: #EAEAEA;
+            --luxe-text-muted: #9AA5B5;
+            --luxe-border: #1E2A3A;
+            --luxe-border-light: #2A3A50;
+            --luxe-success: #2E8B57;
+            --luxe-danger: #B22234;
+            --luxe-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            --luxe-glow: 0 0 20px rgba(212, 184, 124, 0.08);
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--luxe-bg);
+            color: var(--luxe-text);
+            font-family: 'IRANYekanXVF', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            direction: rtl;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 1.25rem;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
         @media (max-width: 400px) {
             .admin-tabs button { min-width: 45px; padding: 0.4rem 0.2rem; font-size: 0.65rem; }
             .search-box input, .search-box select { min-width: 50px; font-size: 0.65rem; padding: 0.3rem 0.4rem; }
             .setting-item input { width: 120px; }
+            .schedule-item input[type="time"] { width: 70px; }
         }
         @media (max-width: 350px) {
             .admin-tabs { gap: 4px; padding: 4px; }
             .admin-tabs button { min-width: 40px; font-size: 0.55rem; padding: 0.3rem 0.1rem; }
             .search-box { flex-direction: column; }
             .search-box input, .search-box select { width: 100%; min-width: unset; }
+            .schedule-item { flex-direction: column; align-items: stretch; gap: 4px; }
+            .schedule-item input[type="time"] { width: 100%; }
+            .schedule-item input[type="number"] { width: 100%; }
         }
     </style>
 </head>
@@ -225,7 +491,7 @@
             <div class="brand-tagline">📊 پنل مدیریت</div>
         </div>
 
-        <!-- ====== منوهای تفکیک‌شده ====== -->
+        <!-- ====== منوهای اصلی ====== -->
         <div class="admin-tabs" id="adminTabs">
             <button class="active" data-tab="stats">📊 آمار</button>
             <button data-tab="apps">📋 نوبت‌ها</button>
@@ -235,11 +501,11 @@
             <button data-tab="broadcast">📢 اعلان</button>
         </div>
 
-        <!-- ====== تب‌ها ====== -->
+        <!-- ====== تب آمار ====== -->
         <div id="tab-stats" class="tab-content active">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
-                <span style="font-weight:600;">📊 آمار کلی</span>
-                <button class="btn-sm btn-sm-primary" onclick="loadStats()">⟳ بروزرسانی</button>
+                <span style="font-weight:600;font-size:clamp(0.85rem,2.2vw,1rem);">📊 آمار کلی</span>
+                <button class="btn-sm btn-sm-primary" onclick="loadStats()" style="padding:0.3rem 0.8rem;">⟳ بروزرسانی</button>
             </div>
             <div class="stats-grid">
                 <div class="stat-card gold"><span class="number" id="statUsers">...</span><span class="label">👥 کاربران</span></div>
@@ -253,42 +519,64 @@
                 <div class="row"><span class="label">✔️ انجام شده</span><span class="value" id="statCompleted">...</span></div>
                 <div class="row"><span class="label">❌ لغو شده</span><span class="value" id="statCancelled">...</span></div>
             </div>
+            <div class="footer-note" style="margin-top:0.3rem;font-size:clamp(0.6rem,1.4vw,0.7rem);color:var(--luxe-text-muted);text-align:center;opacity:0.6;">🔄 هر بار ورود بروزرسانی می‌شود</div>
         </div>
 
+        <!-- ====== تب نوبت‌ها ====== -->
         <div id="tab-apps" class="tab-content">
             <div class="search-box">
-                <select id="filterStatus"><option value="">همه</option><option value="pending">در انتظار</option><option value="confirmed">تأیید</option><option value="completed">انجام</option><option value="cancelled">لغو</option></select>
+                <select id="filterStatus">
+                    <option value="">همه</option>
+                    <option value="pending">در انتظار</option>
+                    <option value="confirmed">تأیید</option>
+                    <option value="completed">انجام</option>
+                    <option value="cancelled">لغو</option>
+                </select>
                 <input type="text" id="filterUser" placeholder="آیدی کاربر...">
                 <input type="text" id="filterDate" placeholder="تاریخ (مثلاً 1404/05/20)...">
                 <button class="btn-sm btn-sm-primary" onclick="applyFilters()">🔍 فیلتر</button>
                 <button class="btn-sm btn-sm-primary" onclick="exportExcel()">📤 اکسل</button>
             </div>
-            <div id="appointmentsList"><div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div></div>
+            <div id="appointmentsList">
+                <div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div>
+            </div>
         </div>
 
+        <!-- ====== تب کاربران ====== -->
         <div id="tab-users" class="tab-content">
-            <div id="usersList"><div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div></div>
+            <div id="usersList">
+                <div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div>
+            </div>
         </div>
 
+        <!-- ====== تب ساعات کاری (رفع مشکل) ====== -->
         <div id="tab-schedule" class="tab-content">
-            <div id="scheduleList"><div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div></div>
+            <div id="scheduleList">
+                <div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div>
+            </div>
             <button id="saveSchedule" class="btn btn-success" style="margin-top:0.75rem;">💾 ذخیره</button>
         </div>
 
+        <!-- ====== تب تنظیمات ====== -->
         <div id="tab-settings" class="tab-content">
             <div class="setting-item">
-                <span class="label">📞 شماره پشتیبانی</span>
+                <span class="label">📞 شماره پشتیبانی (ادمین)</span>
                 <div style="display:flex;gap:4px;flex-wrap:wrap;">
                     <input type="text" id="supportInput" value="@Tvpnred">
                     <button class="btn-sm btn-sm-primary" onclick="updateSupport()">ذخیره</button>
                 </div>
             </div>
+            <div style="font-size:clamp(0.6rem,1.4vw,0.7rem);color:var(--luxe-text-muted);margin-top:0.5rem;">
+                این شماره در پیام استارت و لندینگ نمایش داده می‌شود.
+            </div>
         </div>
 
+        <!-- ====== تب اعلان همگانی ====== -->
         <div id="tab-broadcast" class="tab-content">
             <div class="broadcast-area">
-                <textarea id="broadcastMessage" placeholder="متن پیام همگانی..."></textarea>
-                <button id="sendBroadcast" class="btn btn-success">📤 ارسال</button>
+                <label style="font-size:clamp(0.7rem,1.8vw,0.85rem);color:var(--luxe-text-muted);font-weight:500;">متن پیام همگانی:</label>
+                <textarea id="broadcastMessage" placeholder="متن پیام را وارد کنید..."></textarea>
+                <button id="sendBroadcast" class="btn btn-success" style="margin-top:0.5rem;">📤 ارسال</button>
                 <div id="broadcastResult"></div>
             </div>
         </div>
@@ -298,7 +586,7 @@
 
     <script>
         // ============================================================
-        //   M4Cut - پنل ادمین (دیباگ قوی و تفکیک منوها)
+        //   M4Cut - پنل ادمین (رفع مشکل ساعات کاری)
         // ============================================================
 
         // ----- اعتبارسنجی کاربر -----
@@ -336,74 +624,47 @@
             }, 4000);
         }
 
-        // ----- تابع تغییر تب (تفکیک شده با دیباگ) -----
+        // ----- تابع تغییر تب -----
         function switchTab(tabId) {
             try {
-                // 1. مخفی کردن همه تب‌ها
                 document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-                // 2. غیرفعال کردن همه دکمه‌ها
                 document.querySelectorAll('.admin-tabs button').forEach(el => el.classList.remove('active'));
 
-                // 3. نمایش تب جدید
                 const targetTab = document.getElementById('tab-' + tabId);
-                if (targetTab) {
-                    targetTab.classList.add('active');
-                } else {
-                    console.error(`Tab with id tab-${tabId} not found!`);
-                    showToast('خطا در تغییر تب!', 'error');
-                    return;
-                }
+                if (targetTab) targetTab.classList.add('active');
 
-                // 4. فعال کردن دکمه مربوطه
                 const targetBtn = document.querySelector(`.admin-tabs button[data-tab="${tabId}"]`);
-                if (targetBtn) {
-                    targetBtn.classList.add('active');
-                }
+                if (targetBtn) targetBtn.classList.add('active');
 
-                // 5. بارگیری داده‌ها (با مدیریت خطا)
-                console.log(`🔄 Switching to tab: ${tabId}`);
                 if (tabId === 'stats') loadStats();
                 else if (tabId === 'apps') loadAppointments();
                 else if (tabId === 'users') loadUsers();
                 else if (tabId === 'schedule') loadSchedule();
             } catch (error) {
-                console.error('🔥 SwitchTab Error:', error);
-                showToast('خطا در تغییر منو: ' + error.message, 'error');
+                console.error('SwitchTab Error:', error);
+                showToast('خطا در تغییر منو', 'error');
             }
         }
 
-        // ----- رویدادهای منوها (با دیباگ) -----
+        // ----- رویدادهای منوها -----
         document.querySelectorAll('.admin-tabs button').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
                 const tabId = this.dataset.tab;
-                if (!tabId) {
-                    console.error('No data-tab attribute!');
-                    return;
-                }
-                // اگر همان تب فعال است، کاری نکن
+                if (!tabId) return;
                 if (this.classList.contains('active')) return;
                 switchTab(tabId);
             });
         });
 
         // ============================================================
-        //   توابع بارگیری داده‌ها (همگی با دیباگ قوی)
+        //   آمار
         // ============================================================
-
-        // ----- ۱. آمار -----
         async function loadStats() {
-            const statElements = ['statUsers', 'statTotalApps', 'statTodayApps', 'statUpcomingApps', 'statPending', 'statConfirmed', 'statCompleted', 'statCancelled'];
-            statElements.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = '...';
-            });
-
             try {
                 const res = await fetch('/api/admin/stats');
                 if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const data = await res.json();
-
                 if (data.status === 'ok') {
                     const s = data.stats;
                     document.getElementById('statUsers').textContent = s.total_users || 0;
@@ -414,16 +675,16 @@
                     document.getElementById('statConfirmed').textContent = s.status?.confirmed || 0;
                     document.getElementById('statCompleted').textContent = s.status?.completed || 0;
                     document.getElementById('statCancelled').textContent = s.status?.cancelled || 0;
-                } else {
-                    throw new Error(data.message || 'خطا در دریافت آمار');
                 }
             } catch (error) {
-                console.error('❌ loadStats Error:', error);
-                showToast('خطا در بارگیری آمار: ' + error.message, 'error');
+                console.error('loadStats Error:', error);
+                showToast('خطا در بارگیری آمار', 'error');
             }
         }
 
-        // ----- ۲. نوبت‌ها (با Pagination و دیباگ) -----
+        // ============================================================
+        //   نوبت‌ها
+        // ============================================================
         let allAppointments = [];
 
         async function loadAppointments(page = 1) {
@@ -450,13 +711,12 @@
                     const pagination = data.pagination || {};
                     currentPage = pagination.page || 1;
                     totalPages = pagination.pages || 1;
-
                     renderAppointments(allAppointments, pagination);
                 } else {
                     throw new Error(data.message || 'خطا در دریافت نوبت‌ها');
                 }
             } catch (error) {
-                console.error('❌ loadAppointments Error:', error);
+                console.error('loadAppointments Error:', error);
                 div.innerHTML = `<div class="error-box">❌ ${error.message}</div>`;
                 showToast('خطا در بارگیری نوبت‌ها', 'error');
             }
@@ -465,7 +725,6 @@
         function renderAppointments(apps, pagination) {
             const div = document.getElementById('appointmentsList');
             if (!div) return;
-
             if (!apps || apps.length === 0) {
                 div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">هیچ نوبتی یافت نشد.</p>';
                 return;
@@ -497,7 +756,6 @@
                     </div>
                 `).join('');
 
-            // Pagination
             if (pagination && pagination.pages > 1) {
                 html += `
                         <div style="display:flex;justify-content:center;gap:8px;margin-top:1rem;flex-wrap:wrap;">
@@ -536,7 +794,7 @@
                     throw new Error(result.message || 'خطا در تغییر وضعیت');
                 }
             } catch (error) {
-                console.error('❌ updateStatus Error:', error);
+                console.error('updateStatus Error:', error);
                 showToast('خطا: ' + error.message, 'error');
             }
         }
@@ -555,7 +813,9 @@
             }
         }
 
-        // ----- ۳. کاربران -----
+        // ============================================================
+        //   کاربران
+        // ============================================================
         async function loadUsers() {
             const div = document.getElementById('usersList');
             if (!div) return;
@@ -587,7 +847,7 @@
                     throw new Error(data.message || 'خطا در دریافت کاربران');
                 }
             } catch (error) {
-                console.error('❌ loadUsers Error:', error);
+                console.error('loadUsers Error:', error);
                 div.innerHTML = `<div class="error-box">❌ ${error.message}</div>`;
                 showToast('خطا در بارگیری کاربران', 'error');
             }
@@ -610,7 +870,7 @@
                     throw new Error(result.message || 'خطا در تغییر نقش');
                 }
             } catch (error) {
-                console.error('❌ toggleAdmin Error:', error);
+                console.error('toggleAdmin Error:', error);
                 showToast('خطا: ' + error.message, 'error');
             }
         }
@@ -629,12 +889,14 @@
                     throw new Error(result.message || 'خطا در حذف کاربر');
                 }
             } catch (error) {
-                console.error('❌ deleteUser Error:', error);
+                console.error('deleteUser Error:', error);
                 showToast('خطا: ' + error.message, 'error');
             }
         }
 
-        // ----- ۴. ساعات کاری -----
+        // ============================================================
+        //   ساعات کاری (رفع مشکل فعال/غیرفعال)
+        // ============================================================
         async function loadSchedule() {
             const div = document.getElementById('scheduleList');
             if (!div) return;
@@ -647,21 +909,50 @@
 
                 if (data.status === 'ok' && data.schedule) {
                     const days = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'];
-                    div.innerHTML = data.schedule.map(s => `
-                            <div class="schedule-item">
+                    div.innerHTML = data.schedule.map(s => {
+                        const isActive = s.is_active === 1;
+                        const activeClass = isActive ? '' : 'inactive';
+                        const statusText = isActive ? 'فعال' : 'غیرفعال';
+                        const statusClass = isActive ? 'status-active' : 'status-inactive';
+                        return `
+                            <div class="schedule-item ${activeClass}" data-day="${s.day_of_week}">
                                 <span class="day-name">${days[s.day_of_week]}</span>
-                                <input type="time" value="${s.start_time}" data-day="${s.day_of_week}" class="start-time">
+                                <input type="time" value="${s.start_time}" data-day="${s.day_of_week}" class="start-time" ${!isActive ? 'disabled' : ''}>
                                 <span>تا</span>
-                                <input type="time" value="${s.end_time}" data-day="${s.day_of_week}" class="end-time">
-                                <span>ظرفیت: <input type="number" value="${s.capacity}" data-day="${s.day_of_week}" class="capacity-input" min="0" max="10"></span>
-                                <label><input type="checkbox" ${s.is_active === 1 ? 'checked' : ''} data-day="${s.day_of_week}" class="active-check"> فعال</label>
+                                <input type="time" value="${s.end_time}" data-day="${s.day_of_week}" class="end-time" ${!isActive ? 'disabled' : ''}>
+                                <span>ظرفیت: <input type="number" value="${s.capacity}" data-day="${s.day_of_week}" class="capacity-input" min="0" max="10" ${!isActive ? 'disabled' : ''}></span>
+                                <label>
+                                    <input type="checkbox" ${isActive ? 'checked' : ''} data-day="${s.day_of_week}" class="active-check">
+                                    فعال
+                                </label>
+                                <span class="status-badge ${statusClass}">${statusText}</span>
                             </div>
-                        `).join('');
+                        `;
+                    }).join('');
+
+                    // اضافه کردن رویداد به چک‌باکس‌ها برای تغییر وضعیت فعال/غیرفعال
+                    document.querySelectorAll('.schedule-item .active-check').forEach(cb => {
+                        cb.addEventListener('change', function() {
+                            const item = this.closest('.schedule-item');
+                            const isChecked = this.checked;
+                            // تغییر کلاس
+                            item.classList.toggle('inactive', !isChecked);
+                            // فعال/غیرفعال کردن ورودی‌ها
+                            const inputs = item.querySelectorAll('input:not(.active-check)');
+                            inputs.forEach(inp => inp.disabled = !isChecked);
+                            // تغییر وضعیت نمایشی
+                            const badge = item.querySelector('.status-badge');
+                            if (badge) {
+                                badge.textContent = isChecked ? 'فعال' : 'غیرفعال';
+                                badge.className = 'status-badge ' + (isChecked ? 'status-active' : 'status-inactive');
+                            }
+                        });
+                    });
                 } else {
                     throw new Error(data.message || 'خطا در دریافت ساعات کاری');
                 }
             } catch (error) {
-                console.error('❌ loadSchedule Error:', error);
+                console.error('loadSchedule Error:', error);
                 div.innerHTML = `<div class="error-box">❌ ${error.message}</div>`;
                 showToast('خطا در بارگیری ساعات کاری', 'error');
             }
@@ -673,22 +964,24 @@
             let hasError = false;
 
             items.forEach(item => {
-                const day = parseInt(item.querySelector('.start-time').dataset.day);
+                const day = parseInt(item.dataset.day);
                 const start = item.querySelector('.start-time').value;
                 const end = item.querySelector('.end-time').value;
                 const cap = parseInt(item.querySelector('.capacity-input').value) || 2;
+                const isActive = item.querySelector('.active-check').checked ? 1 : 0;
 
-                if (!start || !end) {
+                if (isActive === 1 && (!start || !end)) {
                     hasError = true;
                     showToast(`لطفاً ساعت شروع و پایان را برای ${item.querySelector('.day-name').textContent} وارد کنید.`, 'error');
                     return;
                 }
+
                 updates.push({
                     day_of_week: day,
-                    start_time: start,
-                    end_time: end,
+                    start_time: start || '09:00',
+                    end_time: end || '18:00',
                     capacity: cap,
-                    is_active: item.querySelector('.active-check').checked ? 1 : 0
+                    is_active: isActive
                 });
             });
 
@@ -709,7 +1002,7 @@
                 showToast('✅ ساعات کاری با موفقیت ذخیره شد!', 'success');
                 loadSchedule();
             } catch (error) {
-                console.error('❌ saveSchedule Error:', error);
+                console.error('saveSchedule Error:', error);
                 showToast('❌ خطا در ذخیره ساعات کاری.', 'error');
             } finally {
                 this.disabled = false;
@@ -717,7 +1010,9 @@
             }
         });
 
-        // ----- ۵. تنظیمات پشتیبانی -----
+        // ============================================================
+        //   تنظیمات پشتیبانی
+        // ============================================================
         async function loadSupport() {
             try {
                 const res = await fetch('/api/admin/support');
@@ -727,7 +1022,7 @@
                     document.getElementById('supportInput').value = data.support_contact || '@Tvpnred';
                 }
             } catch (error) {
-                console.error('❌ loadSupport Error:', error);
+                console.error('loadSupport Error:', error);
             }
         }
 
@@ -754,14 +1049,16 @@
                     throw new Error(result.message || 'خطا در به‌روزرسانی');
                 }
             } catch (error) {
-                console.error('❌ updateSupport Error:', error);
+                console.error('updateSupport Error:', error);
                 showToast('خطا: ' + error.message, 'error');
             } finally {
                 if (btn) btn.disabled = false;
             }
         }
 
-        // ----- ۶. اعلان همگانی -----
+        // ============================================================
+        //   اعلان همگانی
+        // ============================================================
         document.getElementById('sendBroadcast')?.addEventListener('click', async function() {
             const msg = document.getElementById('broadcastMessage').value.trim();
             if (!msg) {
@@ -790,7 +1087,7 @@
                     throw new Error(result.message || 'خطا در ارسال پیام');
                 }
             } catch (error) {
-                console.error('❌ sendBroadcast Error:', error);
+                console.error('sendBroadcast Error:', error);
                 showToast('خطا: ' + error.message, 'error');
             } finally {
                 this.disabled = false;
@@ -802,7 +1099,6 @@
         //   بارگیری اولیه
         // ============================================================
         console.log('🚀 Admin Panel Started.');
-        // بارگیری پیش‌فرض تب آمار
         loadStats();
 
         // به‌روزرسانی خودکار آمار هر ۶۰ ثانیه
