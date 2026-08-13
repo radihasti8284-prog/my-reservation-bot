@@ -7,7 +7,65 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* ====== استایل‌های اختصاصی ادمین ====== */
+        /* ====== استایل اختصاصی منوها و پنل ادمین ====== */
+        .admin-tabs {
+            display: flex;
+            gap: 8px;
+            margin: 1rem 0 1.5rem;
+            background: rgba(10, 14, 23, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 8px;
+            border: 1px solid var(--luxe-border);
+            flex-wrap: wrap;
+        }
+        .admin-tabs button {
+            flex: 1 1 auto;
+            min-width: 60px;
+            padding: 0.7rem 0.5rem;
+            border: none;
+            border-radius: 12px;
+            background: transparent;
+            color: var(--luxe-text-muted);
+            font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            text-align: center;
+            min-height: 44px;
+            touch-action: manipulation;
+            position: relative;
+            border: 1px solid transparent;
+        }
+        .admin-tabs button:hover {
+            background: rgba(212, 184, 124, 0.05);
+            color: var(--luxe-text);
+            border-color: var(--luxe-border-light);
+        }
+        .admin-tabs button.active {
+            background: var(--luxe-gold);
+            color: #0A0E17;
+            box-shadow: 0 4px 20px rgba(212, 184, 124, 0.25);
+            border-color: var(--luxe-gold);
+            transform: translateY(-2px);
+        }
+        .admin-tabs button:active {
+            transform: scale(0.96);
+        }
+        .admin-tabs button .badge-tab {
+            display: inline-block;
+            background: var(--luxe-danger);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 8px;
+            border-radius: 20px;
+            margin-right: 4px;
+            vertical-align: top;
+        }
+
+        /* سایر استایل‌های قبلی */
         .admin-box {
             background: var(--luxe-bg);
             padding: 0.9rem 1rem;
@@ -20,16 +78,9 @@
         .admin-box:hover {
             border-color: var(--luxe-gold-light);
         }
-        .admin-box.confirmed {
-            border-right-color: var(--luxe-success);
-        }
-        .admin-box.cancelled {
-            border-right-color: var(--luxe-danger);
-            opacity: 0.6;
-        }
-        .admin-box.completed {
-            border-right-color: var(--luxe-text-muted);
-        }
+        .admin-box.confirmed { border-right-color: var(--luxe-success); }
+        .admin-box.cancelled { border-right-color: var(--luxe-danger); opacity: 0.6; }
+        .admin-box.completed { border-right-color: var(--luxe-text-muted); }
         .admin-box .receipt-thumb {
             max-width: 60px;
             max-height: 60px;
@@ -49,30 +100,18 @@
             font-size: clamp(0.6rem, 1.4vw, 0.7rem);
             font-weight: 700;
         }
-        .status-badge.pending {
-            background: rgba(212, 184, 124, 0.2);
-            color: var(--luxe-gold);
-        }
-        .status-badge.confirmed {
-            background: rgba(46, 139, 87, 0.2);
-            color: var(--luxe-success);
-        }
-        .status-badge.cancelled {
-            background: rgba(178, 34, 52, 0.2);
-            color: var(--luxe-danger);
-        }
-        .status-badge.completed {
-            background: rgba(154, 165, 181, 0.2);
-            color: var(--luxe-text-muted);
-        }
+        .status-badge.pending { background: rgba(212, 184, 124, 0.2); color: var(--luxe-gold); }
+        .status-badge.confirmed { background: rgba(46, 139, 87, 0.2); color: var(--luxe-success); }
+        .status-badge.cancelled { background: rgba(178, 34, 52, 0.2); color: var(--luxe-danger); }
+        .status-badge.completed { background: rgba(154, 165, 181, 0.2); color: var(--luxe-text-muted); }
+
         .search-box {
             display: flex;
             gap: 6px;
             margin-bottom: 0.75rem;
             flex-wrap: wrap;
         }
-        .search-box input,
-        .search-box select {
+        .search-box input, .search-box select {
             flex: 1 1 auto;
             min-width: 70px;
             padding: 0.5rem 0.6rem;
@@ -84,11 +123,11 @@
             font-size: clamp(0.7rem, 1.8vw, 0.85rem);
             min-height: 36px;
         }
-        .search-box input:focus,
-        .search-box select:focus {
+        .search-box input:focus, .search-box select:focus {
             border-color: var(--luxe-gold);
             outline: none;
         }
+
         .setting-item {
             display: flex;
             justify-content: space-between;
@@ -98,10 +137,7 @@
             flex-wrap: wrap;
             gap: 6px;
         }
-        .setting-item .label {
-            color: var(--luxe-text-muted);
-            font-size: clamp(0.75rem, 2vw, 0.9rem);
-        }
+        .setting-item .label { color: var(--luxe-text-muted); font-size: clamp(0.75rem, 2vw, 0.9rem); }
         .setting-item input {
             background: var(--luxe-bg);
             border: 1px solid var(--luxe-border);
@@ -113,10 +149,8 @@
             min-height: 34px;
             font-size: clamp(0.75rem, 2vw, 0.9rem);
         }
-        .setting-item input:focus {
-            border-color: var(--luxe-gold);
-            outline: none;
-        }
+        .setting-item input:focus { border-color: var(--luxe-gold); outline: none; }
+
         .broadcast-area {
             background: var(--luxe-bg);
             padding: 1rem;
@@ -135,26 +169,8 @@
             font-family: inherit;
             font-size: clamp(0.75rem, 2vw, 0.9rem);
         }
-        .broadcast-area textarea:focus {
-            border-color: var(--luxe-gold);
-            outline: none;
-        }
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid var(--luxe-border);
-            border-top-color: var(--luxe-gold);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+        .broadcast-area textarea:focus { border-color: var(--luxe-gold); outline: none; }
+
         .toast {
             position: fixed;
             bottom: 20px;
@@ -172,48 +188,33 @@
             max-width: 90%;
             text-align: center;
         }
-        .toast.success {
-            border-color: var(--luxe-success);
-        }
-        .toast.error {
-            border-color: var(--luxe-danger);
-        }
+        .toast.success { border-color: var(--luxe-success); }
+        .toast.error { border-color: var(--luxe-danger); }
         @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .error-box {
+            background: rgba(178, 34, 52, 0.1);
+            border: 1px solid var(--luxe-danger);
+            color: var(--luxe-danger);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin: 0.5rem 0;
+            text-align: center;
         }
 
         @media (max-width: 400px) {
-            .search-box input,
-            .search-box select {
-                min-width: 50px;
-                font-size: clamp(0.6rem, 1.5vw, 0.7rem);
-                padding: 0.3rem 0.4rem;
-                min-height: 30px;
-            }
-            .setting-item input {
-                width: 120px;
-                font-size: clamp(0.65rem, 1.6vw, 0.75rem);
-                min-height: 28px;
-            }
+            .admin-tabs button { min-width: 45px; padding: 0.4rem 0.2rem; font-size: 0.65rem; }
+            .search-box input, .search-box select { min-width: 50px; font-size: 0.65rem; padding: 0.3rem 0.4rem; }
+            .setting-item input { width: 120px; }
         }
-
         @media (max-width: 350px) {
-            .search-box {
-                flex-direction: column;
-                gap: 4px;
-            }
-            .search-box input,
-            .search-box select {
-                width: 100%;
-                min-width: unset;
-            }
+            .admin-tabs { gap: 4px; padding: 4px; }
+            .admin-tabs button { min-width: 40px; font-size: 0.55rem; padding: 0.3rem 0.1rem; }
+            .search-box { flex-direction: column; }
+            .search-box input, .search-box select { width: 100%; min-width: unset; }
         }
     </style>
 </head>
@@ -224,8 +225,8 @@
             <div class="brand-tagline">📊 پنل مدیریت</div>
         </div>
 
-        <!-- ====== منوهای اصلی (تب‌ها) ====== -->
-        <div class="tabs" id="adminTabs">
+        <!-- ====== منوهای تفکیک‌شده ====== -->
+        <div class="admin-tabs" id="adminTabs">
             <button class="active" data-tab="stats">📊 آمار</button>
             <button data-tab="apps">📋 نوبت‌ها</button>
             <button data-tab="users">👥 کاربران</button>
@@ -234,13 +235,13 @@
             <button data-tab="broadcast">📢 اعلان</button>
         </div>
 
-        <!-- ====== تب آمار ====== -->
+        <!-- ====== تب‌ها ====== -->
         <div id="tab-stats" class="tab-content active">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
-                <span style="font-weight:600;font-size:clamp(0.85rem,2.2vw,1rem);">📊 آمار کلی</span>
-                <button class="btn-sm btn-sm-primary" onclick="loadStats()" style="padding:0.3rem 0.8rem;">⟳ بروزرسانی</button>
+                <span style="font-weight:600;">📊 آمار کلی</span>
+                <button class="btn-sm btn-sm-primary" onclick="loadStats()">⟳ بروزرسانی</button>
             </div>
-            <div class="stats-grid" id="statsGrid">
+            <div class="stats-grid">
                 <div class="stat-card gold"><span class="number" id="statUsers">...</span><span class="label">👥 کاربران</span></div>
                 <div class="stat-card gold"><span class="number" id="statTotalApps">...</span><span class="label">📋 کل نوبت‌ها</span></div>
                 <div class="stat-card"><span class="number" id="statTodayApps">...</span><span class="label">📅 نوبت‌های امروز</span></div>
@@ -252,64 +253,42 @@
                 <div class="row"><span class="label">✔️ انجام شده</span><span class="value" id="statCompleted">...</span></div>
                 <div class="row"><span class="label">❌ لغو شده</span><span class="value" id="statCancelled">...</span></div>
             </div>
-            <div class="footer-note" style="margin-top:0.3rem;">🔄 هر بار ورود بروزرسانی می‌شود</div>
         </div>
 
-        <!-- ====== تب نوبت‌ها ====== -->
         <div id="tab-apps" class="tab-content">
             <div class="search-box">
-                <select id="filterStatus">
-                    <option value="">همه</option>
-                    <option value="pending">در انتظار</option>
-                    <option value="confirmed">تأیید</option>
-                    <option value="completed">انجام</option>
-                    <option value="cancelled">لغو</option>
-                </select>
+                <select id="filterStatus"><option value="">همه</option><option value="pending">در انتظار</option><option value="confirmed">تأیید</option><option value="completed">انجام</option><option value="cancelled">لغو</option></select>
                 <input type="text" id="filterUser" placeholder="آیدی کاربر...">
                 <input type="text" id="filterDate" placeholder="تاریخ (مثلاً 1404/05/20)...">
                 <button class="btn-sm btn-sm-primary" onclick="applyFilters()">🔍 فیلتر</button>
                 <button class="btn-sm btn-sm-primary" onclick="exportExcel()">📤 اکسل</button>
             </div>
-            <div id="appointmentsList">
-                <div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div>
-            </div>
+            <div id="appointmentsList"><div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div></div>
         </div>
 
-        <!-- ====== تب کاربران ====== -->
         <div id="tab-users" class="tab-content">
-            <div id="usersList">
-                <div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div>
-            </div>
+            <div id="usersList"><div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div></div>
         </div>
 
-        <!-- ====== تب ساعات کاری ====== -->
         <div id="tab-schedule" class="tab-content">
-            <div id="scheduleList">
-                <div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div>
-            </div>
+            <div id="scheduleList"><div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div></div>
             <button id="saveSchedule" class="btn btn-success" style="margin-top:0.75rem;">💾 ذخیره</button>
         </div>
 
-        <!-- ====== تب تنظیمات ====== -->
         <div id="tab-settings" class="tab-content">
             <div class="setting-item">
-                <span class="label">📞 شماره پشتیبانی (ادمین)</span>
+                <span class="label">📞 شماره پشتیبانی</span>
                 <div style="display:flex;gap:4px;flex-wrap:wrap;">
                     <input type="text" id="supportInput" value="@Tvpnred">
                     <button class="btn-sm btn-sm-primary" onclick="updateSupport()">ذخیره</button>
                 </div>
             </div>
-            <div style="font-size:clamp(0.6rem,1.4vw,0.7rem);color:var(--luxe-text-muted);margin-top:0.5rem;">
-                این شماره در پیام استارت و لندینگ نمایش داده می‌شود.
-            </div>
         </div>
 
-        <!-- ====== تب اعلان همگانی ====== -->
         <div id="tab-broadcast" class="tab-content">
             <div class="broadcast-area">
-                <label style="font-size:clamp(0.7rem,1.8vw,0.85rem);color:var(--luxe-text-muted);font-weight:500;">متن پیام همگانی:</label>
-                <textarea id="broadcastMessage" placeholder="متن پیام را وارد کنید..."></textarea>
-                <button id="sendBroadcast" class="btn btn-success" style="margin-top:0.5rem;">📤 ارسال</button>
+                <textarea id="broadcastMessage" placeholder="متن پیام همگانی..."></textarea>
+                <button id="sendBroadcast" class="btn btn-success">📤 ارسال</button>
                 <div id="broadcastResult"></div>
             </div>
         </div>
@@ -319,24 +298,31 @@
 
     <script>
         // ============================================================
-        //   M4Cut - اسکریپت پنل ادمین (دیباگ شده)
+        //   M4Cut - پنل ادمین (دیباگ قوی و تفکیک منوها)
         // ============================================================
 
-        // ====== اعتبارسنجی کاربر ======
-        const user = JSON.parse(localStorage.getItem('user'));
+        // ----- اعتبارسنجی کاربر -----
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            alert('⛔ لطفاً ابتدا وارد شوید.');
+            window.location.href = '/static/index.html';
+        }
+        const user = JSON.parse(userStr);
         if (!user || user.is_admin !== 1) {
             alert('⛔ شما دسترسی ادمین ندارید.');
             window.location.href = '/static/index.html';
         }
 
-        // ====== متغیرهای عمومی ======
-        let currentFilter = {};
+        // ----- متغیرها -----
         let toastTimeout = null;
+        let currentPage = 1;
+        let totalPages = 1;
+        const PER_PAGE = 10;
 
-        // ====== تابع نمایش پیام (Toast) ======
+        // ----- نمایش پیام (Toast) -----
         function showToast(message, type = 'success') {
-            const oldToast = document.querySelector('.toast');
-            if (oldToast) oldToast.remove();
+            const old = document.querySelector('.toast');
+            if (old) old.remove();
             if (toastTimeout) clearTimeout(toastTimeout);
 
             const toast = document.createElement('div');
@@ -350,115 +336,154 @@
             }, 4000);
         }
 
-        // ====== تابع تغییر تب (رفع مشکل اصلی) ======
+        // ----- تابع تغییر تب (تفکیک شده با دیباگ) -----
         function switchTab(tabId) {
-            // مخفی کردن همه تب‌ها
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            // حذف کلاس active از همه دکمه‌ها
-            document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+            try {
+                // 1. مخفی کردن همه تب‌ها
+                document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+                // 2. غیرفعال کردن همه دکمه‌ها
+                document.querySelectorAll('.admin-tabs button').forEach(el => el.classList.remove('active'));
 
-            // نمایش تب انتخاب شده
-            const targetTab = document.getElementById('tab-' + tabId);
-            if (targetTab) {
-                targetTab.classList.add('active');
+                // 3. نمایش تب جدید
+                const targetTab = document.getElementById('tab-' + tabId);
+                if (targetTab) {
+                    targetTab.classList.add('active');
+                } else {
+                    console.error(`Tab with id tab-${tabId} not found!`);
+                    showToast('خطا در تغییر تب!', 'error');
+                    return;
+                }
+
+                // 4. فعال کردن دکمه مربوطه
+                const targetBtn = document.querySelector(`.admin-tabs button[data-tab="${tabId}"]`);
+                if (targetBtn) {
+                    targetBtn.classList.add('active');
+                }
+
+                // 5. بارگیری داده‌ها (با مدیریت خطا)
+                console.log(`🔄 Switching to tab: ${tabId}`);
+                if (tabId === 'stats') loadStats();
+                else if (tabId === 'apps') loadAppointments();
+                else if (tabId === 'users') loadUsers();
+                else if (tabId === 'schedule') loadSchedule();
+            } catch (error) {
+                console.error('🔥 SwitchTab Error:', error);
+                showToast('خطا در تغییر منو: ' + error.message, 'error');
             }
-
-            // فعال کردن دکمه مربوطه
-            const targetBtn = document.querySelector(`.tabs button[data-tab="${tabId}"]`);
-            if (targetBtn) {
-                targetBtn.classList.add('active');
-            }
-
-            // بارگیری داده‌های مربوط به تب
-            if (tabId === 'stats') loadStats();
-            else if (tabId === 'apps') loadAppointments();
-            else if (tabId === 'users') loadUsers();
-            else if (tabId === 'schedule') loadSchedule();
         }
 
-        // ====== رویدادهای کلیک روی منوها ======
-        document.querySelectorAll('.tabs button').forEach(btn => {
+        // ----- رویدادهای منوها (با دیباگ) -----
+        document.querySelectorAll('.admin-tabs button').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
                 const tabId = this.dataset.tab;
-                console.log('Switching to tab:', tabId);
+                if (!tabId) {
+                    console.error('No data-tab attribute!');
+                    return;
+                }
+                // اگر همان تب فعال است، کاری نکن
+                if (this.classList.contains('active')) return;
                 switchTab(tabId);
             });
         });
 
-        // ====== آمار ======
+        // ============================================================
+        //   توابع بارگیری داده‌ها (همگی با دیباگ قوی)
+        // ============================================================
+
+        // ----- ۱. آمار -----
         async function loadStats() {
+            const statElements = ['statUsers', 'statTotalApps', 'statTodayApps', 'statUpcomingApps', 'statPending', 'statConfirmed', 'statCompleted', 'statCancelled'];
+            statElements.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '...';
+            });
+
             try {
                 const res = await fetch('/api/admin/stats');
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const data = await res.json();
+
                 if (data.status === 'ok') {
                     const s = data.stats;
-                    document.getElementById('statUsers').textContent = s.total_users;
-                    document.getElementById('statTotalApps').textContent = s.total_appointments;
-                    document.getElementById('statTodayApps').textContent = s.today_appointments;
-                    document.getElementById('statUpcomingApps').textContent = s.upcoming_appointments;
-                    document.getElementById('statPending').textContent = s.status.pending;
-                    document.getElementById('statConfirmed').textContent = s.status.confirmed;
-                    document.getElementById('statCompleted').textContent = s.status.completed;
-                    document.getElementById('statCancelled').textContent = s.status.cancelled;
+                    document.getElementById('statUsers').textContent = s.total_users || 0;
+                    document.getElementById('statTotalApps').textContent = s.total_appointments || 0;
+                    document.getElementById('statTodayApps').textContent = s.today_appointments || 0;
+                    document.getElementById('statUpcomingApps').textContent = s.upcoming_appointments || 0;
+                    document.getElementById('statPending').textContent = s.status?.pending || 0;
+                    document.getElementById('statConfirmed').textContent = s.status?.confirmed || 0;
+                    document.getElementById('statCompleted').textContent = s.status?.completed || 0;
+                    document.getElementById('statCancelled').textContent = s.status?.cancelled || 0;
+                } else {
+                    throw new Error(data.message || 'خطا در دریافت آمار');
                 }
-            } catch (e) {
-                console.error('Error loading stats:', e);
-                showToast('خطا در بارگیری آمار', 'error');
+            } catch (error) {
+                console.error('❌ loadStats Error:', error);
+                showToast('خطا در بارگیری آمار: ' + error.message, 'error');
             }
         }
 
-        // ====== نوبت‌ها ======
-        let appointmentsPage = 0;
-        const APPOINTMENTS_PER_PAGE = 10;
+        // ----- ۲. نوبت‌ها (با Pagination و دیباگ) -----
         let allAppointments = [];
-        let filteredAppointments = [];
 
-        async function loadAppointments() {
+        async function loadAppointments(page = 1) {
             const div = document.getElementById('appointmentsList');
+            if (!div) return;
             div.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div>';
 
             try {
-                let url = '/api/admin/appointments?';
-                if (currentFilter.status) url += `status=${currentFilter.status}&`;
-                if (currentFilter.user) url += `user=${currentFilter.user}&`;
-                if (currentFilter.date) url += `date=${currentFilter.date}&`;
+                const status = document.getElementById('filterStatus')?.value || '';
+                const user = document.getElementById('filterUser')?.value.trim() || '';
+                const date = document.getElementById('filterDate')?.value.trim() || '';
+
+                let url = `/api/admin/appointments?page=${page}&limit=${PER_PAGE}`;
+                if (status) url += `&status=${status}`;
+                if (user) url += `&user=${user}`;
+                if (date) url += `&date=${date}`;
 
                 const res = await fetch(url);
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const data = await res.json();
 
                 if (data.status === 'ok') {
                     allAppointments = data.appointments || [];
-                    filteredAppointments = allAppointments;
-                    appointmentsPage = 0;
-                    renderAppointments();
+                    const pagination = data.pagination || {};
+                    currentPage = pagination.page || 1;
+                    totalPages = pagination.pages || 1;
+
+                    renderAppointments(allAppointments, pagination);
                 } else {
-                    div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">خطا در بارگیری نوبت‌ها.</p>';
+                    throw new Error(data.message || 'خطا در دریافت نوبت‌ها');
                 }
-            } catch (e) {
-                console.error('Error loading appointments:', e);
-                div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">خطا در بارگیری نوبت‌ها.</p>';
+            } catch (error) {
+                console.error('❌ loadAppointments Error:', error);
+                div.innerHTML = `<div class="error-box">❌ ${error.message}</div>`;
                 showToast('خطا در بارگیری نوبت‌ها', 'error');
             }
         }
 
-        function renderAppointments() {
+        function renderAppointments(apps, pagination) {
             const div = document.getElementById('appointmentsList');
-            const start = appointmentsPage * APPOINTMENTS_PER_PAGE;
-            const end = start + APPOINTMENTS_PER_PAGE;
-            const pageItems = filteredAppointments.slice(start, end);
+            if (!div) return;
 
-            if (filteredAppointments.length === 0) {
+            if (!apps || apps.length === 0) {
                 div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">هیچ نوبتی یافت نشد.</p>';
                 return;
             }
 
-            let html = pageItems.map(a => `
+            const statusMap = {
+                'pending': '<span class="status-badge pending">در انتظار</span>',
+                'confirmed': '<span class="status-badge confirmed">✅ تأیید</span>',
+                'cancelled': '<span class="status-badge cancelled">لغو</span>',
+                'completed': '<span class="status-badge completed">انجام</span>'
+            };
+
+            let html = apps.map(a => `
                     <div class="admin-box ${a.status}">
-                        <strong>${a.service_name}</strong><br>
-                        👤 ${a.user_name} | 📞 ${a.phone} | 🆔 ${a.telegram_id}<br>
-                        📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
-                        وضعیت: <span class="status-badge ${a.status}">${a.status === 'pending' ? 'در انتظار' : a.status === 'confirmed' ? 'تأیید شده' : a.status === 'cancelled' ? 'لغو شده' : 'انجام شده'}</span>
+                        <strong>${a.service_name || 'بدون خدمت'}</strong><br>
+                        👤 ${a.user_name || 'نامشخص'} | 📞 ${a.phone || '---'} | 🆔 ${a.telegram_id || '---'}<br>
+                        📅 ${a.appointment_date || '---'} | 🕐 ${a.appointment_time || '---'}<br>
+                        وضعیت: ${statusMap[a.status] || a.status}
                         ${a.receipt ? `<br><img src="${a.receipt}" class="receipt-thumb" onclick="window.open('${a.receipt}')" />` : ''}
                         <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
                             <select onchange="updateStatus(${a.id}, this.value)" style="padding:0.3rem 0.5rem;border-radius:var(--radius-sm);border:1px solid var(--luxe-border);background:var(--luxe-bg);color:var(--luxe-text);font-family:inherit;font-size:clamp(0.65rem,1.6vw,0.75rem);min-height:30px;">
@@ -472,57 +497,47 @@
                     </div>
                 `).join('');
 
-            const totalPages = Math.ceil(filteredAppointments.length / APPOINTMENTS_PER_PAGE);
-            if (totalPages > 1) {
+            // Pagination
+            if (pagination && pagination.pages > 1) {
                 html += `
                         <div style="display:flex;justify-content:center;gap:8px;margin-top:1rem;flex-wrap:wrap;">
-                            ${appointmentsPage > 0 ? `<button class="btn-sm btn-sm-primary" onclick="changePage(-1)">⬅️ قبلی</button>` : ''}
-                            <span style="color:var(--luxe-text-muted);font-size:clamp(0.7rem,1.8vw,0.85rem);">صفحه ${appointmentsPage + 1} از ${totalPages}</span>
-                            ${appointmentsPage < totalPages - 1 ? `<button class="btn-sm btn-sm-primary" onclick="changePage(1)">بعدی ➡️</button>` : ''}
+                            ${pagination.page > 1 ? `<button class="btn-sm btn-sm-primary" onclick="changePage(${pagination.page - 1})">⬅️ قبلی</button>` : ''}
+                            <span style="color:var(--luxe-text-muted);font-size:0.85rem;">صفحه ${pagination.page} از ${pagination.pages}</span>
+                            ${pagination.page < pagination.pages ? `<button class="btn-sm btn-sm-primary" onclick="changePage(${pagination.page + 1})">بعدی ➡️</button>` : ''}
                         </div>
                     `;
             }
-
             div.innerHTML = html;
         }
 
-        function changePage(delta) {
-            appointmentsPage += delta;
-            renderAppointments();
-            document.getElementById('appointmentsList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        function changePage(page) {
+            loadAppointments(page);
+            document.getElementById('appointmentsList')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function applyFilters() {
-            currentFilter.status = document.getElementById('filterStatus').value;
-            currentFilter.user = document.getElementById('filterUser').value.trim();
-            currentFilter.date = document.getElementById('filterDate').value.trim();
-            appointmentsPage = 0;
-            loadAppointments();
+            loadAppointments(1);
         }
 
         async function updateStatus(id, status) {
             try {
-                const btn = event?.target?.previousElementSibling;
-                if (btn) btn.disabled = true;
-
                 const res = await fetch(`/api/admin/appointments/${id}/status`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status })
                 });
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const result = await res.json();
-
-                if (res.ok) {
+                if (result.status === 'ok') {
                     showToast(result.message || 'وضعیت با موفقیت تغییر کرد.', 'success');
-                    loadAppointments();
+                    loadAppointments(currentPage);
                     loadStats();
                 } else {
-                    showToast(result.message || 'خطا در تغییر وضعیت.', 'error');
+                    throw new Error(result.message || 'خطا در تغییر وضعیت');
                 }
-            } catch (e) {
-                showToast('خطا در ارتباط با سرور.', 'error');
-            } finally {
-                if (btn) btn.disabled = false;
+            } catch (error) {
+                console.error('❌ updateStatus Error:', error);
+                showToast('خطا: ' + error.message, 'error');
             }
         }
 
@@ -532,17 +547,23 @@
         }
 
         function exportExcel() {
-            window.open('/api/admin/export/excel', '_blank');
-            showToast('📤 در حال دانلود فایل اکسل...', 'success');
+            try {
+                window.open('/api/admin/export/excel', '_blank');
+                showToast('📤 در حال دانلود فایل اکسل...', 'success');
+            } catch (e) {
+                showToast('خطا در دانلود اکسل', 'error');
+            }
         }
 
-        // ====== کاربران ======
+        // ----- ۳. کاربران -----
         async function loadUsers() {
             const div = document.getElementById('usersList');
+            if (!div) return;
             div.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div>';
 
             try {
                 const res = await fetch('/api/admin/users');
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const data = await res.json();
 
                 if (data.status === 'ok' && data.users) {
@@ -550,11 +571,10 @@
                         div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">هیچ کاربری ثبت نشده است.</p>';
                         return;
                     }
-
                     div.innerHTML = data.users.map(u => `
                             <div class="user-item">
-                                <div style="font-size:clamp(0.7rem,1.8vw,0.85rem);">
-                                    <strong>${u.name}</strong> | 📞 ${u.phone || '---'} | 🆔 ${u.telegram_id}
+                                <div>
+                                    <strong>${u.name || 'نامشخص'}</strong> | 📞 ${u.phone || '---'} | 🆔 ${u.telegram_id || '---'}
                                     ${u.is_admin === 1 ? '<span class="admin-badge">👑 ادمین</span>' : ''}
                                 </div>
                                 <div style="display:flex;gap:4px;flex-wrap:wrap;">
@@ -564,63 +584,65 @@
                             </div>
                         `).join('');
                 } else {
-                    div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">خطا در بارگیری کاربران.</p>';
+                    throw new Error(data.message || 'خطا در دریافت کاربران');
                 }
-            } catch (e) {
-                console.error('Error loading users:', e);
-                div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">خطا در بارگیری کاربران.</p>';
+            } catch (error) {
+                console.error('❌ loadUsers Error:', error);
+                div.innerHTML = `<div class="error-box">❌ ${error.message}</div>`;
                 showToast('خطا در بارگیری کاربران', 'error');
             }
         }
 
         async function toggleAdmin(id, newStatus) {
             if (!confirm(`آیا از ${newStatus === 1 ? 'ادمین کردن' : 'حذف ادمین از'} این کاربر مطمئن هستید؟`)) return;
-
             try {
                 const res = await fetch(`/api/admin/users/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ is_admin: newStatus })
                 });
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const result = await res.json();
-
-                if (res.ok) {
-                    showToast(result.message || 'نقش کاربر با موفقیت تغییر کرد.', 'success');
+                if (result.status === 'ok') {
+                    showToast(result.message || 'نقش کاربر تغییر کرد.', 'success');
                     loadUsers();
                 } else {
-                    showToast(result.message || 'خطا در تغییر نقش.', 'error');
+                    throw new Error(result.message || 'خطا در تغییر نقش');
                 }
-            } catch (e) {
-                showToast('خطا در ارتباط با سرور.', 'error');
+            } catch (error) {
+                console.error('❌ toggleAdmin Error:', error);
+                showToast('خطا: ' + error.message, 'error');
             }
         }
 
         async function deleteUser(id) {
             if (!confirm('آیا از حذف این کاربر مطمئن هستید؟ این عملیات قابل بازگشت نیست!')) return;
-
             try {
                 const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const result = await res.json();
-
-                if (res.ok) {
+                if (result.status === 'ok') {
                     showToast(result.message || 'کاربر با موفقیت حذف شد.', 'success');
                     loadUsers();
                     loadStats();
                 } else {
-                    showToast(result.message || 'خطا در حذف کاربر.', 'error');
+                    throw new Error(result.message || 'خطا در حذف کاربر');
                 }
-            } catch (e) {
-                showToast('خطا در ارتباط با سرور.', 'error');
+            } catch (error) {
+                console.error('❌ deleteUser Error:', error);
+                showToast('خطا: ' + error.message, 'error');
             }
         }
 
-        // ====== ساعات کاری ======
+        // ----- ۴. ساعات کاری -----
         async function loadSchedule() {
             const div = document.getElementById('scheduleList');
+            if (!div) return;
             div.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div>';
 
             try {
                 const res = await fetch('/api/admin/schedule');
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const data = await res.json();
 
                 if (data.status === 'ok' && data.schedule) {
@@ -636,16 +658,16 @@
                             </div>
                         `).join('');
                 } else {
-                    div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">خطا در بارگیری ساعات کاری.</p>';
+                    throw new Error(data.message || 'خطا در دریافت ساعات کاری');
                 }
-            } catch (e) {
-                console.error('Error loading schedule:', e);
-                div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">خطا در بارگیری ساعات کاری.</p>';
+            } catch (error) {
+                console.error('❌ loadSchedule Error:', error);
+                div.innerHTML = `<div class="error-box">❌ ${error.message}</div>`;
                 showToast('خطا در بارگیری ساعات کاری', 'error');
             }
         }
 
-        document.getElementById('saveSchedule').addEventListener('click', async function() {
+        document.getElementById('saveSchedule')?.addEventListener('click', async function() {
             const items = document.querySelectorAll('.schedule-item');
             const updates = [];
             let hasError = false;
@@ -661,7 +683,6 @@
                     showToast(`لطفاً ساعت شروع و پایان را برای ${item.querySelector('.day-name').textContent} وارد کنید.`, 'error');
                     return;
                 }
-
                 updates.push({
                     day_of_week: day,
                     start_time: start,
@@ -685,10 +706,10 @@
                     });
                     if (!res.ok) throw new Error('خطا در ذخیره');
                 }
-
                 showToast('✅ ساعات کاری با موفقیت ذخیره شد!', 'success');
                 loadSchedule();
-            } catch (e) {
+            } catch (error) {
+                console.error('❌ saveSchedule Error:', error);
                 showToast('❌ خطا در ذخیره ساعات کاری.', 'error');
             } finally {
                 this.disabled = false;
@@ -696,16 +717,17 @@
             }
         });
 
-        // ====== تنظیمات پشتیبانی ======
+        // ----- ۵. تنظیمات پشتیبانی -----
         async function loadSupport() {
             try {
                 const res = await fetch('/api/admin/support');
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const data = await res.json();
                 if (data.status === 'ok') {
                     document.getElementById('supportInput').value = data.support_contact || '@Tvpnred';
                 }
-            } catch (e) {
-                console.error('Error loading support:', e);
+            } catch (error) {
+                console.error('❌ loadSupport Error:', error);
             }
         }
 
@@ -715,7 +737,6 @@
                 showToast('لطفاً مقدار را وارد کنید.', 'error');
                 return;
             }
-
             try {
                 const btn = event?.target;
                 if (btn) btn.disabled = true;
@@ -725,28 +746,28 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ support_contact: val })
                 });
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const result = await res.json();
-
-                if (res.ok) {
+                if (result.status === 'ok') {
                     showToast('✅ شماره پشتیبانی به‌روزرسانی شد!', 'success');
                 } else {
-                    showToast(result.message || 'خطا در به‌روزرسانی.', 'error');
+                    throw new Error(result.message || 'خطا در به‌روزرسانی');
                 }
-            } catch (e) {
-                showToast('خطا در ارتباط با سرور.', 'error');
+            } catch (error) {
+                console.error('❌ updateSupport Error:', error);
+                showToast('خطا: ' + error.message, 'error');
             } finally {
                 if (btn) btn.disabled = false;
             }
         }
 
-        // ====== اعلان همگانی ======
-        document.getElementById('sendBroadcast').addEventListener('click', async function() {
+        // ----- ۶. اعلان همگانی -----
+        document.getElementById('sendBroadcast')?.addEventListener('click', async function() {
             const msg = document.getElementById('broadcastMessage').value.trim();
             if (!msg) {
                 showToast('لطفاً متن پیام را وارد کنید.', 'error');
                 return;
             }
-
             if (!confirm(`آیا از ارسال این پیام به همه کاربران مطمئن هستید؟\n\n${msg}`)) return;
 
             try {
@@ -758,38 +779,39 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: msg })
                 });
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const result = await res.json();
 
-                if (res.ok) {
+                if (result.status === 'ok') {
                     document.getElementById('broadcastResult').innerHTML = `<div class="msg msg-success">✅ ${result.message}</div>`;
                     document.getElementById('broadcastMessage').value = '';
                     showToast(`✅ ${result.message}`, 'success');
                 } else {
-                    showToast(result.message || 'خطا در ارسال پیام.', 'error');
+                    throw new Error(result.message || 'خطا در ارسال پیام');
                 }
-            } catch (e) {
-                showToast('خطا در ارتباط با سرور.', 'error');
+            } catch (error) {
+                console.error('❌ sendBroadcast Error:', error);
+                showToast('خطا: ' + error.message, 'error');
             } finally {
                 this.disabled = false;
                 this.textContent = '📤 ارسال';
             }
         });
 
-        // ====== بارگیری اولیه (آمار پیش‌فرض) ======
-        console.log('Admin panel loaded. Loading stats...');
+        // ============================================================
+        //   بارگیری اولیه
+        // ============================================================
+        console.log('🚀 Admin Panel Started.');
+        // بارگیری پیش‌فرض تب آمار
         loadStats();
 
-        // ====== به‌روزرسانی خودکار آمار (هر ۶۰ ثانیه) ======
+        // به‌روزرسانی خودکار آمار هر ۶۰ ثانیه
         setInterval(() => {
             const statsTab = document.getElementById('tab-stats');
             if (statsTab && statsTab.classList.contains('active')) {
                 loadStats();
             }
         }, 60000);
-
-        // ====== راه‌اندازی اولیه ======
-        // اطمینان از اینکه تب آمار فعال باشد
-        switchTab('stats');
     </script>
 </body>
 </html>
