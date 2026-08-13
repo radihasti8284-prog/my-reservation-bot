@@ -42,7 +42,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'}
 ADMIN_IDS = [int(x.strip()) for x in os.environ.get("ADMIN_IDS", "").split(",") if x.strip().isdigit()]
 print(f"👑 Admin IDs: {ADMIN_IDS}")
 
-# ====== تنظیمات Cloudinary (با دیباگ) ======
+# ====== تنظیمات Cloudinary ======
 CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME")
 CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY")
 CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET")
@@ -59,69 +59,9 @@ else:
 
 
 # ============================================================
-#   تابع آپلود (با دیباگ قوی و پشتیبانی از آپلود محلی)
-# ============================================================
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-@app.route('/api/upload', methods=['POST'])
-def upload_file():
-    try:
-        # بررسی وجود فایل
-        if 'file' not in request.files:
-            return jsonify({"status": "error", "message": "هیچ فایلی ارسال نشده است."}), 400
-
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({"status": "error", "message": "هیچ فایلی انتخاب نشده است."}), 400
-
-        # بررسی فرمت فایل
-        if not allowed_file(file.filename):
-            return jsonify({
-                "status": "error",
-                "message": "فرمت فایل پشتیبانی نمی‌شود. فقط PNG, JPG, JPEG, GIF, WEBP, PDF"
-            }), 400
-
-        # ====== تلاش برای آپلود در Cloudinary ======
-        if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
-            try:
-                upload_result = cloudinary.uploader.upload(
-                    file,
-                    folder="m4cut_receipts",
-                    transformation={"quality": "auto", "fetch_format": "auto"},
-                    timeout=30
-                )
-                image_url = upload_result['secure_url']
-                print(f"✅ File uploaded to Cloudinary: {image_url}")
-                return jsonify({"status": "ok", "url": image_url})
-            except Exception as e:
-                print(f"⚠️ Cloudinary upload failed: {e}")
-                # اگر Cloudinary خطا داد، به آپلود محلی برگرد
-                print("🔄 Falling back to local upload...")
-
-        # ====== آپلود محلی (Fallback) ======
-        try:
-            filename = f"{int(time.time())}_{secure_filename(file.filename)}"
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            local_url = f"/static/uploads/{filename}"
-            print(f"✅ File uploaded locally: {local_url}")
-            return jsonify({"status": "ok", "url": local_url})
-        except Exception as e:
-            print(f"❌ Local upload failed: {e}")
-            return jsonify({"status": "error", "message": f"خطا در ذخیره فایل: {str(e)}"}), 500
-
-    except Exception as e:
-        print(f"❌ upload_file critical error: {e}")
-        traceback.print_exc()
-        return jsonify({"status": "error", "message": f"خطای سرور: {str(e)}"}), 500
-
-# ============================================================
 #   توابع کمکی PDF (تبدیل فارسی)
 # ============================================================
 def reshape_persian(text):
-    """تبدیل متن فارسی به شکل صحیح برای نمایش در PDF"""
     if not text:
         return ""
     try:
@@ -132,25 +72,13 @@ def reshape_persian(text):
 
 
 def generate_appointment_pdf(appointments, title="گزارش نوبت‌ها"):
-    """تولید PDF از لیست نوبت‌ها با پشتیبانی از فارسی"""
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=1.5 * cm, leftMargin=1.5 * cm,
                             topMargin=1.5 * cm, bottomMargin=1.5 * cm)
     styles = getSampleStyleSheet()
 
-    # استایل فارسی
-    persian_style = ParagraphStyle(
-        'PersianStyle',
-        parent=styles['Normal'],
-        fontName='Helvetica',
-        fontSize=10,
-        alignment=TA_RIGHT,
-        encoding='utf-8'
-    )
-
     elements = []
 
-    # عنوان
     title_style = ParagraphStyle(
         'TitleStyle',
         parent=styles['Heading1'],
@@ -161,7 +89,6 @@ def generate_appointment_pdf(appointments, title="گزارش نوبت‌ها"):
     )
     elements.append(Paragraph(reshape_persian(title), title_style))
 
-    # تاریخ امروز (شمسی)
     now = jdatetime.datetime.now()
     date_str = now.strftime("%Y/%m/%d - %H:%M")
     date_style = ParagraphStyle(
@@ -175,9 +102,7 @@ def generate_appointment_pdf(appointments, title="گزارش نوبت‌ها"):
     elements.append(Paragraph(reshape_persian(f"تاریخ: {date_str}"), date_style))
     elements.append(Spacer(1, 20))
 
-    # جدول داده‌ها
     if appointments and len(appointments) > 0:
-        # هدر جدول
         headers = ['ردیف', 'نام کاربر', 'شماره تماس', 'خدمت', 'تاریخ', 'ساعت', 'وضعیت']
         data = [headers]
 
@@ -199,7 +124,6 @@ def generate_appointment_pdf(appointments, title="گزارش نوبت‌ها"):
             ]
             data.append(row)
 
-        # ساخت جدول
         table = Table(data, colWidths=[30, 80, 80, 100, 80, 60, 80])
         table.setStyle(TableStyle([
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
@@ -212,7 +136,6 @@ def generate_appointment_pdf(appointments, title="گزارش نوبت‌ها"):
         ]))
         elements.append(table)
 
-        # تعداد کل
         elements.append(Spacer(1, 10))
         count_style = ParagraphStyle(
             'CountStyle',
@@ -223,9 +146,8 @@ def generate_appointment_pdf(appointments, title="گزارش نوبت‌ها"):
         )
         elements.append(Paragraph(reshape_persian(f"تعداد کل نوبت‌ها: {len(appointments)}"), count_style))
     else:
-        elements.append(Paragraph(reshape_persian("هیچ نوبتی یافت نشد."), persian_style))
+        elements.append(Paragraph(reshape_persian("هیچ نوبتی یافت نشد."), styles['Normal']))
 
-    # فوتر
     elements.append(Spacer(1, 30))
     footer_style = ParagraphStyle(
         'FooterStyle',
@@ -426,6 +348,7 @@ def get_or_create_user(telegram_id, name, phone):
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 def get_all_users():
     try:
@@ -695,6 +618,7 @@ def get_services():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
+# ====== مسیر آپلود (فقط یک بار تعریف شده) ======
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
     try:
@@ -705,15 +629,45 @@ def upload_file():
         if file.filename == '':
             return jsonify({"status": "error", "message": "هیچ فایلی انتخاب نشده است."}), 400
 
-        # آپلود فایل به Cloudinary
-        upload_result = cloudinary.uploader.upload(file, folder="m4cut_receipts")
-        image_url = upload_result['secure_url']  # دریافت URL امن
+        if not allowed_file(file.filename):
+            return jsonify({
+                "status": "error",
+                "message": "فرمت فایل پشتیبانی نمی‌شود. فقط PNG, JPG, JPEG, GIF, WEBP, PDF"
+            }), 400
 
-        return jsonify({"status": "ok", "url": image_url})
+        # ====== تلاش برای آپلود در Cloudinary ======
+        if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
+            try:
+                upload_result = cloudinary.uploader.upload(
+                    file,
+                    folder="m4cut_receipts",
+                    transformation={"quality": "auto", "fetch_format": "auto"},
+                    timeout=30
+                )
+                image_url = upload_result['secure_url']
+                print(f"✅ File uploaded to Cloudinary: {image_url}")
+                return jsonify({"status": "ok", "url": image_url})
+            except Exception as e:
+                print(f"⚠️ Cloudinary upload failed: {e}")
+                print("🔄 Falling back to local upload...")
+
+        # ====== آپلود محلی (Fallback) ======
+        try:
+            filename = f"{int(time.time())}_{secure_filename(file.filename)}"
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            local_url = f"/static/uploads/{filename}"
+            print(f"✅ File uploaded locally: {local_url}")
+            return jsonify({"status": "ok", "url": local_url})
+        except Exception as e:
+            print(f"❌ Local upload failed: {e}")
+            return jsonify({"status": "error", "message": f"خطا در ذخیره فایل: {str(e)}"}), 500
 
     except Exception as e:
-        print(f"❌ خطا در آپلود: {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
+        print(f"❌ upload_file critical error: {e}")
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": f"خطای سرور: {str(e)}"}), 500
+
 
 @app.route('/api/appointments', methods=['POST'])
 def create_appointment():
@@ -839,7 +793,7 @@ def cancel_appointment(appointment_id):
 
 
 # ============================================================
-#   API های ادمین (با دیباگ قوی)
+#   API های ادمین
 # ============================================================
 @app.route('/api/admin/appointments', methods=['GET'])
 def admin_get_appointments():
@@ -1112,7 +1066,6 @@ def admin_broadcast():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
-# ====== API جدید: گزارش روزانه PDF ======
 @app.route('/api/admin/daily-report/pdf', methods=['GET'])
 def daily_report_pdf():
     try:
@@ -1135,8 +1088,6 @@ def daily_report_pdf():
         conn.close()
 
         appointments = [dict(a) for a in apps]
-
-        # عنوان شامل تاریخ شمسی
         now = jdatetime.datetime.now()
         persian_date = now.strftime("%Y/%m/%d")
         title = f"گزارش روزانه مشتریان - {persian_date}"
@@ -1155,7 +1106,6 @@ def daily_report_pdf():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
-# ====== API جدید: گزارش کامل PDF ======
 @app.route('/api/admin/full-report/pdf', methods=['GET'])
 def full_report_pdf():
     try:
@@ -1191,7 +1141,6 @@ def full_report_pdf():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
-# ====== API قبلی اکسل (برای موارد خاص) ======
 @app.route('/api/admin/export/excel', methods=['GET'])
 def export_excel():
     try:
