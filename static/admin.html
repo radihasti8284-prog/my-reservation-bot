@@ -5,82 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>M4Cut - پنل مدیریت</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'IRANYekanXVF', Tahoma, Arial, sans-serif;
+        /* ====== استایل‌های اختصاصی ادمین ====== */
+        .admin-box {
+            background: var(--luxe-bg);
+            padding: 16px 18px;
+            border-radius: 16px;
+            margin: 10px 0;
+            border-right: 4px solid var(--luxe-gold);
+            border-left: 1px solid var(--luxe-border);
+            border-top: 1px solid var(--luxe-border);
+            border-bottom: 1px solid var(--luxe-border);
+            transition: all 0.3s ease;
         }
-        body {
-            background: #f4f0ea;
-            padding: 20px;
-            direction: rtl;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
+        .admin-box:hover { border-color: var(--luxe-border-light); }
+        .admin-box.confirmed { border-right-color: var(--luxe-success); }
+        .admin-box.cancelled { border-right-color: var(--luxe-danger); }
+        .admin-box.completed { border-right-color: var(--luxe-text-muted); }
+        .admin-box .receipt-thumb {
+            max-width: 70px; max-height: 70px; border-radius: 10px;
+            cursor: pointer; border: 1px solid var(--luxe-border);
+            transition: all 0.3s ease;
         }
-        .container {
-            max-width: 480px;
-            width: 100%;
-            margin: 0 auto;
-            background: #ffffff;
-            border-radius: 24px;
-            padding: 28px 22px;
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06);
-            border: 1px solid #e0dcd5;
-        }
-        .brand-header {
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #f4f0ea;
-            margin-bottom: 22px;
-        }
-        .brand-logo {
-            font-size: 32px;
-            font-weight: 900;
-            letter-spacing: -1px;
-            color: #161513;
-        }
-        .brand-logo span {
-            color: #c69249;
-        }
-        .brand-tagline {
+        .admin-box .receipt-thumb:hover { transform: scale(1.05); border-color: var(--luxe-gold); }
+        .btn-sm {
+            padding: 8px 16px;
             font-size: 13px;
-            color: #7f8c8d;
-            margin-top: 4px;
-        }
-        .tabs {
-            display: flex;
-            gap: 6px;
-            margin: 14px 0;
-            flex-wrap: wrap;
-        }
-        .tabs button {
-            flex: 1;
-            min-width: 70px;
-            padding: 10px 12px;
-            border: none;
             border-radius: 10px;
-            background: #f4f0ea;
-            font-size: 13px;
+            border: none;
             font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-family: inherit;
-            color: #7f8c8d;
         }
-        .tabs button.active {
-            background: #c69249;
-            color: white;
-            box-shadow: 0 4px 12px rgba(198, 146, 73, 0.25);
-        }
-        .tab-content { display: none; animation: fadeIn 0.3s ease; }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* ====== کارت‌های آمار ====== */
+        .btn-sm-success { background: var(--luxe-success); color: white; }
+        .btn-sm-success:hover { background: #3CA06A; box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3); }
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -88,169 +48,293 @@
             margin: 12px 0 16px;
         }
         .stat-card {
-            background: #f4f0ea;
-            padding: 14px 12px;
-            border-radius: 12px;
+            background: var(--luxe-bg);
+            padding: 16px 14px;
+            border-radius: 16px;
             text-align: center;
-            border: 1px solid #e0dcd5;
+            border: 1px solid var(--luxe-border);
+            transition: all 0.3s ease;
         }
+        .stat-card:hover { border-color: var(--luxe-gold-dark); }
         .stat-card .number {
-            font-size: 28px;
-            font-weight: 700;
-            color: #161513;
+            font-size: 30px; font-weight: 800;
+            color: var(--luxe-gold);
             display: block;
+            letter-spacing: -0.5px;
         }
         .stat-card .label {
-            font-size: 12px;
-            color: #7f8c8d;
-            margin-top: 4px;
-            display: block;
+            font-size: 12px; color: var(--luxe-text-muted);
+            margin-top: 4px; display: block; font-weight: 500;
         }
-        .stat-card .sub {
+        .stat-card.gold { background: var(--luxe-gold); border-color: var(--luxe-gold); }
+        .stat-card.gold .number, .stat-card.gold .label { color: #0A0E17; }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 14px;
+            border-radius: 20px;
             font-size: 11px;
-            color: #c69249;
-            margin-top: 2px;
-            display: block;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .stat-card.gold {
-            background: #c69249;
-            border-color: #c69249;
+        .status-badge.pending { background: rgba(212, 184, 124, 0.2); color: var(--luxe-gold); }
+        .status-badge.confirmed { background: rgba(46, 139, 87, 0.2); color: var(--luxe-success); }
+        .status-badge.cancelled { background: rgba(178, 34, 52, 0.2); color: var(--luxe-danger); }
+        .status-badge.completed { background: rgba(154, 165, 181, 0.2); color: var(--luxe-text-muted); }
+        .stats-detail {
+            background: var(--luxe-bg);
+            border-radius: 16px;
+            padding: 16px 18px;
+            margin: 4px 0 12px;
+            border: 1px solid var(--luxe-border);
         }
-        .stat-card.gold .number,
-        .stat-card.gold .label,
-        .stat-card.gold .sub {
-            color: white;
+        .stats-detail .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 14px;
+            border-bottom: 1px solid var(--luxe-border);
         }
-
-        /* ====== سایر استایل‌ها ====== */
-        .admin-box {
-            background: #f4f0ea;
-            padding: 16px;
-            border-radius: 14px;
-            margin: 10px 0;
-            border-right: 4px solid #c69249;
+        .stats-detail .row:last-child { border-bottom: none; }
+        .stats-detail .row .label { color: var(--luxe-text-muted); }
+        .stats-detail .row .value { font-weight: 600; color: var(--luxe-text); }
+        .stats-note {
+            font-size: 12px;
+            color: var(--luxe-text-muted);
+            text-align: center;
+            margin: 8px 0 4px;
+            opacity: 0.6;
         }
-        .admin-box.confirmed { border-color: #154038; }
-        .admin-box.cancelled { border-color: #9e5541; }
-        .admin-box.completed { border-color: #161513; }
-        .receipt-thumb {
-            max-width: 70px;
-            max-height: 70px;
-            border-radius: 8px;
+        .refresh-btn {
+            background: none;
+            border: none;
+            color: var(--luxe-gold);
             cursor: pointer;
-            border: 1px solid #e0dcd5;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.3s ease;
         }
+        .refresh-btn:hover { color: var(--luxe-gold-light); }
         .broadcast-area {
-            background: #f4f0ea;
-            padding: 16px;
-            border-radius: 14px;
+            background: var(--luxe-bg);
+            padding: 18px 20px;
+            border-radius: 16px;
             margin: 10px 0;
+            border: 1px solid var(--luxe-border);
         }
         .broadcast-area textarea {
             min-height: 80px;
             resize: vertical;
             width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #e0dcd5;
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 1px solid var(--luxe-border);
+            background: var(--luxe-bg);
+            color: var(--luxe-text);
             font-family: inherit;
+            font-size: 14px;
         }
+        .broadcast-area textarea:focus { border-color: var(--luxe-gold); }
         .schedule-item {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 10px 0;
-            border-bottom: 1px solid #e0dcd5;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--luxe-border);
             flex-wrap: wrap;
         }
-        .schedule-item .day-name { width: 70px; font-weight: 600; }
-        .schedule-item input[type="time"] { width: 100px; padding: 6px 10px; border-radius: 8px; border: 1px solid #e0dcd5; margin:0; }
-        .schedule-item label { display:flex; align-items:center; gap:4px; font-size:13px; margin:0; }
-        .btn-sm { padding: 6px 14px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600; font-size: 13px; }
-        .btn-sm-success { background: #154038; color: white; }
-        .btn-sm-success:hover { background: #0f2d26; }
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
+        .schedule-item .day-name {
+            width: 70px;
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #c69249;
-            color: white;
+            color: var(--luxe-text);
+            font-size: 14px;
+        }
+        .schedule-item input[type="time"] {
+            width: 100px;
+            padding: 6px 10px;
+            border-radius: 10px;
+            border: 1px solid var(--luxe-border);
+            background: var(--luxe-bg);
+            color: var(--luxe-text);
             font-family: inherit;
+            margin: 0;
         }
-        .btn:hover {
-            background: #b07d3a;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(198, 146, 73, 0.3);
+        .schedule-item input[type="time"]:focus { border-color: var(--luxe-gold); }
+        .schedule-item label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--luxe-text-muted);
+            margin: 0;
         }
-        .btn-success {
-            background: #154038;
-        }
-        .btn-success:hover {
-            background: #0f2d26;
-        }
-        .btn-close {
-            background: #f4f0ea;
-            color: #161513;
-            margin-top: 12px;
-        }
-        .btn-close:hover {
-            background: #e8e2d9;
-            box-shadow: none;
-            transform: none;
+        .schedule-item input[type="checkbox"] {
+            width: 18px; height: 18px;
+            accent-color: var(--luxe-gold);
+            margin: 0;
         }
         .user-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
-            background: #f4f0ea;
-            border-radius: 12px;
+            padding: 14px 18px;
+            background: var(--luxe-bg);
+            border-radius: 14px;
             margin: 6px 0;
+            border: 1px solid var(--luxe-border);
+            transition: all 0.3s ease;
         }
+        .user-item:hover { border-color: var(--luxe-border-light); }
         .user-item .admin-badge {
-            background: #c69249;
-            color: white;
-            padding: 2px 12px;
+            background: var(--luxe-gold);
+            color: #0A0E17;
+            padding: 2px 14px;
             border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 700;
         }
-        .msg { padding: 12px 16px; border-radius: 12px; margin: 10px 0; font-size: 14px; }
-        .msg-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .status-badge {
-            display: inline-block;
-            padding: 2px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin: 16px 0 20px;
+            background: var(--luxe-bg);
+            border-radius: 16px;
+            padding: 4px;
+            border: 1px solid var(--luxe-border);
         }
-        .status-badge.pending { background: #f39c12; color: white; }
-        .status-badge.confirmed { background: #154038; color: white; }
-        .status-badge.cancelled { background: #9e5541; color: white; }
-        .status-badge.completed { background: #161513; color: white; }
-        .stats-note {
-            font-size: 12px;
-            color: #7f8c8d;
-            text-align: center;
-            margin: 8px 0 4px;
-        }
-        .refresh-btn {
-            background: none;
+        .tabs button {
+            flex: 1;
+            padding: 10px 8px;
             border: none;
-            color: #c69249;
-            cursor: pointer;
-            font-size: 14px;
+            border-radius: 12px;
+            background: transparent;
+            color: var(--luxe-text-muted);
+            font-size: 13px;
             font-weight: 600;
             font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-        .refresh-btn:hover {
-            color: #b07d3a;
+        .tabs button.active {
+            background: var(--luxe-gold);
+            color: #0A0E17;
+            box-shadow: 0 4px 12px rgba(212, 184, 124, 0.2);
         }
+        .tabs button:hover:not(.active) { color: var(--luxe-text); }
+        .tab-content { display: none; animation: fadeSlide 0.4s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .msg { padding: 14px 18px; border-radius: 14px; margin: 12px 0; font-size: 14px; font-weight: 500; border-right: 4px solid transparent; }
+        .msg-success { background: rgba(46, 139, 87, 0.12); color: var(--luxe-success); border-right-color: var(--luxe-success); }
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            text-align: center;
+            letter-spacing: 0.3px;
+            background: var(--luxe-gold);
+            color: #0A0E17;
+            box-shadow: 0 4px 15px rgba(212, 184, 124, 0.25);
+        }
+        .btn:hover {
+            background: var(--luxe-gold-light);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(212, 184, 124, 0.35);
+        }
+        .btn-success { background: var(--luxe-success); color: white; box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3); }
+        .btn-success:hover { background: #3CA06A; box-shadow: 0 8px 30px rgba(46, 139, 87, 0.4); }
+        .btn-close {
+            background: transparent;
+            color: var(--luxe-text-muted);
+            border: 1px solid var(--luxe-border);
+            box-shadow: none;
+            margin-top: 16px;
+        }
+        .btn-close:hover {
+            background: var(--luxe-border);
+            color: var(--luxe-text);
+            box-shadow: none;
+            transform: none;
+        }
+        .container {
+            max-width: 480px;
+            width: 100%;
+            margin: 0 auto;
+            background: var(--luxe-card);
+            border-radius: 28px;
+            padding: 32px 24px;
+            box-shadow: var(--luxe-shadow), var(--luxe-glow);
+            border: 1px solid var(--luxe-border);
+        }
+        .brand-header {
+            text-align: center;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--luxe-border);
+            margin-bottom: 24px;
+        }
+        .brand-logo { font-size: 36px; font-weight: 800; letter-spacing: -0.5px; color: var(--luxe-text); display: flex; justify-content: center; align-items: center; gap: 4px; }
+        .brand-logo span { color: var(--luxe-gold); }
+        .brand-tagline { font-size: 13px; color: var(--luxe-text-muted); margin-top: 6px; letter-spacing: 1px; font-weight: 300; }
+        :root {
+            --luxe-bg: #0A0E17;
+            --luxe-card: #131B2A;
+            --luxe-card-hover: #1A2438;
+            --luxe-gold: #D4B87C;
+            --luxe-gold-light: #E8C98A;
+            --luxe-gold-dark: #B8995E;
+            --luxe-text: #EAEAEA;
+            --luxe-text-muted: #9AA5B5;
+            --luxe-border: #1E2A3A;
+            --luxe-border-light: #2A3A50;
+            --luxe-success: #2E8B57;
+            --luxe-danger: #B22234;
+            --luxe-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            --luxe-glow: 0 0 20px rgba(212, 184, 124, 0.08);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--luxe-bg);
+            color: var(--luxe-text);
+            font-family: 'IRANYekanXVF', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            direction: rtl;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        .notice-box {
+            background: rgba(212, 184, 124, 0.06);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin: 12px 0;
+            text-align: center;
+            font-size: 13px;
+            color: var(--luxe-text-muted);
+            border: 1px solid var(--luxe-border);
+        }
+        .notice-box strong { color: var(--luxe-gold); }
+        select {
+            padding: 6px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--luxe-border);
+            background: var(--luxe-bg);
+            color: var(--luxe-text);
+            font-family: inherit;
+            font-size: 13px;
+        }
+        select:focus { border-color: var(--luxe-gold); outline: none; }
     </style>
 </head>
 <body>
@@ -271,32 +355,20 @@
     <!-- ====== تب آمار ====== -->
     <div id="tab-stats" class="tab-content active">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span style="font-weight:600;font-size:15px;">📊 آمار کلی</span>
+            <span style="font-weight:600;font-size:15px;color:var(--luxe-text);">📊 آمار کلی</span>
             <button class="refresh-btn" onclick="loadStats()">⟳ بروزرسانی</button>
         </div>
-        <div id="statsGrid" class="stats-grid">
+        <div class="stats-grid" id="statsGrid">
             <div class="stat-card gold"><span class="number" id="statUsers">...</span><span class="label">👥 کاربران</span></div>
             <div class="stat-card gold"><span class="number" id="statTotalApps">...</span><span class="label">📋 کل نوبت‌ها</span></div>
             <div class="stat-card"><span class="number" id="statTodayApps">...</span><span class="label">📅 نوبت‌های امروز</span></div>
             <div class="stat-card"><span class="number" id="statUpcomingApps">...</span><span class="label">📆 نوبت‌های آینده</span></div>
         </div>
-        <div style="background:#f4f0ea;border-radius:12px;padding:14px 16px;margin:4px 0 12px;">
-            <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;">
-                <span>⏳ در انتظار تأیید</span>
-                <span><strong id="statPending">...</strong></span>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;">
-                <span>✅ تأیید شده</span>
-                <span><strong id="statConfirmed">...</strong></span>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;">
-                <span>✔️ انجام شده</span>
-                <span><strong id="statCompleted">...</strong></span>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;">
-                <span>❌ لغو شده</span>
-                <span><strong id="statCancelled">...</strong></span>
-            </div>
+        <div class="stats-detail">
+            <div class="row"><span class="label">⏳ در انتظار تأیید</span><span class="value" id="statPending">...</span></div>
+            <div class="row"><span class="label">✅ تأیید شده</span><span class="value" id="statConfirmed">...</span></div>
+            <div class="row"><span class="label">✔️ انجام شده</span><span class="value" id="statCompleted">...</span></div>
+            <div class="row"><span class="label">❌ لغو شده</span><span class="value" id="statCancelled">...</span></div>
         </div>
         <div class="stats-note">🔄 آمار هر بار ورود به این صفحه بروزرسانی می‌شود</div>
     </div>
@@ -320,11 +392,15 @@
     <!-- ====== تب اعلان همگانی ====== -->
     <div id="tab-broadcast" class="tab-content">
         <div class="broadcast-area">
-            <label>متن پیام همگانی:</label>
+            <label style="color:var(--luxe-text-muted);font-size:13px;font-weight:500;">متن پیام همگانی:</label>
             <textarea id="broadcastMessage" placeholder="متن پیام را وارد کنید..."></textarea>
             <button id="sendBroadcast" class="btn btn-success">📤 ارسال به همه کاربران</button>
             <div id="broadcastResult"></div>
         </div>
+    </div>
+
+    <div class="notice-box">
+        ⚠️ تنها خدمت موجود: <strong>کوتاهی مو</strong> با بیعانه ۲۰۰,۰۰۰ تومان
     </div>
 
     <button onclick="Telegram.WebApp.close()" class="btn btn-close">❌ بستن</button>
@@ -348,7 +424,7 @@
         });
     });
 
-    // ====== بارگیری آمار ======
+    // ====== آمار ======
     async function loadStats() {
         try {
             const res = await fetch('/api/admin/stats');
@@ -364,9 +440,7 @@
                 document.getElementById('statCompleted').textContent = s.status.completed;
                 document.getElementById('statCancelled').textContent = s.status.cancelled;
             }
-        } catch(e) {
-            console.error('Error loading stats:', e);
-        }
+        } catch(e) { console.error('Error loading stats:', e); }
     }
 
     // ====== نوبت‌ها ======
@@ -375,7 +449,7 @@
         const data = await res.json();
         const div = document.getElementById('appointmentsList');
         if (!data.appointments || data.appointments.length === 0) {
-            div.innerHTML = '<p style="color:#7f8c8d;text-align:center;padding:20px;">هیچ نوبتی ثبت نشده است.</p>';
+            div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:20px;">هیچ نوبتی ثبت نشده است.</p>';
             return;
         }
         div.innerHTML = data.appointments.map(a => `
@@ -385,8 +459,8 @@
                 📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
                 وضعیت: <span class="status-badge ${a.status}">${a.status === 'pending' ? 'در انتظار' : a.status === 'confirmed' ? 'تأیید شده' : a.status === 'cancelled' ? 'لغو شده' : 'انجام شده'}</span>
                 ${a.receipt ? `<br><img src="${a.receipt}" class="receipt-thumb" onclick="window.open('${a.receipt}')" />` : '<br>بدون رسید'}
-                <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
-                    <select onchange="updateStatus(${a.id}, this.value)" style="padding:6px 10px;border-radius:8px;border:1px solid #e0dcd5;font-family:inherit;">
+                <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                    <select onchange="updateStatus(${a.id}, this.value)">
                         <option value="pending" ${a.status === 'pending' ? 'selected' : ''}>در انتظار</option>
                         <option value="confirmed" ${a.status === 'confirmed' ? 'selected' : ''}>تأیید شده</option>
                         <option value="completed" ${a.status === 'completed' ? 'selected' : ''}>انجام شده</option>
@@ -407,7 +481,7 @@
         const result = await res.json();
         alert(result.message);
         loadAppointments();
-        loadStats(); // بروزرسانی آمار بعد از تغییر وضعیت
+        loadStats();
     }
 
     async function quickApprove(id) {
@@ -421,7 +495,7 @@
         const data = await res.json();
         const div = document.getElementById('usersList');
         if (!data.users || data.users.length === 0) {
-            div.innerHTML = '<p style="color:#7f8c8d;text-align:center;padding:20px;">هیچ کاربری ثبت نشده است.</p>';
+            div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:20px;">هیچ کاربری ثبت نشده است.</p>';
             return;
         }
         div.innerHTML = data.users.map(u => `
@@ -430,7 +504,7 @@
                     <strong>${u.name}</strong> | 📞 ${u.phone || '---'} | 🆔 ${u.telegram_id}
                     ${u.is_admin === 1 ? '<span class="admin-badge">👑 ادمین</span>' : ''}
                 </div>
-                <div style="font-size:12px;color:#7f8c8d;">
+                <div style="font-size:12px;color:var(--luxe-text-muted);">
                     ${u.created_at ? new Date(u.created_at).toLocaleDateString('fa-IR') : ''}
                 </div>
             </div>

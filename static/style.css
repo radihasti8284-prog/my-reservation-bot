@@ -1,5 +1,5 @@
 /* ========================================
-   تم M4Cut - برگرفته از طراحی Moein Kh
+   M4Cut - تم NIGHT LUXE (سرمه‌ای و طلایی)
    ======================================== */
 
 /* ----- فونت ----- */
@@ -12,16 +12,22 @@
     font-display: swap;
 }
 
-/* ----- متغیرهای رنگ ----- */
+/* ----- متغیرهای رنگ (تم لوکس) ----- */
 :root {
-    --m4cut-ink: #161513;
-    --m4cut-smoke: #f4f0ea;
-    --m4cut-brass: #c69249;
-    --m4cut-clay: #9e5541;
-    --m4cut-pine: #154038;
-    --m4cut-white: #ffffff;
-    --m4cut-gray: #7f8c8d;
-    --m4cut-border: #e0dcd5;
+    --luxe-bg: #0A0E17;
+    --luxe-card: #131B2A;
+    --luxe-card-hover: #1A2438;
+    --luxe-gold: #D4B87C;
+    --luxe-gold-light: #E8C98A;
+    --luxe-gold-dark: #B8995E;
+    --luxe-text: #EAEAEA;
+    --luxe-text-muted: #9AA5B5;
+    --luxe-border: #1E2A3A;
+    --luxe-border-light: #2A3A50;
+    --luxe-success: #2E8B57;
+    --luxe-danger: #B22234;
+    --luxe-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --luxe-glow: 0 0 20px rgba(212, 184, 124, 0.08);
 }
 
 /* ----- ریست عمومی ----- */
@@ -29,18 +35,20 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'IRANYekanXVF', Tahoma, Arial, sans-serif;
 }
 
 body {
-    background: var(--m4cut-smoke);
-    color: var(--m4cut-ink);
-    padding: 20px;
+    background: var(--luxe-bg);
+    color: var(--luxe-text);
+    font-family: 'IRANYekanXVF', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     direction: rtl;
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: flex-start;
+    padding: 20px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
 }
 
 /* ----- کانتینر اصلی ----- */
@@ -48,120 +56,326 @@ body {
     max-width: 480px;
     width: 100%;
     margin: 0 auto;
-    background: var(--m4cut-white);
-    border-radius: 24px;
-    padding: 28px 22px;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06);
-    border: 1px solid var(--m4cut-border);
+    background: var(--luxe-card);
+    border-radius: 28px;
+    padding: 32px 24px;
+    box-shadow: var(--luxe-shadow), var(--luxe-glow);
+    border: 1px solid var(--luxe-border);
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
 }
 
-/* ----- هدر و لوگو ----- */
+/* ----- هدر برند ----- */
 .brand-header {
     text-align: center;
-    padding-bottom: 20px;
-    border-bottom: 2px solid var(--m4cut-smoke);
-    margin-bottom: 22px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--luxe-border);
+    margin-bottom: 24px;
 }
 
 .brand-logo {
-    font-size: 32px;
-    font-weight: 900;
-    letter-spacing: -1px;
-    color: var(--m4cut-ink);
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--luxe-text);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
 }
 
 .brand-logo span {
-    color: var(--m4cut-brass);
+    color: var(--luxe-gold);
 }
 
 .brand-tagline {
     font-size: 13px;
-    color: var(--m4cut-gray);
-    margin-top: 4px;
+    color: var(--luxe-text-muted);
+    margin-top: 6px;
+    letter-spacing: 1px;
+    font-weight: 300;
 }
 
-/* ----- عنوان‌ها ----- */
-h1, h2, h3 {
-    color: var(--m4cut-ink);
+/* ----- تایپوگرافی ----- */
+h1, h2, h3, h4 {
     font-weight: 700;
+    color: var(--luxe-text);
+    letter-spacing: -0.3px;
 }
 
-h1 { font-size: 24px; }
-h2 { font-size: 18px; margin: 16px 0 10px; }
+h1 { font-size: 26px; }
+h2 { font-size: 20px; margin: 18px 0 12px; }
+h3 { font-size: 16px; margin: 12px 0 8px; }
+
+p {
+    color: var(--luxe-text-muted);
+    font-size: 14px;
+}
 
 /* ----- دکمه‌ها ----- */
 .btn {
+    display: inline-block;
     width: 100%;
-    padding: 14px;
+    padding: 14px 20px;
     border: none;
-    border-radius: 12px;
+    border-radius: 14px;
     font-size: 16px;
     font-weight: 600;
+    font-family: inherit;
     cursor: pointer;
-    transition: all 0.3s ease;
-    background: var(--m4cut-brass);
-    color: white;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    text-align: center;
+    letter-spacing: 0.3px;
+    background: var(--luxe-gold);
+    color: #0A0E17;
+    box-shadow: 0 4px 15px rgba(212, 184, 124, 0.25);
 }
 
 .btn:hover {
-    background: #b07d3a;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(198, 146, 73, 0.3);
+    background: var(--luxe-gold-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(212, 184, 124, 0.35);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--luxe-gold);
+    border: 1.5px solid var(--luxe-gold);
+    box-shadow: none;
+}
+
+.btn-secondary:hover {
+    background: var(--luxe-gold);
+    color: #0A0E17;
+    box-shadow: 0 8px 30px rgba(212, 184, 124, 0.2);
 }
 
 .btn-close {
-    background: var(--m4cut-smoke);
-    color: var(--m4cut-ink);
-    margin-top: 12px;
+    background: transparent;
+    color: var(--luxe-text-muted);
+    border: 1px solid var(--luxe-border);
+    box-shadow: none;
+    margin-top: 16px;
 }
 
 .btn-close:hover {
-    background: #e8e2d9;
+    background: var(--luxe-border);
+    color: var(--luxe-text);
     box-shadow: none;
     transform: none;
 }
 
 .btn-success {
-    background: var(--m4cut-pine);
+    background: var(--luxe-success);
+    color: white;
+    box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3);
 }
 
 .btn-success:hover {
-    background: #0f2d26;
+    background: #3CA06A;
+    box-shadow: 0 8px 30px rgba(46, 139, 87, 0.4);
 }
 
-/* ----- فرم و ورودی‌ها ----- */
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 13px;
+    border-radius: 10px;
+    width: auto;
+}
+
+/* ----- ورودی‌ها ----- */
 input, select, textarea {
     width: 100%;
     padding: 12px 16px;
-    margin: 6px 0 12px;
-    border: 1.5px solid var(--m4cut-border);
-    border-radius: 12px;
+    margin: 6px 0 14px;
+    border: 1.5px solid var(--luxe-border);
+    border-radius: 14px;
     font-size: 15px;
-    background: var(--m4cut-white);
-    color: var(--m4cut-ink);
-    transition: border-color 0.3s ease;
     font-family: inherit;
+    background: var(--luxe-bg);
+    color: var(--luxe-text);
+    transition: all 0.3s ease;
 }
 
 input:focus, select:focus, textarea:focus {
     outline: none;
-    border-color: var(--m4cut-brass);
-    box-shadow: 0 0 0 3px rgba(198, 146, 73, 0.15);
+    border-color: var(--luxe-gold);
+    box-shadow: 0 0 0 4px rgba(212, 184, 124, 0.1);
+    background: var(--luxe-card);
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--luxe-text-muted);
+    opacity: 0.6;
 }
 
 label {
-    font-weight: 500;
-    font-size: 14px;
     display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--luxe-text-muted);
     margin-bottom: 2px;
-    color: var(--m4cut-ink);
+    letter-spacing: 0.3px;
 }
 
-/* ----- استپ‌های رزرو (شبیه سایت معین) ----- */
+/* ----- کارت‌ها و باکس‌ها ----- */
+.card {
+    background: var(--luxe-bg);
+    border-radius: 16px;
+    padding: 18px 20px;
+    border: 1px solid var(--luxe-border);
+    margin: 10px 0;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    border-color: var(--luxe-border-light);
+}
+
+/* ----- تب‌ها ----- */
+.tabs {
+    display: flex;
+    gap: 6px;
+    margin: 16px 0 20px;
+    background: var(--luxe-bg);
+    border-radius: 16px;
+    padding: 4px;
+    border: 1px solid var(--luxe-border);
+}
+
+.tabs button {
+    flex: 1;
+    padding: 10px 8px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--luxe-text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tabs button.active {
+    background: var(--luxe-gold);
+    color: #0A0E17;
+    box-shadow: 0 4px 12px rgba(212, 184, 124, 0.2);
+}
+
+.tabs button:hover:not(.active) {
+    color: var(--luxe-text);
+}
+
+/* ----- دکمه‌های فیلتر (نوبت‌ها) ----- */
+.filter-buttons {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0 16px;
+}
+
+.filter-buttons button {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--luxe-border);
+    border-radius: 12px;
+    background: var(--luxe-bg);
+    color: var(--luxe-text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-buttons button.active {
+    background: var(--luxe-gold);
+    border-color: var(--luxe-gold);
+    color: #0A0E17;
+}
+
+.filter-buttons button:hover:not(.active) {
+    border-color: var(--luxe-gold-dark);
+    color: var(--luxe-text);
+}
+
+/* ----- آیتم‌های نوبت ----- */
+.appointment-item {
+    background: var(--luxe-bg);
+    padding: 16px 18px;
+    margin: 10px 0;
+    border-radius: 16px;
+    border-right: 4px solid var(--luxe-gold);
+    transition: all 0.3s ease;
+}
+
+.appointment-item:hover {
+    background: var(--luxe-card-hover);
+}
+
+.appointment-item.confirmed {
+    border-right-color: var(--luxe-success);
+}
+
+.appointment-item.cancelled {
+    border-right-color: var(--luxe-danger);
+    opacity: 0.6;
+}
+
+.appointment-item.completed {
+    border-right-color: var(--luxe-text-muted);
+}
+
+.appointment-item.past {
+    opacity: 0.5;
+    border-right-color: var(--luxe-border);
+}
+
+/* ----- نشان وضعیت (Badge) ----- */
+.badge {
+    display: inline-block;
+    padding: 3px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-pending {
+    background: rgba(212, 184, 124, 0.2);
+    color: var(--luxe-gold);
+}
+
+.badge-confirmed {
+    background: rgba(46, 139, 87, 0.2);
+    color: var(--luxe-success);
+}
+
+.badge-cancelled {
+    background: rgba(178, 34, 52, 0.2);
+    color: var(--luxe-danger);
+}
+
+.badge-completed {
+    background: rgba(154, 165, 181, 0.2);
+    color: var(--luxe-text-muted);
+}
+
+.badge-past {
+    background: rgba(154, 165, 181, 0.1);
+    color: var(--luxe-text-muted);
+}
+
+/* ----- استپ‌های رزرو ----- */
 .step-indicator {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     padding: 0 4px;
 }
 
@@ -170,152 +384,176 @@ label {
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: var(--m4cut-gray);
     font-weight: 500;
+    color: var(--luxe-text-muted);
 }
 
 .step-dot .dot {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
-    background: var(--m4cut-smoke);
-    border: 2px solid var(--m4cut-border);
+    background: var(--luxe-bg);
+    border: 2px solid var(--luxe-border);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 14px;
-    color: var(--m4cut-gray);
-    transition: all 0.4s ease;
+    font-size: 13px;
+    color: var(--luxe-text-muted);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .step-dot.active .dot {
-    background: var(--m4cut-brass);
-    border-color: var(--m4cut-brass);
-    color: white;
-    box-shadow: 0 4px 12px rgba(198, 146, 73, 0.3);
+    background: var(--luxe-gold);
+    border-color: var(--luxe-gold);
+    color: #0A0E17;
+    box-shadow: 0 4px 20px rgba(212, 184, 124, 0.3);
 }
 
 .step-dot.completed .dot {
-    background: var(--m4cut-pine);
-    border-color: var(--m4cut-pine);
+    background: var(--luxe-success);
+    border-color: var(--luxe-success);
     color: white;
 }
 
-.step-dot.active { color: var(--m4cut-ink); }
-
-.step-guide {
-    text-align: center;
-    font-size: 14px;
-    color: var(--m4cut-gray);
-    margin-bottom: 16px;
-    padding: 8px 12px;
-    background: var(--m4cut-smoke);
-    border-radius: 10px;
+.step-dot.active {
+    color: var(--luxe-text);
 }
 
 .booking-step {
     display: none;
-    animation: fadeIn 0.3s ease;
+    animation: fadeSlide 0.4s ease;
 }
 
 .booking-step--visible {
     display: block;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
+@keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 .step-title {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;
-    color: var(--m4cut-ink);
-    margin-bottom: 12px;
+    margin-bottom: 6px;
+    color: var(--luxe-text);
 }
 
 .step-help {
     font-size: 14px;
-    color: var(--m4cut-gray);
-    margin-bottom: 14px;
+    color: var(--luxe-text-muted);
+    margin-bottom: 16px;
 }
 
-/* ----- انتخاب روز (تقویم شمسی ساده) ----- */
+/* ----- کارت انتخاب روز (تقویم) ----- */
 .day-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 6px;
-    margin: 10px 0 16px;
-}
-
-.day-grid button {
-    padding: 12px 0;
-    border: 1.5px solid var(--m4cut-border);
-    border-radius: 10px;
-    background: var(--m4cut-white);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: inherit;
-    color: var(--m4cut-ink);
-}
-
-.day-grid button:hover {
-    border-color: var(--m4cut-brass);
-    background: var(--m4cut-smoke);
-}
-
-.day-grid button.selected {
-    background: var(--m4cut-brass);
-    border-color: var(--m4cut-brass);
-    color: white;
-}
-
-.day-grid button:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
+    margin: 12px 0 18px;
 }
 
 .day-name {
     font-size: 11px;
-    color: var(--m4cut-gray);
+    color: var(--luxe-text-muted);
     text-align: center;
-    padding: 4px 0;
+    padding: 6px 0;
     font-weight: 600;
+    opacity: 0.6;
 }
 
-/* ----- انتخاب ساعت ----- */
+.day-grid button {
+    padding: 12px 0;
+    border: 1.5px solid var(--luxe-border);
+    border-radius: 12px;
+    background: var(--luxe-bg);
+    color: var(--luxe-text);
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.day-grid button:hover:not(:disabled) {
+    border-color: var(--luxe-gold-dark);
+    background: var(--luxe-card-hover);
+}
+
+.day-grid button.selected {
+    background: var(--luxe-gold);
+    border-color: var(--luxe-gold);
+    color: #0A0E17;
+    box-shadow: 0 4px 15px rgba(212, 184, 124, 0.25);
+}
+
+.day-grid button:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+}
+
+.month-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 0 4px;
+}
+
+.month-nav button {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--luxe-gold);
+    padding: 0 16px;
+    font-weight: 300;
+    transition: all 0.3s ease;
+}
+
+.month-nav button:hover {
+    color: var(--luxe-gold-light);
+    transform: scale(1.1);
+}
+
+.month-nav span {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--luxe-text);
+}
+
+/* ----- گرید ساعت‌ها ----- */
 .time-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
-    margin: 10px 0 16px;
+    margin: 12px 0 18px;
 }
 
 .time-grid button {
-    padding: 10px 0;
-    border: 1.5px solid var(--m4cut-border);
-    border-radius: 10px;
-    background: var(--m4cut-white);
-    font-size: 14px;
+    padding: 10px 4px;
+    border: 1.5px solid var(--luxe-border);
+    border-radius: 12px;
+    background: var(--luxe-bg);
+    color: var(--luxe-text);
+    font-size: 13px;
     font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
     font-family: inherit;
-    color: var(--m4cut-ink);
+    cursor: pointer;
+    transition: all 0.25s ease;
 }
 
 .time-grid button:hover {
-    border-color: var(--m4cut-brass);
-    background: var(--m4cut-smoke);
+    border-color: var(--luxe-gold-dark);
+    background: var(--luxe-card-hover);
 }
 
 .time-grid button.selected {
-    background: var(--m4cut-brass);
-    border-color: var(--m4cut-brass);
-    color: white;
+    background: var(--luxe-gold);
+    border-color: var(--luxe-gold);
+    color: #0A0E17;
+    box-shadow: 0 4px 15px rgba(212, 184, 124, 0.2);
 }
 
 .time-grid button:disabled {
@@ -323,21 +561,54 @@ label {
     cursor: not-allowed;
 }
 
-/* ----- آپلود رسید (شبیه سایت معین) ----- */
+/* ----- کارت بانکی (شبیه سایت‌های لوکس) ----- */
+.bank-card {
+    background: var(--luxe-bg);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--luxe-border);
+}
+
+.bank-card .number {
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--luxe-gold);
+    direction: ltr;
+}
+
+.bank-card .label {
+    font-size: 11px;
+    color: var(--luxe-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.bank-card .logo {
+    font-size: 28px;
+    opacity: 0.8;
+}
+
+/* ----- آپلود رسید ----- */
 .upload-area {
-    border: 2px dashed var(--m4cut-border);
-    border-radius: 14px;
+    border: 2px dashed var(--luxe-border);
+    border-radius: 16px;
     padding: 24px 16px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    background: var(--m4cut-smoke);
+    background: var(--luxe-bg);
     margin: 8px 0 12px;
 }
 
 .upload-area:hover {
-    border-color: var(--m4cut-brass);
-    background: #faf8f5;
+    border-color: var(--luxe-gold);
+    background: var(--luxe-card-hover);
 }
 
 .upload-area .icon {
@@ -348,12 +619,12 @@ label {
 
 .upload-area .text {
     font-size: 14px;
-    color: var(--m4cut-gray);
+    color: var(--luxe-text-muted);
 }
 
 .upload-area .filename {
     font-size: 13px;
-    color: var(--m4cut-brass);
+    color: var(--luxe-gold);
     margin-top: 4px;
     font-weight: 500;
 }
@@ -362,145 +633,36 @@ label {
     max-width: 100%;
     max-height: 160px;
     border-radius: 12px;
-    margin: 10px 0;
-    border: 1px solid var(--m4cut-border);
-}
-
-/* ----- کارت بانکی (شبیه سایت معین) ----- */
-.bank-card {
-    background: var(--m4cut-smoke);
-    border-radius: 14px;
-    padding: 16px 20px;
-    margin: 12px 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border: 1px solid var(--m4cut-border);
-}
-
-.bank-card .number {
-    font-family: monospace;
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    color: var(--m4cut-ink);
-    direction: ltr;
-}
-
-.bank-card .label {
-    font-size: 12px;
-    color: var(--m4cut-gray);
-}
-
-.bank-card .logo {
-    font-size: 24px;
-}
-
-/* ----- لیست نوبت‌ها ----- */
-.appointment-item {
-    background: var(--m4cut-smoke);
-    padding: 16px;
-    margin: 10px 0;
-    border-radius: 14px;
-    border-right: 4px solid var(--m4cut-brass);
-    transition: all 0.2s ease;
-}
-
-.appointment-item.confirmed {
-    border-color: var(--m4cut-pine);
-}
-
-.appointment-item.cancelled {
-    border-color: var(--m4cut-clay);
-    opacity: 0.7;
-}
-
-.appointment-item.completed {
-    border-color: var(--m4cut-ink);
-}
-
-.appointment-item .badge {
-    display: inline-block;
-    padding: 2px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.badge-pending {
-    background: #f39c12;
-    color: white;
-}
-.badge-confirmed {
-    background: var(--m4cut-pine);
-    color: white;
-}
-.badge-cancelled {
-    background: var(--m4cut-clay);
-    color: white;
-}
-.badge-completed {
-    background: var(--m4cut-ink);
-    color: white;
+    margin: 8px 0;
+    border: 1px solid var(--luxe-border);
 }
 
 /* ----- پیام‌ها ----- */
 .msg {
-    padding: 12px 16px;
-    border-radius: 12px;
-    margin: 10px 0;
+    padding: 14px 18px;
+    border-radius: 14px;
+    margin: 12px 0;
     font-size: 14px;
+    font-weight: 500;
+    border-right: 4px solid transparent;
 }
 
 .msg-success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background: rgba(46, 139, 87, 0.12);
+    color: var(--luxe-success);
+    border-right-color: var(--luxe-success);
 }
 
 .msg-error {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background: rgba(178, 34, 52, 0.12);
+    color: var(--luxe-danger);
+    border-right-color: var(--luxe-danger);
 }
 
 .msg-info {
-    background: #d1ecf1;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
-}
-
-/* ----- تب‌ها (ادمین) ----- */
-.tabs {
-    display: flex;
-    gap: 6px;
-    margin: 14px 0;
-    flex-wrap: wrap;
-}
-
-.tabs button {
-    flex: 1;
-    min-width: 70px;
-    padding: 10px 12px;
-    border: none;
-    border-radius: 10px;
-    background: var(--m4cut-smoke);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: inherit;
-    color: var(--m4cut-gray);
-}
-
-.tabs button.active {
-    background: var(--m4cut-brass);
-    color: white;
-    box-shadow: 0 4px 12px rgba(198, 146, 73, 0.25);
-}
-
-.tabs button:hover:not(.active) {
-    background: #e8e2d9;
+    background: rgba(212, 184, 124, 0.08);
+    color: var(--luxe-gold);
+    border-right-color: var(--luxe-gold);
 }
 
 /* ----- لیست کاربران (ادمین) ----- */
@@ -508,67 +670,206 @@ label {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
-    background: var(--m4cut-smoke);
-    border-radius: 12px;
+    padding: 14px 18px;
+    background: var(--luxe-bg);
+    border-radius: 14px;
     margin: 6px 0;
+    border: 1px solid var(--luxe-border);
+    transition: all 0.3s ease;
+}
+
+.user-item:hover {
+    border-color: var(--luxe-border-light);
 }
 
 .user-item .admin-badge {
-    background: var(--m4cut-brass);
-    color: white;
-    padding: 2px 12px;
+    background: var(--luxe-gold);
+    color: #0A0E17;
+    padding: 2px 14px;
     border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 700;
 }
 
 /* ----- تنظیمات ساعات کاری (ادمین) ----- */
 .schedule-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--m4cut-border);
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--luxe-border);
     flex-wrap: wrap;
 }
 
 .schedule-item .day-name {
     width: 70px;
     font-weight: 600;
+    color: var(--luxe-text);
     font-size: 14px;
 }
 
 .schedule-item input[type="time"] {
     width: 100px;
     padding: 6px 10px;
-    border-radius: 8px;
-    border: 1px solid var(--m4cut-border);
-    font-size: 14px;
+    border-radius: 10px;
+    border: 1px solid var(--luxe-border);
+    background: var(--luxe-bg);
+    color: var(--luxe-text);
+    font-family: inherit;
     margin: 0;
+}
+
+.schedule-item input[type="time"]:focus {
+    border-color: var(--luxe-gold);
 }
 
 .schedule-item label {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     font-size: 13px;
     font-weight: 400;
+    color: var(--luxe-text-muted);
     margin: 0;
 }
 
-/* ----- responsive ----- */
-@media (max-width: 400px) {
-    .container { padding: 18px 14px; }
-    .brand-logo { font-size: 26px; }
-    .time-grid { grid-template-columns: repeat(3, 1fr); }
-    .day-grid { gap: 4px; }
-    .day-grid button { padding: 10px 0; font-size: 13px; }
-    .schedule-item { flex-direction: column; align-items: stretch; gap: 6px; }
-    .schedule-item input[type="time"] { width: 100%; }
+.schedule-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--luxe-gold);
+    margin: 0;
+}
+
+/* ----- گرید آمار (ادمین) ----- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin: 12px 0 16px;
+}
+
+.stat-card {
+    background: var(--luxe-bg);
+    padding: 16px 14px;
+    border-radius: 16px;
+    text-align: center;
+    border: 1px solid var(--luxe-border);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    border-color: var(--luxe-gold-dark);
+}
+
+.stat-card .number {
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--luxe-gold);
+    display: block;
+    letter-spacing: -0.5px;
+}
+
+.stat-card .label {
+    font-size: 12px;
+    color: var(--luxe-text-muted);
+    margin-top: 4px;
+    display: block;
+    font-weight: 500;
+}
+
+.stat-card.gold {
+    background: var(--luxe-gold);
+    border-color: var(--luxe-gold);
+}
+
+.stat-card.gold .number,
+.stat-card.gold .label {
+    color: #0A0E17;
+}
+
+/* ----- باکس ادمین (مدیریت نوبت‌ها) ----- */
+.admin-box {
+    background: var(--luxe-bg);
+    padding: 16px 18px;
+    border-radius: 16px;
+    margin: 10px 0;
+    border-right: 4px solid var(--luxe-gold);
+    border-left: 1px solid var(--luxe-border);
+    border-top: 1px solid var(--luxe-border);
+    border-bottom: 1px solid var(--luxe-border);
+    transition: all 0.3s ease;
+}
+
+.admin-box:hover {
+    border-color: var(--luxe-border-light);
+}
+
+.admin-box.confirmed {
+    border-right-color: var(--luxe-success);
+}
+.admin-box.cancelled {
+    border-right-color: var(--luxe-danger);
+}
+.admin-box.completed {
+    border-right-color: var(--luxe-text-muted);
+}
+
+.admin-box .receipt-thumb {
+    max-width: 70px;
+    max-height: 70px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid var(--luxe-border);
+    transition: all 0.3s ease;
+}
+
+.admin-box .receipt-thumb:hover {
+    transform: scale(1.05);
+    border-color: var(--luxe-gold);
+}
+
+/* ----- ناحیه اعلان همگانی ----- */
+.broadcast-area {
+    background: var(--luxe-bg);
+    padding: 18px 20px;
+    border-radius: 16px;
+    margin: 10px 0;
+    border: 1px solid var(--luxe-border);
+}
+
+.broadcast-area textarea {
+    min-height: 80px;
+    resize: vertical;
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1px solid var(--luxe-border);
+    background: var(--luxe-bg);
+    color: var(--luxe-text);
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.broadcast-area textarea:focus {
+    border-color: var(--luxe-gold);
 }
 
 /* ----- اسکرول نرم ----- */
 html {
     scroll-behavior: smooth;
+}
+
+/* ----- ریسپانسیو ----- */
+@media (max-width: 400px) {
+    .container { padding: 20px 16px; }
+    .brand-logo { font-size: 28px; }
+    .time-grid { grid-template-columns: repeat(3, 1fr); }
+    .day-grid { gap: 4px; }
+    .day-grid button { padding: 10px 0; font-size: 13px; }
+    .schedule-item { flex-direction: column; align-items: stretch; gap: 6px; }
+    .schedule-item input[type="time"] { width: 100%; }
+    .step-dot { font-size: 11px; gap: 4px; }
+    .step-dot .dot { width: 28px; height: 28px; font-size: 11px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .stat-card .number { font-size: 24px; }
 }

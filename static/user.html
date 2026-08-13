@@ -7,271 +7,382 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* تمام استایل‌های قبلی به‌علاوه موارد جدید */
         .service-card {
-            background: var(--m4cut-smoke);
-            border-radius: 14px;
-            padding: 18px 20px;
+            background: var(--luxe-bg);
+            border-radius: 16px;
+            padding: 20px 22px;
             margin: 10px 0 16px;
-            border: 2px solid var(--m4cut-brass);
+            border: 1.5px solid var(--luxe-gold);
             text-align: center;
+            box-shadow: var(--luxe-glow);
         }
-        .service-card .icon { font-size: 32px; display: block; margin-bottom: 6px; }
-        .service-card .name { font-size: 18px; font-weight: 700; color: var(--m4cut-ink); }
-        .service-card .price { font-size: 20px; font-weight: 700; color: var(--m4cut-brass); margin: 4px 0; }
-        .service-card .desc { font-size: 13px; color: var(--m4cut-gray); margin-top: 6px; line-height: 1.6; }
+        .service-card .icon { font-size: 36px; display: block; margin-bottom: 6px; }
+        .service-card .name { font-size: 20px; font-weight: 700; color: var(--luxe-text); }
+        .service-card .price { font-size: 22px; font-weight: 700; color: var(--luxe-gold); margin: 4px 0; }
+        .service-card .desc { font-size: 13px; color: var(--luxe-text-muted); margin-top: 6px; line-height: 1.7; }
         .service-card .note {
-            background: #fff3cd;
-            padding: 10px 14px;
-            border-radius: 10px;
-            margin-top: 12px;
+            background: rgba(212, 184, 124, 0.08);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-top: 14px;
             font-size: 13px;
-            color: #856404;
-            border-right: 3px solid #f39c12;
+            color: var(--luxe-gold);
+            border-right: 3px solid var(--luxe-gold);
+            text-align: right;
         }
-        .service-card .note strong { color: #e74c3c; }
-        .bank-card {
-            background: var(--m4cut-smoke);
-            border-radius: 14px;
-            padding: 16px 20px;
-            margin: 12px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid var(--m4cut-border);
+        .service-card .note strong { color: #f1c40f; }
+        .appointment-item {
+            background: var(--luxe-bg);
+            padding: 16px 18px;
+            margin: 10px 0;
+            border-radius: 16px;
+            border-right: 4px solid var(--luxe-gold);
+            transition: all 0.3s ease;
         }
-        .bank-card .number {
-            font-family: monospace;
-            font-size: 18px;
+        .appointment-item:hover { background: var(--luxe-card-hover); }
+        .appointment-item.confirmed { border-right-color: var(--luxe-success); }
+        .appointment-item.cancelled { border-right-color: var(--luxe-danger); opacity: 0.6; }
+        .appointment-item.completed { border-right-color: var(--luxe-text-muted); }
+        .appointment-item.past { opacity: 0.5; border-right-color: var(--luxe-border); }
+        .badge {
+            display: inline-block;
+            padding: 3px 14px;
+            border-radius: 20px;
+            font-size: 11px;
             font-weight: 700;
-            letter-spacing: 2px;
-            color: var(--m4cut-ink);
-            direction: ltr;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .bank-card .label { font-size: 12px; color: var(--m4cut-gray); }
-        .upload-area {
-            border: 2px dashed var(--m4cut-border);
-            border-radius: 14px;
-            padding: 24px 16px;
-            text-align: center;
+        .badge-pending { background: rgba(212, 184, 124, 0.2); color: var(--luxe-gold); }
+        .badge-confirmed { background: rgba(46, 139, 87, 0.2); color: var(--luxe-success); }
+        .badge-cancelled { background: rgba(178, 34, 52, 0.2); color: var(--luxe-danger); }
+        .badge-completed { background: rgba(154, 165, 181, 0.2); color: var(--luxe-text-muted); }
+        .badge-past { background: rgba(154, 165, 181, 0.1); color: var(--luxe-text-muted); }
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+            margin: 12px 0 16px;
+        }
+        .filter-buttons button {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--luxe-border);
+            border-radius: 12px;
+            background: var(--luxe-bg);
+            color: var(--luxe-text-muted);
+            font-size: 12px;
+            font-weight: 500;
+            font-family: inherit;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: var(--m4cut-smoke);
-            margin: 8px 0 12px;
         }
-        .upload-area:hover { border-color: var(--m4cut-brass); background: #faf8f5; }
-        .upload-area .icon { font-size: 32px; display: block; margin-bottom: 6px; }
-        .upload-area .text { font-size: 14px; color: var(--m4cut-gray); }
-        .upload-area .filename { font-size: 13px; color: var(--m4cut-brass); margin-top: 4px; font-weight: 500; }
-        .receipt-preview { max-width: 100%; max-height: 140px; border-radius: 12px; margin: 8px 0; border: 1px solid var(--m4cut-border); }
-        .date-selectors { display: flex; gap: 10px; margin: 10px 0 14px; }
-        .date-selectors select { flex: 1; padding: 10px; border-radius: 10px; border: 1.5px solid var(--m4cut-border); font-size: 15px; background: var(--m4cut-white); font-family: inherit; }
-        .date-selectors select:focus { border-color: var(--m4cut-brass); outline: none; box-shadow: 0 0 0 3px rgba(198, 146, 73, 0.15); }
-        .day-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-            margin: 10px 0 16px;
+        .filter-buttons button.active {
+            background: var(--luxe-gold);
+            border-color: var(--luxe-gold);
+            color: #0A0E17;
         }
-        .day-grid button {
-            padding: 12px 0;
-            border: 1.5px solid var(--m4cut-border);
-            border-radius: 10px;
-            background: var(--m4cut-white);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        .filter-buttons button:hover:not(.active) {
+            border-color: var(--luxe-gold-dark);
+            color: var(--luxe-text);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px 8px;
+            border: none;
+            border-radius: 12px;
+            background: transparent;
+            color: var(--luxe-text-muted);
+            font-size: 13px;
+            font-weight: 600;
             font-family: inherit;
-            color: var(--m4cut-ink);
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-        .day-grid button:hover:not(:disabled) { border-color: var(--m4cut-brass); background: var(--m4cut-smoke); }
-        .day-grid button.selected { background: var(--m4cut-brass); border-color: var(--m4cut-brass); color: white; }
-        .day-grid button:disabled { opacity: 0.3; cursor: not-allowed; }
-        .day-name { font-size: 11px; color: var(--m4cut-gray); text-align: center; padding: 4px 0; font-weight: 600; }
+        .tab-btn.active {
+            background: var(--luxe-gold);
+            color: #0A0E17;
+            box-shadow: 0 4px 12px rgba(212, 184, 124, 0.2);
+        }
+        .tab-btn:hover:not(.active) { color: var(--luxe-text); }
+        .tab-content { display: none; animation: fadeSlide 0.4s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin: 16px 0 20px;
+            background: var(--luxe-bg);
+            border-radius: 16px;
+            padding: 4px;
+            border: 1px solid var(--luxe-border);
+        }
         .month-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin: 8px 0 4px;
         }
-        .month-nav button { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--m4cut-brass); padding: 0 12px; font-weight: 700; }
-        .month-nav span { font-weight: 600; font-size: 16px; }
+        .month-nav button {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: var(--luxe-gold);
+            padding: 0 16px;
+            font-weight: 300;
+            transition: all 0.3s ease;
+        }
+        .month-nav button:hover { color: var(--luxe-gold-light); transform: scale(1.1); }
+        .month-nav span { font-weight: 600; font-size: 16px; color: var(--luxe-text); }
+        .day-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin: 12px 0 18px;
+        }
+        .day-name {
+            font-size: 11px;
+            color: var(--luxe-text-muted);
+            text-align: center;
+            padding: 6px 0;
+            font-weight: 600;
+            opacity: 0.6;
+        }
+        .day-grid button {
+            padding: 12px 0;
+            border: 1.5px solid var(--luxe-border);
+            border-radius: 12px;
+            background: var(--luxe-bg);
+            color: var(--luxe-text);
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .day-grid button:hover:not(:disabled) {
+            border-color: var(--luxe-gold-dark);
+            background: var(--luxe-card-hover);
+        }
+        .day-grid button.selected {
+            background: var(--luxe-gold);
+            border-color: var(--luxe-gold);
+            color: #0A0E17;
+            box-shadow: 0 4px 15px rgba(212, 184, 124, 0.25);
+        }
+        .day-grid button:disabled { opacity: 0.25; cursor: not-allowed; }
         .time-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 8px;
-            margin: 10px 0 16px;
+            margin: 12px 0 18px;
         }
         .time-grid button {
-            padding: 10px 0;
-            border: 1.5px solid var(--m4cut-border);
-            border-radius: 10px;
-            background: var(--m4cut-white);
-            font-size: 14px;
+            padding: 10px 4px;
+            border: 1.5px solid var(--luxe-border);
+            border-radius: 12px;
+            background: var(--luxe-bg);
+            color: var(--luxe-text);
+            font-size: 13px;
             font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
             font-family: inherit;
-            color: var(--m4cut-ink);
+            cursor: pointer;
+            transition: all 0.25s ease;
         }
-        .time-grid button:hover { border-color: var(--m4cut-brass); background: var(--m4cut-smoke); }
-        .time-grid button.selected { background: var(--m4cut-brass); border-color: var(--m4cut-brass); color: white; }
+        .time-grid button:hover {
+            border-color: var(--luxe-gold-dark);
+            background: var(--luxe-card-hover);
+        }
+        .time-grid button.selected {
+            background: var(--luxe-gold);
+            border-color: var(--luxe-gold);
+            color: #0A0E17;
+            box-shadow: 0 4px 15px rgba(212, 184, 124, 0.2);
+        }
         .time-grid button:disabled { opacity: 0.3; cursor: not-allowed; }
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 10px;
-            background: var(--m4cut-smoke);
-            font-size: 14px;
-            font-weight: 600;
+        .bank-card {
+            background: var(--luxe-bg);
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid var(--luxe-border);
+        }
+        .bank-card .number {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--luxe-gold);
+            direction: ltr;
+        }
+        .bank-card .label { font-size: 11px; color: var(--luxe-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .bank-card .logo { font-size: 28px; opacity: 0.8; }
+        .upload-area {
+            border: 2px dashed var(--luxe-border);
+            border-radius: 16px;
+            padding: 24px 16px;
+            text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-family: inherit;
-            color: var(--m4cut-gray);
+            background: var(--luxe-bg);
+            margin: 8px 0 12px;
         }
-        .tab-btn.active { background: var(--m4cut-brass); color: white; }
-        .tab-content { display: none; animation: fadeIn 0.3s ease; }
-        .tab-content.active { display: block; }
-        .appointment-item {
-            background: var(--m4cut-smoke);
-            padding: 16px;
-            margin: 10px 0;
-            border-radius: 14px;
-            border-right: 4px solid var(--m4cut-brass);
+        .upload-area:hover { border-color: var(--luxe-gold); background: var(--luxe-card-hover); }
+        .upload-area .icon { font-size: 32px; display: block; margin-bottom: 6px; }
+        .upload-area .text { font-size: 14px; color: var(--luxe-text-muted); }
+        .upload-area .filename { font-size: 13px; color: var(--luxe-gold); margin-top: 4px; font-weight: 500; }
+        .receipt-preview { max-width: 100%; max-height: 160px; border-radius: 12px; margin: 8px 0; border: 1px solid var(--luxe-border); }
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding: 0 4px;
         }
-        .appointment-item.confirmed { border-color: var(--m4cut-pine); }
-        .appointment-item.cancelled { border-color: var(--m4cut-clay); opacity: 0.7; }
-        .appointment-item.completed { border-color: var(--m4cut-ink); }
-        .appointment-item.past {
-            background: #f8f9fa;
-            opacity: 0.7;
-            border-right-color: #adb5bd;
-        }
-        .appointment-item.past .badge {
-            background: #adb5bd;
-            color: white;
-        }
-        .badge {
-            display: inline-block;
-            padding: 2px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .badge-pending { background: #f39c12; color: white; }
-        .badge-confirmed { background: var(--m4cut-pine); color: white; }
-        .badge-cancelled { background: var(--m4cut-clay); color: white; }
-        .badge-completed { background: var(--m4cut-ink); color: white; }
-        .badge-past { background: #adb5bd; color: white; }
-        .msg { padding: 12px 16px; border-radius: 12px; margin: 10px 0; font-size: 14px; }
-        .msg-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .msg-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .step-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-        .step-help { font-size: 14px; color: var(--m4cut-gray); margin-bottom: 10px; }
-        .booking-step { display: none; animation: fadeIn 0.3s ease; }
-        .booking-step--visible { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .step-dot {
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 13px;
-            color: var(--m4cut-gray);
             font-weight: 500;
+            color: var(--luxe-text-muted);
         }
         .step-dot .dot {
-            width: 32px; height: 32px; border-radius: 50%;
-            background: var(--m4cut-smoke);
-            border: 2px solid var(--m4cut-border);
+            width: 34px; height: 34px; border-radius: 50%;
+            background: var(--luxe-bg);
+            border: 2px solid var(--luxe-border);
             display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 14px;
-            color: var(--m4cut-gray);
-            transition: all 0.4s ease;
+            font-weight: 700; font-size: 13px;
+            color: var(--luxe-text-muted);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
-        .step-dot.active .dot { background: var(--m4cut-brass); border-color: var(--m4cut-brass); color: white; box-shadow: 0 4px 12px rgba(198, 146, 73, 0.3); }
-        .step-dot.completed .dot { background: var(--m4cut-pine); border-color: var(--m4cut-pine); color: white; }
-        .step-dot.active { color: var(--m4cut-ink); }
-        .step-indicator {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding: 0 4px;
+        .step-dot.active .dot {
+            background: var(--luxe-gold);
+            border-color: var(--luxe-gold);
+            color: #0A0E17;
+            box-shadow: 0 4px 20px rgba(212, 184, 124, 0.3);
         }
+        .step-dot.completed .dot {
+            background: var(--luxe-success);
+            border-color: var(--luxe-success);
+            color: white;
+        }
+        .step-dot.active { color: var(--luxe-text); }
+        .booking-step { display: none; animation: fadeSlide 0.4s ease; }
+        .booking-step--visible { display: block; }
+        .step-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--luxe-text); }
+        .step-help { font-size: 14px; color: var(--luxe-text-muted); margin-bottom: 16px; }
+        .msg { padding: 14px 18px; border-radius: 14px; margin: 12px 0; font-size: 14px; font-weight: 500; border-right: 4px solid transparent; }
+        .msg-success { background: rgba(46, 139, 87, 0.12); color: var(--luxe-success); border-right-color: var(--luxe-success); }
+        .msg-error { background: rgba(178, 34, 52, 0.12); color: var(--luxe-danger); border-right-color: var(--luxe-danger); }
+        .msg-info { background: rgba(212, 184, 124, 0.08); color: var(--luxe-gold); border-right-color: var(--luxe-gold); }
         .btn {
+            display: inline-block;
             width: 100%;
-            padding: 14px;
+            padding: 14px 20px;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 16px;
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: var(--m4cut-brass);
-            color: white;
             font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            text-align: center;
+            letter-spacing: 0.3px;
+            background: var(--luxe-gold);
+            color: #0A0E17;
+            box-shadow: 0 4px 15px rgba(212, 184, 124, 0.25);
         }
-        .btn:hover { background: #b07d3a; transform: translateY(-1px); box-shadow: 0 4px 15px rgba(198, 146, 73, 0.3); }
-        .btn-close { background: var(--m4cut-smoke); color: var(--m4cut-ink); margin-top: 12px; }
-        .btn-close:hover { background: #e8e2d9; box-shadow: none; transform: none; }
+        .btn:hover {
+            background: var(--luxe-gold-light);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(212, 184, 124, 0.35);
+        }
+        .btn-close {
+            background: transparent;
+            color: var(--luxe-text-muted);
+            border: 1px solid var(--luxe-border);
+            box-shadow: none;
+            margin-top: 16px;
+        }
+        .btn-close:hover {
+            background: var(--luxe-border);
+            color: var(--luxe-text);
+            box-shadow: none;
+            transform: none;
+        }
         .container {
             max-width: 480px;
             width: 100%;
             margin: 0 auto;
-            background: var(--m4cut-white);
-            border-radius: 24px;
-            padding: 28px 22px;
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06);
-            border: 1px solid var(--m4cut-border);
+            background: var(--luxe-card);
+            border-radius: 28px;
+            padding: 32px 24px;
+            box-shadow: var(--luxe-shadow), var(--luxe-glow);
+            border: 1px solid var(--luxe-border);
         }
         .brand-header {
             text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 2px solid var(--m4cut-smoke);
-            margin-bottom: 22px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--luxe-border);
+            margin-bottom: 24px;
         }
-        .brand-logo { font-size: 32px; font-weight: 900; letter-spacing: -1px; color: var(--m4cut-ink); }
-        .brand-logo span { color: var(--m4cut-brass); }
-        .brand-tagline { font-size: 13px; color: var(--m4cut-gray); margin-top: 4px; }
+        .brand-logo { font-size: 36px; font-weight: 800; letter-spacing: -0.5px; color: var(--luxe-text); display: flex; justify-content: center; align-items: center; gap: 4px; }
+        .brand-logo span { color: var(--luxe-gold); }
+        .brand-tagline { font-size: 13px; color: var(--luxe-text-muted); margin-top: 6px; letter-spacing: 1px; font-weight: 300; }
         :root {
-            --m4cut-ink: #161513;
-            --m4cut-smoke: #f4f0ea;
-            --m4cut-brass: #c69249;
-            --m4cut-clay: #9e5541;
-            --m4cut-pine: #154038;
-            --m4cut-white: #ffffff;
-            --m4cut-gray: #7f8c8d;
-            --m4cut-border: #e0dcd5;
+            --luxe-bg: #0A0E17;
+            --luxe-card: #131B2A;
+            --luxe-card-hover: #1A2438;
+            --luxe-gold: #D4B87C;
+            --luxe-gold-light: #E8C98A;
+            --luxe-gold-dark: #B8995E;
+            --luxe-text: #EAEAEA;
+            --luxe-text-muted: #9AA5B5;
+            --luxe-border: #1E2A3A;
+            --luxe-border-light: #2A3A50;
+            --luxe-success: #2E8B57;
+            --luxe-danger: #B22234;
+            --luxe-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            --luxe-glow: 0 0 20px rgba(212, 184, 124, 0.08);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'IRANYekanXVF', Tahoma, Arial, sans-serif; }
-        body { background: var(--m4cut-smoke); color: var(--m4cut-ink); padding: 20px; direction: rtl; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; }
-        .filter-buttons {
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--luxe-bg);
+            color: var(--luxe-text);
+            font-family: 'IRANYekanXVF', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            direction: rtl;
+            min-height: 100vh;
             display: flex;
-            gap: 8px;
-            margin: 10px 0 14px;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
-        .filter-buttons button {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1.5px solid var(--m4cut-border);
-            border-radius: 10px;
-            background: var(--m4cut-white);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: inherit;
-            color: var(--m4cut-gray);
+        .user-info {
+            background: var(--luxe-bg);
+            padding: 12px 16px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            border: 1px solid var(--luxe-border);
+            color: var(--luxe-text-muted);
         }
-        .filter-buttons button.active {
-            background: var(--m4cut-brass);
-            border-color: var(--m4cut-brass);
-            color: white;
+        .user-info strong { color: var(--luxe-text); }
+        .price-tag {
+            background: rgba(212, 184, 124, 0.08);
+            padding: 10px 16px;
+            border-radius: 12px;
+            margin: 6px 0;
+            text-align: center;
+            border: 1px solid var(--luxe-border);
         }
-        .filter-buttons button:hover:not(.active) {
-            background: var(--m4cut-smoke);
-        }
+        .price-tag span:first-child { font-size: 14px; color: var(--luxe-text-muted); }
+        .price-tag span:last-child { font-size: 18px; font-weight: 700; color: var(--luxe-gold); }
+        .btn[disabled] { opacity: 0.4; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -281,11 +392,11 @@
         <div class="brand-tagline">همه مراحل رزرو در یک صفحه</div>
     </div>
 
-    <div id="userInfo" style="background:var(--m4cut-smoke);padding:12px 16px;border-radius:12px;margin-bottom:16px;font-size:14px;">
+    <div class="user-info" id="userInfo">
         👤 بارگذاری...
     </div>
 
-    <div style="display:flex;gap:8px;margin-bottom:16px;">
+    <div class="tabs">
         <button class="tab-btn active" data-tab="reserve">📅 رزرو جدید</button>
         <button class="tab-btn" data-tab="myapps">📋 نوبت‌های من</button>
     </div>
@@ -341,9 +452,9 @@
                     </div>
                     <div class="logo">💳</div>
                 </div>
-                <div style="background:var(--m4cut-smoke);padding:10px 16px;border-radius:10px;margin:6px 0;text-align:center;">
-                    <span style="font-size:14px;color:var(--m4cut-gray);">مبلغ بیعانه:</span>
-                    <span style="font-size:18px;font-weight:700;color:var(--m4cut-brass);">۲۰۰,۰۰۰ تومان</span>
+                <div class="price-tag">
+                    <span>مبلغ بیعانه:</span>
+                    <span>۲۰۰,۰۰۰ تومان</span>
                 </div>
                 <div class="upload-area" id="uploadBox">
                     <span class="icon">📎</span>
@@ -373,15 +484,14 @@
 
 <script>
     // ============================================================
-    //   M4Cut - اسکریپت کاربر (با نمایش همه نوبت‌ها)
+    //   M4Cut - اسکریپت کاربر (تم NIGHT LUXE)
     // ============================================================
 
     const userStr = localStorage.getItem('user');
     if (!userStr) window.location.href = '/static/index.html';
     const user = JSON.parse(userStr);
-    document.getElementById('userInfo').innerHTML = `👤 ${user.name} | 📞 ${user.phone}`;
+    document.getElementById('userInfo').innerHTML = `👤 <strong>${user.name}</strong> | 📞 ${user.phone}`;
 
-    // ----- متغیرها -----
     let selectedService = { id: null, name: 'کوتاهی مو', price: 200000 };
     let selectedDate = null;
     let selectedTime = null;
@@ -390,93 +500,71 @@
     let allAppointments = [];
     let currentFilter = 'all';
 
-    // ----- تاریخ شمسی -----
+    // ----- تاریخ شمسی (ساده) -----
     const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
     const today = new Date();
-    let currentYear = 1404;
-    let currentMonth = today.getMonth() + 1;
-    const gYear = today.getFullYear();
-    const gMonth = today.getMonth();
-    const gDay = today.getDate();
-    currentYear = gYear - 621;
-    currentMonth = gMonth + 2;
+    let currentYear = today.getFullYear() - 621;
+    let currentMonth = today.getMonth() + 2;
     if (currentMonth > 12) { currentMonth -= 12; currentYear += 1; }
-    const currentDay = gDay + 10;
-    let maxDay = daysInMonth(currentYear, currentMonth - 1);
-    let displayDay = Math.min(currentDay, maxDay);
+    let currentDay = today.getDate() + 10;
+    const maxDayInMonth = (y, m) => {
+        const d = [31,31,31,31,31,31,30,30,30,30,30,29];
+        if (m === 11 && ((y % 33) === 1 || (y % 33) === 5 || (y % 33) === 9 || (y % 33) === 13 || (y % 33) === 17 || (y % 33) === 22 || (y % 33) === 26 || (y % 33) === 30)) return 30;
+        return d[m];
+    };
+    if (currentDay > maxDayInMonth(currentYear, currentMonth-1)) currentDay = maxDayInMonth(currentYear, currentMonth-1);
+    let selectedYear = currentYear, selectedMonth = currentMonth, selectedDay = currentDay;
 
-    let selectedYear = currentYear;
-    let selectedMonth = currentMonth;
-    let selectedDay = displayDay;
-
-    function isLeapYear(year) {
-        const a = year % 33;
-        return a === 1 || a === 5 || a === 9 || a === 13 || a === 17 || a === 22 || a === 26 || a === 30;
-    }
-
-    function daysInMonth(year, monthIndex) {
-        const d = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
-        if (monthIndex === 11 && isLeapYear(year)) return 30;
-        return d[monthIndex];
-    }
-
-    function isPastDate(year, monthIndex, day) {
-        if (year < currentYear) return true;
-        if (year === currentYear && monthIndex < currentMonth - 1) return true;
-        if (year === currentYear && monthIndex === currentMonth - 1 && day < currentDay) return true;
+    function isPastDate(y, m, d) {
+        if (y < currentYear) return true;
+        if (y === currentYear && m < currentMonth-1) return true;
+        if (y === currentYear && m === currentMonth-1 && d < currentDay) return true;
         return false;
     }
 
-    function buildDayGrid(year, monthIndex) {
+    function buildDayGrid(y, m) {
         const grid = document.getElementById('dayGrid');
         grid.innerHTML = '';
-        const days = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
+        const days = ['ش','ی','د','س','چ','پ','ج'];
         days.forEach(d => {
             const div = document.createElement('div');
             div.className = 'day-name';
             div.textContent = d;
             grid.appendChild(div);
         });
-
-        const totalDays = daysInMonth(year, monthIndex);
-        for (let d = 1; d <= totalDays; d++) {
+        const total = maxDayInMonth(y, m);
+        for (let d = 1; d <= total; d++) {
             const btn = document.createElement('button');
             btn.textContent = d;
             btn.dataset.day = d;
-            if (isPastDate(year, monthIndex, d)) {
-                btn.disabled = true;
-            }
-            if (d === selectedDay && year === selectedYear && monthIndex === selectedMonth - 1) {
-                btn.classList.add('selected');
-            }
+            if (isPastDate(y, m, d)) btn.disabled = true;
+            if (d === selectedDay && y === selectedYear && m === selectedMonth-1) btn.classList.add('selected');
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.day-grid button').forEach(b => b.classList.remove('selected'));
                 this.classList.add('selected');
                 selectedDay = parseInt(this.dataset.day);
-                selectedYear = year;
-                selectedMonth = monthIndex + 1;
+                selectedYear = y;
+                selectedMonth = m+1;
                 selectedDate = `${selectedYear}/${String(selectedMonth).padStart(2,'0')}/${String(selectedDay).padStart(2,'0')}`;
                 goToStep(3);
             });
             grid.appendChild(btn);
         }
-        document.getElementById('currentMonthDisplay').textContent = `${persianMonths[monthIndex]} ${year}`;
+        document.getElementById('currentMonthDisplay').textContent = `${persianMonths[m]} ${y}`;
     }
 
     function updateMonth(delta) {
-        let newMonth = selectedMonth - 1 + delta;
-        let newYear = selectedYear;
-        if (newMonth < 0) { newMonth = 11; newYear -= 1; }
-        if (newMonth > 11) { newMonth = 0; newYear += 1; }
-        if (newYear < currentYear) return;
-        if (newYear === currentYear && newMonth < currentMonth - 1) return;
-        selectedYear = newYear;
-        selectedMonth = newMonth + 1;
-        const totalDays = daysInMonth(selectedYear, newMonth);
-        selectedDay = Math.min(selectedDay, totalDays);
-        buildDayGrid(selectedYear, newMonth);
+        let nm = selectedMonth - 1 + delta;
+        let ny = selectedYear;
+        if (nm < 0) { nm = 11; ny -= 1; }
+        if (nm > 11) { nm = 0; ny += 1; }
+        if (ny < currentYear) return;
+        if (ny === currentYear && nm < currentMonth-1) return;
+        selectedYear = ny;
+        selectedMonth = nm + 1;
+        selectedDay = Math.min(selectedDay, maxDayInMonth(ny, nm));
+        buildDayGrid(ny, nm);
     }
-
     document.getElementById('prevMonth').addEventListener('click', () => updateMonth(-1));
     document.getElementById('nextMonth').addEventListener('click', () => updateMonth(1));
 
@@ -491,7 +579,7 @@
         });
     });
 
-    // ====== فیلتر نوبت‌ها ======
+    // ----- فیلتر نوبت‌ها -----
     document.querySelectorAll('.filter-buttons button').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.filter-buttons button').forEach(b => b.classList.remove('active'));
@@ -506,12 +594,8 @@
         try {
             const res = await fetch('/api/services');
             const data = await res.json();
-            if (data.services && data.services.length > 0) {
-                selectedService.id = data.services[0].id;
-            }
-        } catch(e) {
-            console.error('Error loading service:', e);
-        }
+            if (data.services && data.services.length > 0) selectedService.id = data.services[0].id;
+        } catch(e) { console.error(e); }
     }
 
     // ----- استپ‌ها -----
@@ -526,13 +610,11 @@
             el.classList.toggle('completed', s < step);
         });
         document.querySelector('#bookingForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        if (step === 2) {
-            buildDayGrid(selectedYear, selectedMonth - 1);
-        }
+        if (step === 2) buildDayGrid(selectedYear, selectedMonth-1);
         if (step === 3) {
             buildTimeGrid();
-            document.getElementById('submitBtn').disabled = (selectedDate === null || selectedTime === null || !uploadedFileUrl);
-            document.getElementById('submitBtn').style.opacity = document.getElementById('submitBtn').disabled ? '0.6' : '1';
+            document.getElementById('submitBtn').disabled = !(selectedDate && selectedTime && uploadedFileUrl);
+            document.getElementById('submitBtn').style.opacity = document.getElementById('submitBtn').disabled ? '0.5' : '1';
         }
     }
 
@@ -540,8 +622,7 @@
     function buildTimeGrid() {
         const grid = document.getElementById('timeGrid');
         grid.innerHTML = '';
-        const times = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
-        times.forEach(t => {
+        ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'].forEach(t => {
             const btn = document.createElement('button');
             btn.textContent = `${t} - ۲۰۰,۰۰۰ تومان`;
             btn.dataset.time = t;
@@ -560,7 +641,6 @@
     const fileInput = document.getElementById('receiptInput');
     const fileName = document.getElementById('fileName');
     const previewImg = document.getElementById('previewImg');
-
     document.getElementById('uploadBox').addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', async function(e) {
@@ -577,64 +657,41 @@
                 previewImg.src = data.url;
                 previewImg.style.display = 'block';
                 document.getElementById('submitBtn').disabled = !(selectedDate && selectedTime && uploadedFileUrl);
-                document.getElementById('submitBtn').style.opacity = document.getElementById('submitBtn').disabled ? '0.6' : '1';
-            } else {
-                alert('خطا در آپلود رسید.');
-            }
-        } catch(e) {
-            alert('خطا در ارتباط با سرور.');
-        }
+                document.getElementById('submitBtn').style.opacity = document.getElementById('submitBtn').disabled ? '0.5' : '1';
+            } else alert('خطا در آپلود رسید.');
+        } catch(e) { alert('خطا در ارتباط با سرور.'); }
     });
 
     // ----- ثبت نوبت -----
     document.getElementById('bookingForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const msgDiv = document.getElementById('formMessage');
-
-        if (!selectedService.id) {
-            msgDiv.innerHTML = '<div class="msg msg-error">❌ خطا در شناسایی خدمت.</div>';
-            return;
-        }
-        if (!selectedDate) {
-            msgDiv.innerHTML = '<div class="msg msg-error">❌ لطفاً یک تاریخ انتخاب کنید.</div>';
-            return;
-        }
-        if (!selectedTime) {
-            msgDiv.innerHTML = '<div class="msg msg-error">❌ لطفاً یک ساعت انتخاب کنید.</div>';
-            return;
-        }
-        if (!uploadedFileUrl) {
-            msgDiv.innerHTML = '<div class="msg msg-error">⚠️ لطفاً رسید را آپلود کنید.</div>';
-            return;
-        }
-
-        const payload = {
-            telegram_id: user.telegram_id,
-            service_id: selectedService.id,
-            date: selectedDate,
-            time: selectedTime,
-            receipt: uploadedFileUrl
-        };
+        if (!selectedService.id) return msgDiv.innerHTML = '<div class="msg msg-error">❌ خطا در شناسایی خدمت.</div>';
+        if (!selectedDate) return msgDiv.innerHTML = '<div class="msg msg-error">❌ لطفاً یک تاریخ انتخاب کنید.</div>';
+        if (!selectedTime) return msgDiv.innerHTML = '<div class="msg msg-error">❌ لطفاً یک ساعت انتخاب کنید.</div>';
+        if (!uploadedFileUrl) return msgDiv.innerHTML = '<div class="msg msg-error">⚠️ لطفاً رسید را آپلود کنید.</div>';
 
         try {
             const res = await fetch('/api/appointments', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    telegram_id: user.telegram_id,
+                    service_id: selectedService.id,
+                    date: selectedDate,
+                    time: selectedTime,
+                    receipt: uploadedFileUrl
+                })
             });
             const result = await res.json();
             if (result.status === 'ok') {
                 msgDiv.innerHTML = `<div class="msg msg-success">✅ ${result.message}</div>`;
-                setTimeout(() => { Telegram.WebApp.close(); }, 3000);
-            } else {
-                msgDiv.innerHTML = `<div class="msg msg-error">❌ ${result.message}</div>`;
-            }
-        } catch(e) {
-            msgDiv.innerHTML = '<div class="msg msg-error">❌ خطا در ارتباط با سرور.</div>';
-        }
+                setTimeout(() => Telegram.WebApp.close(), 3000);
+            } else msgDiv.innerHTML = `<div class="msg msg-error">❌ ${result.message}</div>`;
+        } catch(e) { msgDiv.innerHTML = '<div class="msg msg-error">❌ خطا در ارتباط با سرور.</div>'; }
     });
 
-    // ====== بارگیری و نمایش نوبت‌ها (با فیلتر) ======
+    // ----- بارگیری نوبت‌ها -----
     async function loadMyAppointments() {
         try {
             const res = await fetch(`/api/appointments/user/${user.telegram_id}`);
@@ -642,24 +699,18 @@
             allAppointments = data.appointments || [];
             renderAppointments();
         } catch(e) {
-            document.getElementById('myAppointmentsList').innerHTML = '<p style="color:var(--m4cut-gray);">خطا در بارگیری نوبت‌ها.</p>';
+            document.getElementById('myAppointmentsList').innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:20px;">خطا در بارگیری نوبت‌ها.</p>';
         }
     }
 
     function renderAppointments() {
         const div = document.getElementById('myAppointmentsList');
-
-        // فیلتر کردن بر اساس تاریخ
         let filtered = allAppointments;
-        if (currentFilter === 'upcoming') {
-            filtered = allAppointments.filter(a => a.status !== 'cancelled' && a.status !== 'completed');
-        } else if (currentFilter === 'past') {
-            filtered = allAppointments.filter(a => a.status === 'cancelled' || a.status === 'completed');
-        }
-        // 'all' همه رو نشون میده
+        if (currentFilter === 'upcoming') filtered = allAppointments.filter(a => a.status !== 'cancelled' && a.status !== 'completed');
+        else if (currentFilter === 'past') filtered = allAppointments.filter(a => a.status === 'cancelled' || a.status === 'completed');
 
         if (filtered.length === 0) {
-            div.innerHTML = '<p style="color:var(--m4cut-gray);text-align:center;padding:20px;">هیچ نوبتی در این دسته‌بندی وجود ندارد.</p>';
+            div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:20px;">هیچ نوبتی در این دسته‌بندی وجود ندارد.</p>';
             return;
         }
 
@@ -671,16 +722,14 @@
         };
 
         div.innerHTML = filtered.map(a => {
-            // تشخیص نوبت‌های گذشته (تاریخ کمتر از امروز)
             const isPast = a.status === 'cancelled' || a.status === 'completed';
-            const pastClass = isPast ? 'past' : '';
             return `
-                <div class="appointment-item ${a.status} ${pastClass}">
+                <div class="appointment-item ${a.status} ${isPast ? 'past' : ''}">
                     <strong>${a.service_name}</strong><br>
                     📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
                     وضعیت: ${statusMap[a.status] || a.status}
-                    ${a.receipt ? `<br><img src="${a.receipt}" style="max-height:60px;border-radius:8px;margin-top:6px;" />` : ''}
-                    ${isPast ? '<br><span style="font-size:11px;color:#adb5bd;">📆 نوبت گذشته</span>' : ''}
+                    ${a.receipt ? `<br><img src="${a.receipt}" style="max-height:60px;border-radius:8px;margin-top:6px;border:1px solid var(--luxe-border);" />` : ''}
+                    ${isPast ? '<br><span style="font-size:11px;color:var(--luxe-text-muted);opacity:0.6;">📆 نوبت گذشته</span>' : ''}
                 </div>
             `;
         }).join('');
@@ -688,19 +737,16 @@
 
     // ----- مقداردهی اولیه -----
     loadServiceId();
-    buildDayGrid(currentYear, currentMonth - 1);
+    buildDayGrid(currentYear, currentMonth-1);
     buildTimeGrid();
     document.getElementById('submitBtn').disabled = true;
-    document.getElementById('submitBtn').style.opacity = '0.6';
+    document.getElementById('submitBtn').style.opacity = '0.5';
 
-    const todayStr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(currentDay).padStart(2,'0')}`;
-    selectedDate = todayStr;
+    selectedDate = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(currentDay).padStart(2,'0')}`;
     selectedDay = currentDay;
     selectedYear = currentYear;
     selectedMonth = currentMonth;
     goToStep(1);
-
-    // بارگیری نوبت‌ها بعد از ۱ ثانیه
     setTimeout(loadMyAppointments, 500);
 </script>
 </body>
