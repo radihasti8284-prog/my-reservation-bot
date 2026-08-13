@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M4Cut - آرایشگاه مدرن</title>
+    <title>M4Cut - آرایشگاه تخصصی مردانه</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
@@ -211,38 +211,6 @@
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
         }
-        .work-hours {
-            background: var(--luxe-bg);
-            border-radius: 14px;
-            padding: 14px 18px;
-            margin: 12px 0;
-            border: 1px solid var(--luxe-border);
-        }
-        .work-hours .day {
-            display: flex;
-            justify-content: space-between;
-            padding: 4px 0;
-            font-size: 13px;
-        }
-        .work-hours .day .name {
-            color: var(--luxe-text-muted);
-        }
-        .work-hours .day .time {
-            color: var(--luxe-text);
-            font-weight: 500;
-        }
-        .work-hours .day .off {
-            color: var(--luxe-danger);
-            font-weight: 600;
-        }
-        .badge-gold {
-            background: var(--luxe-gold);
-            color: #0A0E17;
-            padding: 2px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-        }
         .footer-note {
             text-align: center;
             font-size: 12px;
@@ -250,13 +218,23 @@
             margin-top: 16px;
             opacity: 0.6;
         }
+        .badge-men {
+            background: var(--luxe-gold);
+            color: #0A0E17;
+            padding: 2px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="brand-header">
         <div class="brand-logo">M4<span>Cut</span></div>
-        <div class="brand-tagline">آرایشگاه مدرن و حرفه‌ای</div>
+        <div class="brand-tagline">آرایشگاه تخصصی مردانه</div>
     </div>
 
     <div class="hero">
@@ -264,15 +242,18 @@
             ✨ سلام دوست عزیز به <span>M4Cut</span> خوش آمدید!
         </div>
         <div class="sub">
-            💇‍♂️ با ما بهترین تجربه‌ی کوتاهی مو را داشته باشید.
+            💇‍♂️ بهترین تجربه‌ی کوتاهی مو برای آقایان
+        </div>
+        <div>
+            <span class="badge-men">✂️ تخصصی مردانه</span>
         </div>
     </div>
 
     <div class="features-grid">
         <div class="feature-card">
             <span class="icon">✂️</span>
-            <div class="label">کوتاهی حرفه‌ای</div>
-            <div class="desc">با جدیدترین متدها</div>
+            <div class="label">کوتاهی تخصصی</div>
+            <div class="desc">مخصوص آقایان</div>
         </div>
         <div class="feature-card">
             <span class="icon">⚡</span>
@@ -308,21 +289,6 @@
 
     <div class="note-box">
         <strong>📌 نکته مهم:</strong> در صورت عدم حضور در وقت تعیین‌شده، نوبت شما از بین خواهد رفت و بیعانه عودت داده نمی‌شود. لطفاً ۱۰ دقیقه قبل از ساعت رزرو در سالن حضور داشته باشید.
-    </div>
-
-    <div class="work-hours">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span style="font-weight:600;color:var(--luxe-text);">🕒 ساعات کاری</span>
-            <span class="badge-gold">هر روز به جز پنجشنبه و جمعه</span>
-        </div>
-        <div class="day">
-            <span class="name">شنبه تا چهارشنبه</span>
-            <span class="time">۰۹:۰۰ – ۱۸:۰۰</span>
-        </div>
-        <div class="day">
-            <span class="name">پنجشنبه و جمعه</span>
-            <span class="off">تعطیل</span>
-        </div>
     </div>
 
     <div class="support-box">
