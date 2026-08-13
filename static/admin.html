@@ -2,70 +2,116 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>M4Cut - پنل مدیریت</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* استایل‌های قبلی + موارد جدید */
+        .search-box {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .search-box input, .search-box select {
+            flex: 1 1 auto;
+            min-width: 70px;
+            padding: 0.5rem 0.6rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--luxe-border);
+            background: var(--luxe-bg);
+            color: var(--luxe-text);
+            font-family: inherit;
+            font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+            min-height: 36px;
+        }
+        .search-box input:focus, .search-box select:focus {
+            border-color: var(--luxe-gold);
+            outline: none;
+        }
+        .search-box .btn-sm {
+            flex: 0 1 auto;
+            min-width: 50px;
+        }
         .setting-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
+            padding: 0.6rem 0;
             border-bottom: 1px solid var(--luxe-border);
+            flex-wrap: wrap;
+            gap: 6px;
         }
-        .setting-item .label { color: var(--luxe-text-muted); }
-        .setting-item .value { color: var(--luxe-text); font-weight: 500; }
+        .setting-item .label {
+            color: var(--luxe-text-muted);
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
+        }
         .setting-item input {
             background: var(--luxe-bg);
             border: 1px solid var(--luxe-border);
-            border-radius: 10px;
-            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            padding: 0.4rem 0.6rem;
             color: var(--luxe-text);
             font-family: inherit;
-            width: 200px;
+            width: 180px;
+            min-height: 34px;
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
         }
-        .setting-item input:focus { border-color: var(--luxe-gold); }
-        .btn-sm {
-            padding: 6px 14px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: inherit;
-            font-weight: 600;
-            font-size: 13px;
+        .setting-item input:focus {
+            border-color: var(--luxe-gold);
+            outline: none;
         }
-        .btn-sm-primary { background: var(--luxe-gold); color: #0A0E17; }
-        .btn-sm-danger { background: var(--luxe-danger); color: white; }
-        .btn-sm-success { background: var(--luxe-success); color: white; }
-        .btn-sm-primary:hover { background: var(--luxe-gold-light); }
-        .user-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-        .capacity-badge {
-            background: var(--luxe-gold);
-            color: #0A0E17;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
+        .broadcast-area {
+            background: var(--luxe-bg);
+            padding: 1rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--luxe-border);
         }
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-        .search-box input, .search-box select {
-            padding: 8px 12px;
-            border-radius: 10px;
+        .broadcast-area textarea {
+            min-height: 60px;
+            resize: vertical;
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border-radius: var(--radius-sm);
             border: 1px solid var(--luxe-border);
             background: var(--luxe-bg);
             color: var(--luxe-text);
             font-family: inherit;
-            flex: 1;
-            min-width: 100px;
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
         }
-        .search-box input:focus, .search-box select:focus { border-color: var(--luxe-gold); }
+        .broadcast-area textarea:focus {
+            border-color: var(--luxe-gold);
+            outline: none;
+        }
+
+        @media (max-width: 400px) {
+            .search-box input, .search-box select {
+                min-width: 50px;
+                font-size: clamp(0.6rem, 1.5vw, 0.7rem);
+                padding: 0.3rem 0.4rem;
+                min-height: 30px;
+            }
+            .setting-item input {
+                width: 120px;
+                font-size: clamp(0.65rem, 1.6vw, 0.75rem);
+                min-height: 28px;
+            }
+        }
+
+        @media (max-width: 350px) {
+            .search-box {
+                flex-direction: column;
+                gap: 4px;
+            }
+            .search-box input, .search-box select {
+                width: 100%;
+                min-width: unset;
+            }
+            .search-box .btn-sm {
+                width: 100%;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -79,28 +125,40 @@
         <button class="active" data-tab="stats">📊 آمار</button>
         <button data-tab="apps">📋 نوبت‌ها</button>
         <button data-tab="users">👥 کاربران</button>
-        <button data-tab="schedule">⏰ ساعات کاری</button>
+        <button data-tab="schedule">⏰ ساعات</button>
         <button data-tab="settings">⚙️ تنظیمات</button>
         <button data-tab="broadcast">📢 اعلان</button>
     </div>
 
     <!-- آمار -->
-    <div id="tab-stats" class="tab-content active">...</div>
+    <div id="tab-stats" class="tab-content active">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+            <span style="font-weight:600;font-size:clamp(0.85rem,2.2vw,1rem);">📊 آمار کلی</span>
+            <button class="btn-sm btn-sm-primary" onclick="loadStats()" style="padding:0.3rem 0.8rem;">⟳ بروزرسانی</button>
+        </div>
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card gold"><span class="number" id="statUsers">...</span><span class="label">👥 کاربران</span></div>
+            <div class="stat-card gold"><span class="number" id="statTotalApps">...</span><span class="label">📋 کل نوبت‌ها</span></div>
+            <div class="stat-card"><span class="number" id="statTodayApps">...</span><span class="label">📅 نوبت‌های امروز</span></div>
+            <div class="stat-card"><span class="number" id="statUpcomingApps">...</span><span class="label">📆 نوبت‌های آینده</span></div>
+        </div>
+        <div class="stats-detail">
+            <div class="row"><span class="label">⏳ در انتظار</span><span class="value" id="statPending">...</span></div>
+            <div class="row"><span class="label">✅ تأیید شده</span><span class="value" id="statConfirmed">...</span></div>
+            <div class="row"><span class="label">✔️ انجام شده</span><span class="value" id="statCompleted">...</span></div>
+            <div class="row"><span class="label">❌ لغو شده</span><span class="value" id="statCancelled">...</span></div>
+        </div>
+        <div class="footer-note" style="margin-top:0.3rem;">🔄 هر بار ورود بروزرسانی می‌شود</div>
+    </div>
 
     <!-- نوبت‌ها -->
     <div id="tab-apps" class="tab-content">
         <div class="search-box">
-            <select id="filterStatus">
-                <option value="">همه وضعیت‌ها</option>
-                <option value="pending">در انتظار</option>
-                <option value="confirmed">تأیید شده</option>
-                <option value="completed">انجام شده</option>
-                <option value="cancelled">لغو شده</option>
-            </select>
+            <select id="filterStatus"><option value="">همه</option><option value="pending">در انتظار</option><option value="confirmed">تأیید</option><option value="completed">انجام</option><option value="cancelled">لغو</option></select>
             <input type="text" id="filterUser" placeholder="آیدی کاربر...">
-            <input type="text" id="filterDate" placeholder="تاریخ (مثلاً 1404/05/20)...">
-            <button class="btn-sm btn-sm-primary" onclick="applyFilters()">فیلتر</button>
-            <button class="btn-sm btn-sm-primary" onclick="exportExcel()">📤 خروجی اکسل</button>
+            <input type="text" id="filterDate" placeholder="تاریخ...">
+            <button class="btn-sm btn-sm-primary" onclick="applyFilters()">🔍 فیلتر</button>
+            <button class="btn-sm btn-sm-primary" onclick="exportExcel()">📤 اکسل</button>
         </div>
         <div id="appointmentsList"></div>
     </div>
@@ -113,20 +171,17 @@
     <!-- ساعات کاری -->
     <div id="tab-schedule" class="tab-content">
         <div id="scheduleList"></div>
-        <button id="saveSchedule" class="btn btn-success" style="margin-top:12px;">💾 ذخیره تنظیمات</button>
+        <button id="saveSchedule" class="btn btn-success" style="margin-top:0.75rem;">💾 ذخیره</button>
     </div>
 
     <!-- تنظیمات -->
     <div id="tab-settings" class="tab-content">
         <div class="setting-item">
-            <span class="label">📞 شماره پشتیبانی (ادمین)</span>
-            <div>
+            <span class="label">📞 پشتیبانی</span>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;">
                 <input type="text" id="supportInput" value="@Tvpnred">
                 <button class="btn-sm btn-sm-primary" onclick="updateSupport()">ذخیره</button>
             </div>
-        </div>
-        <div style="font-size:12px;color:var(--luxe-text-muted);margin-top:8px;">
-            این شماره در پیام استارت و لندینگ نمایش داده می‌شود.
         </div>
     </div>
 
@@ -134,7 +189,7 @@
     <div id="tab-broadcast" class="tab-content">
         <div class="broadcast-area">
             <textarea id="broadcastMessage" placeholder="متن پیام همگانی..."></textarea>
-            <button id="sendBroadcast" class="btn btn-success">📤 ارسال</button>
+            <button id="sendBroadcast" class="btn btn-success" style="margin-top:0.5rem;">📤 ارسال</button>
             <div id="broadcastResult"></div>
         </div>
     </div>
@@ -163,53 +218,56 @@
 
     // ====== آمار ======
     async function loadStats() {
-        const res = await fetch('/api/admin/stats');
-        const data = await res.json();
-        if (data.status === 'ok') {
-            const s = data.stats;
-            document.getElementById('statUsers').textContent = s.total_users;
-            document.getElementById('statTotalApps').textContent = s.total_appointments;
-            document.getElementById('statTodayApps').textContent = s.today_appointments;
-            document.getElementById('statUpcomingApps').textContent = s.upcoming_appointments;
-            document.getElementById('statPending').textContent = s.status.pending;
-            document.getElementById('statConfirmed').textContent = s.status.confirmed;
-            document.getElementById('statCompleted').textContent = s.status.completed;
-            document.getElementById('statCancelled').textContent = s.status.cancelled;
-        }
+        try {
+            const res = await fetch('/api/admin/stats');
+            const data = await res.json();
+            if (data.status === 'ok') {
+                const s = data.stats;
+                document.getElementById('statUsers').textContent = s.total_users;
+                document.getElementById('statTotalApps').textContent = s.total_appointments;
+                document.getElementById('statTodayApps').textContent = s.today_appointments;
+                document.getElementById('statUpcomingApps').textContent = s.upcoming_appointments;
+                document.getElementById('statPending').textContent = s.status.pending;
+                document.getElementById('statConfirmed').textContent = s.status.confirmed;
+                document.getElementById('statCompleted').textContent = s.status.completed;
+                document.getElementById('statCancelled').textContent = s.status.cancelled;
+            }
+        } catch(e) {}
     }
 
     // ====== نوبت‌ها ======
     async function loadAppointments(filters = {}) {
-        let url = '/api/admin/appointments?';
-        if (filters.status) url += `status=${filters.status}&`;
-        if (filters.user) url += `user=${filters.user}&`;
-        if (filters.date) url += `date=${filters.date}&`;
-
-        const res = await fetch(url);
-        const data = await res.json();
-        const div = document.getElementById('appointmentsList');
-        if (!data.appointments || data.appointments.length === 0) {
-            div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:20px;">هیچ نوبتی یافت نشد.</p>';
-            return;
-        }
-        div.innerHTML = data.appointments.map(a => `
-            <div class="admin-box ${a.status}">
-                <strong>${a.service_name}</strong><br>
-                👤 ${a.user_name} | 📞 ${a.phone} | 🆔 ${a.telegram_id}<br>
-                📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
-                وضعیت: <span class="status-badge ${a.status}">${a.status === 'pending' ? 'در انتظار' : a.status === 'confirmed' ? 'تأیید شده' : a.status === 'cancelled' ? 'لغو شده' : 'انجام شده'}</span>
-                ${a.receipt ? `<br><img src="${a.receipt}" class="receipt-thumb" onclick="window.open('${a.receipt}')" />` : ''}
-                <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-                    <select onchange="updateStatus(${a.id}, this.value)">
-                        <option value="pending" ${a.status === 'pending' ? 'selected' : ''}>در انتظار</option>
-                        <option value="confirmed" ${a.status === 'confirmed' ? 'selected' : ''}>تأیید شده</option>
-                        <option value="completed" ${a.status === 'completed' ? 'selected' : ''}>انجام شده</option>
-                        <option value="cancelled" ${a.status === 'cancelled' ? 'selected' : ''}>لغو شده</option>
-                    </select>
-                    ${a.status === 'pending' ? `<button class="btn-sm btn-sm-success" onclick="quickApprove(${a.id})">✔️ تأیید</button>` : ''}
+        try {
+            let url = '/api/admin/appointments?';
+            if (filters.status) url += `status=${filters.status}&`;
+            if (filters.user) url += `user=${filters.user}&`;
+            if (filters.date) url += `date=${filters.date}&`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const div = document.getElementById('appointmentsList');
+            if (!data.appointments || data.appointments.length === 0) {
+                div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">هیچ نوبتی یافت نشد.</p>';
+                return;
+            }
+            div.innerHTML = data.appointments.map(a => `
+                <div class="admin-box ${a.status}">
+                    <strong>${a.service_name}</strong><br>
+                    👤 ${a.user_name} | 📞 ${a.phone} | 🆔 ${a.telegram_id}<br>
+                    📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
+                    وضعیت: <span class="status-badge ${a.status}">${a.status === 'pending' ? 'در انتظار' : a.status === 'confirmed' ? 'تأیید شده' : a.status === 'cancelled' ? 'لغو شده' : 'انجام شده'}</span>
+                    ${a.receipt ? `<br><img src="${a.receipt}" class="receipt-thumb" onclick="window.open('${a.receipt}')" />` : ''}
+                    <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+                        <select onchange="updateStatus(${a.id}, this.value)" style="padding:0.3rem 0.5rem;border-radius:var(--radius-sm);border:1px solid var(--luxe-border);background:var(--luxe-bg);color:var(--luxe-text);font-family:inherit;font-size:clamp(0.65rem,1.6vw,0.75rem);min-height:30px;">
+                            <option value="pending" ${a.status === 'pending' ? 'selected' : ''}>در انتظار</option>
+                            <option value="confirmed" ${a.status === 'confirmed' ? 'selected' : ''}>تأیید</option>
+                            <option value="completed" ${a.status === 'completed' ? 'selected' : ''}>انجام</option>
+                            <option value="cancelled" ${a.status === 'cancelled' ? 'selected' : ''}>لغو</option>
+                        </select>
+                        ${a.status === 'pending' ? `<button class="btn-sm btn-sm-success" onclick="quickApprove(${a.id})">✔️ تأیید</button>` : ''}
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
+        } catch(e) {}
     }
 
     function applyFilters() {
@@ -220,15 +278,17 @@
     }
 
     async function updateStatus(id, status) {
-        const res = await fetch(`/api/admin/appointments/${id}/status`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({status})
-        });
-        const result = await res.json();
-        alert(result.message);
-        applyFilters();
-        loadStats();
+        try {
+            const res = await fetch(`/api/admin/appointments/${id}/status`, {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({status})
+            });
+            const result = await res.json();
+            alert(result.message);
+            applyFilters();
+            loadStats();
+        } catch(e) { alert('خطا!'); }
     }
 
     async function quickApprove(id) {
@@ -242,64 +302,67 @@
 
     // ====== کاربران ======
     async function loadUsers() {
-        const res = await fetch('/api/admin/users');
-        const data = await res.json();
-        const div = document.getElementById('usersList');
-        if (!data.users || data.users.length === 0) {
-            div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:20px;">هیچ کاربری ثبت نشده است.</p>';
-            return;
-        }
-        div.innerHTML = data.users.map(u => `
-            <div class="user-item">
-                <div>
-                    <strong>${u.name}</strong> | 📞 ${u.phone || '---'} | 🆔 ${u.telegram_id}
-                    ${u.is_admin === 1 ? '<span class="admin-badge">👑 ادمین</span>' : ''}
+        try {
+            const res = await fetch('/api/admin/users');
+            const data = await res.json();
+            const div = document.getElementById('usersList');
+            if (!data.users || data.users.length === 0) {
+                div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">هیچ کاربری ثبت نشده است.</p>';
+                return;
+            }
+            div.innerHTML = data.users.map(u => `
+                <div class="user-item">
+                    <div style="font-size:clamp(0.7rem,1.8vw,0.85rem);">
+                        <strong>${u.name}</strong> | 📞 ${u.phone || '---'} | 🆔 ${u.telegram_id}
+                        ${u.is_admin === 1 ? '<span class="admin-badge">👑 ادمین</span>' : ''}
+                    </div>
+                    <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                        <button class="btn-sm btn-sm-primary" onclick="toggleAdmin(${u.telegram_id}, ${u.is_admin === 1 ? 0 : 1})">${u.is_admin === 1 ? '⬇️' : '⬆️'}</button>
+                        <button class="btn-sm btn-sm-danger" onclick="deleteUser(${u.telegram_id})">🗑️</button>
+                    </div>
                 </div>
-                <div class="user-actions">
-                    <button class="btn-sm btn-sm-primary" onclick="toggleAdmin(${u.telegram_id}, ${u.is_admin === 1 ? 0 : 1})">
-                        ${u.is_admin === 1 ? '⬇️ حذف ادمین' : '⬆️ ادمین کن'}
-                    </button>
-                    <button class="btn-sm btn-sm-danger" onclick="deleteUser(${u.telegram_id})">🗑️</button>
-                </div>
-            </div>
-        `).join('');
+            `).join('');
+        } catch(e) {}
     }
 
-    async function toggleAdmin(telegram_id, newStatus) {
-        if (!confirm('تغییر نقش کاربر؟')) return;
-        await fetch(`/api/admin/users/${telegram_id}`, {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({is_admin: newStatus})
-        });
-        loadUsers();
+    async function toggleAdmin(id, newStatus) {
+        if (!confirm('تغییر نقش؟')) return;
+        try {
+            await fetch(`/api/admin/users/${id}`, {
+                method:'PUT',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({is_admin:newStatus})
+            });
+            loadUsers();
+        } catch(e) { alert('خطا!'); }
     }
 
-    async function deleteUser(telegram_id) {
+    async function deleteUser(id) {
         if (!confirm('حذف کاربر؟')) return;
-        await fetch(`/api/admin/users/${telegram_id}`, {method: 'DELETE'});
-        loadUsers();
+        try {
+            await fetch(`/api/admin/users/${id}`, { method:'DELETE' });
+            loadUsers();
+        } catch(e) { alert('خطا!'); }
     }
 
     // ====== ساعات کاری ======
     async function loadSchedule() {
-        const res = await fetch('/api/admin/schedule');
-        const data = await res.json();
-        const div = document.getElementById('scheduleList');
-        const days = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'];
-        div.innerHTML = data.schedule.map(s => `
-            <div class="schedule-item">
-                <span class="day-name">${days[s.day_of_week]}</span>
-                <input type="time" value="${s.start_time}" data-day="${s.day_of_week}" class="start-time">
-                <span>تا</span>
-                <input type="time" value="${s.end_time}" data-day="${s.day_of_week}" class="end-time">
-                <span>ظرفیت: <input type="number" value="${s.capacity}" data-day="${s.day_of_week}" class="capacity-input" style="width:50px;padding:4px;border-radius:8px;border:1px solid var(--luxe-border);background:var(--luxe-bg);color:var(--luxe-text);"></span>
-                <label>
-                    <input type="checkbox" ${s.is_active === 1 ? 'checked' : ''} data-day="${s.day_of_week}" class="active-check">
-                    فعال
-                </label>
-            </div>
-        `).join('');
+        try {
+            const res = await fetch('/api/admin/schedule');
+            const data = await res.json();
+            const div = document.getElementById('scheduleList');
+            const days = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+            div.innerHTML = data.schedule.map(s => `
+                <div class="schedule-item">
+                    <span class="day-name">${days[s.day_of_week]}</span>
+                    <input type="time" value="${s.start_time}" data-day="${s.day_of_week}" class="start-time">
+                    <span>تا</span>
+                    <input type="time" value="${s.end_time}" data-day="${s.day_of_week}" class="end-time">
+                    <span>ظرفیت: <input type="number" value="${s.capacity}" data-day="${s.day_of_week}" class="capacity-input"></span>
+                    <label><input type="checkbox" ${s.is_active === 1 ? 'checked' : ''} data-day="${s.day_of_week}" class="active-check"> فعال</label>
+                </div>
+            `).join('');
+        } catch(e) {}
     }
 
     document.getElementById('saveSchedule').addEventListener('click', async function() {
@@ -309,55 +372,58 @@
             const day = parseInt(item.querySelector('.start-time').dataset.day);
             const start = item.querySelector('.start-time').value;
             const end = item.querySelector('.end-time').value;
-            const capacity = parseInt(item.querySelector('.capacity-input').value) || 2;
+            const cap = parseInt(item.querySelector('.capacity-input').value) || 2;
             const active = item.querySelector('.active-check').checked ? 1 : 0;
-            updates.push({ day_of_week: day, start_time: start, end_time: end, capacity, is_active: active });
+            updates.push({ day_of_week: day, start_time: start, end_time: end, capacity: cap, is_active: active });
         });
-        for (const update of updates) {
+        for (const u of updates) {
             await fetch('/api/admin/schedule', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(update)
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify(u)
             });
         }
-        alert('✅ ساعات کاری ذخیره شد!');
+        alert('✅ ذخیره شد!');
         loadSchedule();
     });
 
     // ====== تنظیمات پشتیبانی ======
     async function loadSupport() {
-        const res = await fetch('/api/admin/support');
-        const data = await res.json();
-        document.getElementById('supportInput').value = data.support_contact || '@Tvpnred';
+        try {
+            const res = await fetch('/api/admin/support');
+            const data = await res.json();
+            document.getElementById('supportInput').value = data.support_contact || '@Tvpnred';
+        } catch(e) {}
     }
 
     async function updateSupport() {
-        const value = document.getElementById('supportInput').value.trim();
-        if (!value) {
-            alert('لطفاً مقدار را وارد کنید.');
-            return;
-        }
-        await fetch('/api/admin/support', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({support_contact: value})
-        });
-        alert('✅ شماره پشتیبانی به‌روزرسانی شد!');
+        const val = document.getElementById('supportInput').value.trim();
+        if (!val) { alert('مقدار را وارد کنید.'); return; }
+        try {
+            await fetch('/api/admin/support', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({support_contact:val})
+            });
+            alert('✅ ذخیره شد!');
+        } catch(e) { alert('خطا!'); }
     }
 
     // ====== اعلان همگانی ======
     document.getElementById('sendBroadcast').addEventListener('click', async function() {
-        const message = document.getElementById('broadcastMessage').value.trim();
-        if (!message) { alert('متن پیام را وارد کنید.'); return; }
-        if (!confirm(`ارسال پیام:\n\n${message}`)) return;
-        const res = await fetch('/api/admin/broadcast', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({message})
-        });
-        const result = await res.json();
-        document.getElementById('broadcastResult').innerHTML = `<div class="msg msg-success">✅ ${result.message}</div>`;
-        document.getElementById('broadcastMessage').value = '';
+        const msg = document.getElementById('broadcastMessage').value.trim();
+        if (!msg) { alert('متن را وارد کنید.'); return; }
+        if (!confirm(`ارسال:\n\n${msg}`)) return;
+        try {
+            const res = await fetch('/api/admin/broadcast', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({message:msg})
+            });
+            const result = await res.json();
+            document.getElementById('broadcastResult').innerHTML = `<div class="msg msg-success">✅ ${result.message}</div>`;
+            document.getElementById('broadcastMessage').value = '';
+        } catch(e) { alert('خطا!'); }
     });
 
     // بارگیری اولیه

@@ -1,5 +1,5 @@
 /* ========================================
-   M4Cut - تم NIGHT LUXE (سرمه‌ای و طلایی)
+   M4Cut - تم NIGHT LUXE (ریسپانسیو)
    ======================================== */
 
 /* ----- فونت ----- */
@@ -12,7 +12,7 @@
     font-display: swap;
 }
 
-/* ----- متغیرهای رنگ (تم لوکس) ----- */
+/* ----- متغیرهای رنگ ----- */
 :root {
     --luxe-bg: #0A0E17;
     --luxe-card: #131B2A;
@@ -28,6 +28,8 @@
     --luxe-danger: #B22234;
     --luxe-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     --luxe-glow: 0 0 20px rgba(212, 184, 124, 0.08);
+    --radius: 16px;
+    --radius-sm: 10px;
 }
 
 /* ----- ریست عمومی ----- */
@@ -35,6 +37,12 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
 }
 
 body {
@@ -46,42 +54,42 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 20px;
+    padding: 1.25rem;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
 }
 
-/* ----- کانتینر اصلی ----- */
+/* ----- کانتینر اصلی (ریسپانسیو) ----- */
 .container {
-    max-width: 480px;
     width: 100%;
+    max-width: 480px;
     margin: 0 auto;
     background: var(--luxe-card);
     border-radius: 28px;
-    padding: 32px 24px;
+    padding: 2rem 1.5rem;
     box-shadow: var(--luxe-shadow), var(--luxe-glow);
     border: 1px solid var(--luxe-border);
-    backdrop-filter: blur(4px);
-    transition: all 0.3s ease;
+    overflow: hidden;
 }
 
 /* ----- هدر برند ----- */
 .brand-header {
     text-align: center;
-    padding-bottom: 24px;
+    padding-bottom: 1.25rem;
     border-bottom: 1px solid var(--luxe-border);
-    margin-bottom: 24px;
+    margin-bottom: 1.5rem;
 }
 
 .brand-logo {
-    font-size: 36px;
+    font-size: clamp(1.8rem, 5vw, 2.4rem);
     font-weight: 800;
     letter-spacing: -0.5px;
     color: var(--luxe-text);
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 4px;
+    gap: 0.25rem;
 }
 
 .brand-logo span {
@@ -89,56 +97,63 @@ body {
 }
 
 .brand-tagline {
-    font-size: 13px;
+    font-size: clamp(0.7rem, 1.8vw, 0.85rem);
     color: var(--luxe-text-muted);
-    margin-top: 6px;
-    letter-spacing: 1px;
+    margin-top: 0.25rem;
+    letter-spacing: 0.5px;
     font-weight: 300;
 }
 
 /* ----- تایپوگرافی ----- */
-h1, h2, h3, h4 {
+h1 {
+    font-size: clamp(1.4rem, 4vw, 1.8rem);
     font-weight: 700;
     color: var(--luxe-text);
-    letter-spacing: -0.3px;
+}
+h2 {
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    font-weight: 700;
+    color: var(--luxe-text);
+    margin: 0.75rem 0 0.5rem;
+}
+h3 {
+    font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+    font-weight: 600;
+    color: var(--luxe-text);
 }
 
-h1 { font-size: 26px; }
-h2 { font-size: 20px; margin: 18px 0 12px; }
-h3 { font-size: 16px; margin: 12px 0 8px; }
-
-p {
+p, .text-muted {
+    font-size: clamp(0.75rem, 2vw, 0.9rem);
     color: var(--luxe-text-muted);
-    font-size: 14px;
 }
 
-/* ----- دکمه‌ها ----- */
+/* ----- دکمه‌ها (ریسپانسیو) ----- */
 .btn {
     display: inline-block;
     width: 100%;
-    padding: 14px 20px;
+    padding: 0.9rem 1rem;
     border: none;
-    border-radius: 14px;
-    font-size: 16px;
+    border-radius: var(--radius);
+    font-size: clamp(0.9rem, 2.2vw, 1.05rem);
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     text-align: center;
-    letter-spacing: 0.3px;
     background: var(--luxe-gold);
     color: #0A0E17;
-    box-shadow: 0 4px 15px rgba(212, 184, 124, 0.25);
+    box-shadow: 0 4px 15px rgba(212, 184, 124, 0.2);
+    min-height: 48px;
+    touch-action: manipulation;
 }
 
 .btn:hover {
     background: var(--luxe-gold-light);
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(212, 184, 124, 0.35);
+    box-shadow: 0 8px 30px rgba(212, 184, 124, 0.3);
 }
-
 .btn:active {
-    transform: translateY(0);
+    transform: scale(0.98);
 }
 
 .btn-secondary {
@@ -147,11 +162,9 @@ p {
     border: 1.5px solid var(--luxe-gold);
     box-shadow: none;
 }
-
 .btn-secondary:hover {
     background: var(--luxe-gold);
     color: #0A0E17;
-    box-shadow: 0 8px 30px rgba(212, 184, 124, 0.2);
 }
 
 .btn-close {
@@ -159,137 +172,140 @@ p {
     color: var(--luxe-text-muted);
     border: 1px solid var(--luxe-border);
     box-shadow: none;
-    margin-top: 16px;
+    margin-top: 1rem;
 }
-
 .btn-close:hover {
     background: var(--luxe-border);
     color: var(--luxe-text);
-    box-shadow: none;
     transform: none;
 }
 
 .btn-success {
     background: var(--luxe-success);
     color: white;
-    box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3);
+    box-shadow: 0 4px 15px rgba(46, 139, 87, 0.2);
 }
-
 .btn-success:hover {
     background: #3CA06A;
-    box-shadow: 0 8px 30px rgba(46, 139, 87, 0.4);
 }
 
 .btn-sm {
-    padding: 8px 16px;
-    font-size: 13px;
-    border-radius: 10px;
+    padding: 0.4rem 0.8rem;
+    font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+    border-radius: var(--radius-sm);
     width: auto;
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
 }
 
 /* ----- ورودی‌ها ----- */
 input, select, textarea {
     width: 100%;
-    padding: 12px 16px;
-    margin: 6px 0 14px;
+    padding: 0.8rem 1rem;
+    margin: 0.3rem 0 0.7rem;
     border: 1.5px solid var(--luxe-border);
-    border-radius: 14px;
-    font-size: 15px;
+    border-radius: var(--radius);
+    font-size: clamp(0.85rem, 2vw, 1rem);
     font-family: inherit;
     background: var(--luxe-bg);
     color: var(--luxe-text);
     transition: all 0.3s ease;
+    min-height: 44px;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 input:focus, select:focus, textarea:focus {
     outline: none;
     border-color: var(--luxe-gold);
-    box-shadow: 0 0 0 4px rgba(212, 184, 124, 0.1);
-    background: var(--luxe-card);
+    box-shadow: 0 0 0 3px rgba(212, 184, 124, 0.1);
 }
 
 input::placeholder, textarea::placeholder {
     color: var(--luxe-text-muted);
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 label {
     display: block;
-    font-size: 13px;
+    font-size: clamp(0.75rem, 1.8vw, 0.85rem);
     font-weight: 500;
     color: var(--luxe-text-muted);
-    margin-bottom: 2px;
-    letter-spacing: 0.3px;
+    margin-bottom: 0.1rem;
 }
 
-/* ----- کارت‌ها و باکس‌ها ----- */
+/* ----- کارت‌ها ----- */
 .card {
     background: var(--luxe-bg);
-    border-radius: 16px;
-    padding: 18px 20px;
+    border-radius: var(--radius);
+    padding: 1rem 1.2rem;
     border: 1px solid var(--luxe-border);
-    margin: 10px 0;
-    transition: all 0.3s ease;
+    margin: 0.5rem 0;
 }
 
-.card:hover {
-    border-color: var(--luxe-border-light);
-}
-
-/* ----- تب‌ها ----- */
+/* ----- تب‌ها (ریسپانسیو) ----- */
 .tabs {
     display: flex;
-    gap: 6px;
-    margin: 16px 0 20px;
+    gap: 4px;
+    margin: 1rem 0 1.2rem;
     background: var(--luxe-bg);
-    border-radius: 16px;
+    border-radius: var(--radius);
     padding: 4px;
     border: 1px solid var(--luxe-border);
+    flex-wrap: wrap;
 }
 
 .tabs button {
-    flex: 1;
-    padding: 10px 8px;
+    flex: 1 1 auto;
+    min-width: 60px;
+    padding: 0.6rem 0.4rem;
     border: none;
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
     background: transparent;
     color: var(--luxe-text-muted);
-    font-size: 13px;
+    font-size: clamp(0.7rem, 1.8vw, 0.8rem);
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
     transition: all 0.3s ease;
+    text-align: center;
+    min-height: 40px;
+    touch-action: manipulation;
 }
 
 .tabs button.active {
     background: var(--luxe-gold);
     color: #0A0E17;
-    box-shadow: 0 4px 12px rgba(212, 184, 124, 0.2);
+    box-shadow: 0 4px 12px rgba(212, 184, 124, 0.15);
 }
 
-.tabs button:hover:not(.active) {
-    color: var(--luxe-text);
-}
-
-/* ----- دکمه‌های فیلتر (نوبت‌ها) ----- */
+/* ----- فیلتر دکمه‌ها ----- */
 .filter-buttons {
     display: flex;
-    gap: 8px;
-    margin: 12px 0 16px;
+    gap: 6px;
+    margin: 0.75rem 0 1rem;
+    flex-wrap: wrap;
 }
 
 .filter-buttons button {
-    flex: 1;
-    padding: 8px 12px;
+    flex: 1 1 auto;
+    min-width: 50px;
+    padding: 0.5rem 0.6rem;
     border: 1px solid var(--luxe-border);
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
     background: var(--luxe-bg);
     color: var(--luxe-text-muted);
-    font-size: 12px;
+    font-size: clamp(0.65rem, 1.6vw, 0.75rem);
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
     transition: all 0.3s ease;
+    text-align: center;
+    min-height: 34px;
+    touch-action: manipulation;
 }
 
 .filter-buttons button.active {
@@ -298,99 +314,84 @@ label {
     color: #0A0E17;
 }
 
-.filter-buttons button:hover:not(.active) {
-    border-color: var(--luxe-gold-dark);
-    color: var(--luxe-text);
-}
-
-/* ----- آیتم‌های نوبت ----- */
+/* ----- آیتم‌های نوبت (ریسپانسیو) ----- */
 .appointment-item {
     background: var(--luxe-bg);
-    padding: 16px 18px;
-    margin: 10px 0;
-    border-radius: 16px;
+    padding: 0.9rem 1rem;
+    margin: 0.5rem 0;
+    border-radius: var(--radius);
     border-right: 4px solid var(--luxe-gold);
     transition: all 0.3s ease;
+    word-wrap: break-word;
 }
 
 .appointment-item:hover {
     background: var(--luxe-card-hover);
 }
-
 .appointment-item.confirmed {
     border-right-color: var(--luxe-success);
 }
-
 .appointment-item.cancelled {
     border-right-color: var(--luxe-danger);
     opacity: 0.6;
 }
-
 .appointment-item.completed {
     border-right-color: var(--luxe-text-muted);
 }
-
 .appointment-item.past {
     opacity: 0.5;
     border-right-color: var(--luxe-border);
 }
 
-/* ----- نشان وضعیت (Badge) ----- */
-.badge {
-    display: inline-block;
-    padding: 3px 14px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.appointment-item strong {
+    font-size: clamp(0.9rem, 2.2vw, 1rem);
+    display: block;
 }
-
+.appointment-item .badge {
+    font-size: clamp(0.6rem, 1.4vw, 0.7rem);
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    display: inline-block;
+}
 .badge-pending {
     background: rgba(212, 184, 124, 0.2);
     color: var(--luxe-gold);
 }
-
 .badge-confirmed {
     background: rgba(46, 139, 87, 0.2);
     color: var(--luxe-success);
 }
-
 .badge-cancelled {
     background: rgba(178, 34, 52, 0.2);
     color: var(--luxe-danger);
 }
-
 .badge-completed {
     background: rgba(154, 165, 181, 0.2);
     color: var(--luxe-text-muted);
 }
 
-.badge-past {
-    background: rgba(154, 165, 181, 0.1);
-    color: var(--luxe-text-muted);
-}
-
-/* ----- استپ‌های رزرو ----- */
+/* ----- استپ‌های رزرو (ریسپانسیو) ----- */
 .step-indicator {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 24px;
-    padding: 0 4px;
+    margin-bottom: 1.5rem;
+    padding: 0 2px;
+    gap: 4px;
 }
 
 .step-dot {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 13px;
+    gap: 0.3rem;
+    font-size: clamp(0.65rem, 1.6vw, 0.75rem);
     font-weight: 500;
     color: var(--luxe-text-muted);
 }
 
 .step-dot .dot {
-    width: 34px;
-    height: 34px;
+    width: clamp(28px, 7vw, 34px);
+    height: clamp(28px, 7vw, 34px);
     border-radius: 50%;
     background: var(--luxe-bg);
     border: 2px solid var(--luxe-border);
@@ -398,24 +399,23 @@ label {
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 13px;
+    font-size: clamp(0.7rem, 1.8vw, 0.85rem);
     color: var(--luxe-text-muted);
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: all 0.4s;
+    flex-shrink: 0;
 }
 
 .step-dot.active .dot {
     background: var(--luxe-gold);
     border-color: var(--luxe-gold);
     color: #0A0E17;
-    box-shadow: 0 4px 20px rgba(212, 184, 124, 0.3);
+    box-shadow: 0 4px 12px rgba(212, 184, 124, 0.2);
 }
-
 .step-dot.completed .dot {
     background: var(--luxe-success);
     border-color: var(--luxe-success);
     color: white;
 }
-
 .step-dot.active {
     color: var(--luxe-text);
 }
@@ -424,206 +424,185 @@ label {
     display: none;
     animation: fadeSlide 0.4s ease;
 }
-
 .booking-step--visible {
     display: block;
 }
 
 @keyframes fadeSlide {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .step-title {
-    font-size: 18px;
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
     font-weight: 700;
-    margin-bottom: 6px;
     color: var(--luxe-text);
 }
-
 .step-help {
-    font-size: 14px;
+    font-size: clamp(0.75rem, 2vw, 0.9rem);
     color: var(--luxe-text-muted);
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
 }
 
-/* ----- کارت انتخاب روز (تقویم) ----- */
+/* ----- گرید روزها (ریسپانسیو) ----- */
 .day-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
-    margin: 12px 0 18px;
+    gap: 4px;
+    margin: 0.75rem 0 1rem;
 }
 
 .day-name {
-    font-size: 11px;
+    font-size: clamp(0.55rem, 1.4vw, 0.65rem);
     color: var(--luxe-text-muted);
     text-align: center;
-    padding: 6px 0;
+    padding: 4px 0;
     font-weight: 600;
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .day-grid button {
-    padding: 12px 0;
+    padding: 0.6rem 0;
     border: 1.5px solid var(--luxe-border);
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
     background: var(--luxe-bg);
     color: var(--luxe-text);
-    font-size: 14px;
+    font-size: clamp(0.7rem, 1.8vw, 0.85rem);
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
     transition: all 0.25s ease;
+    min-height: 38px;
+    touch-action: manipulation;
 }
-
-.day-grid button:hover:not(:disabled) {
-    border-color: var(--luxe-gold-dark);
-    background: var(--luxe-card-hover);
+.day-grid button:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
 }
-
 .day-grid button.selected {
     background: var(--luxe-gold);
     border-color: var(--luxe-gold);
     color: #0A0E17;
-    box-shadow: 0 4px 15px rgba(212, 184, 124, 0.25);
-}
-
-.day-grid button:disabled {
-    opacity: 0.25;
-    cursor: not-allowed;
 }
 
 .month-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 8px 0 4px;
+    margin: 0.5rem 0 0.2rem;
 }
-
 .month-nav button {
     background: none;
     border: none;
-    font-size: 22px;
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
     cursor: pointer;
     color: var(--luxe-gold);
-    padding: 0 16px;
+    padding: 0 0.8rem;
     font-weight: 300;
-    transition: all 0.3s ease;
+    touch-action: manipulation;
+    min-height: 36px;
 }
-
-.month-nav button:hover {
-    color: var(--luxe-gold-light);
-    transform: scale(1.1);
-}
-
 .month-nav span {
     font-weight: 600;
-    font-size: 16px;
+    font-size: clamp(0.85rem, 2.2vw, 1rem);
     color: var(--luxe-text);
 }
 
-/* ----- گرید ساعت‌ها ----- */
+/* ----- گرید ساعت‌ها (ریسپانسیو) ----- */
 .time-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin: 12px 0 18px;
+    gap: 6px;
+    margin: 0.75rem 0 1rem;
 }
 
 .time-grid button {
-    padding: 10px 4px;
+    padding: 0.5rem 0.2rem;
     border: 1.5px solid var(--luxe-border);
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
     background: var(--luxe-bg);
     color: var(--luxe-text);
-    font-size: 13px;
+    font-size: clamp(0.6rem, 1.6vw, 0.75rem);
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
     transition: all 0.25s ease;
+    min-height: 38px;
+    touch-action: manipulation;
+    text-align: center;
+    word-break: break-word;
 }
-
-.time-grid button:hover {
-    border-color: var(--luxe-gold-dark);
-    background: var(--luxe-card-hover);
-}
-
 .time-grid button.selected {
     background: var(--luxe-gold);
     border-color: var(--luxe-gold);
     color: #0A0E17;
-    box-shadow: 0 4px 15px rgba(212, 184, 124, 0.2);
 }
-
 .time-grid button:disabled {
     opacity: 0.3;
     cursor: not-allowed;
 }
 
-/* ----- کارت بانکی (شبیه سایت‌های لوکس) ----- */
+/* ----- کارت بانکی ----- */
 .bank-card {
     background: var(--luxe-bg);
-    border-radius: 16px;
-    padding: 18px 20px;
-    margin: 12px 0;
+    border-radius: var(--radius);
+    padding: 0.9rem 1rem;
+    margin: 0.75rem 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border: 1px solid var(--luxe-border);
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
-
 .bank-card .number {
     font-family: 'Courier New', monospace;
-    font-size: 18px;
+    font-size: clamp(0.85rem, 2.2vw, 1.1rem);
     font-weight: 700;
-    letter-spacing: 3px;
+    letter-spacing: 1px;
     color: var(--luxe-gold);
     direction: ltr;
+    word-break: break-word;
 }
-
 .bank-card .label {
-    font-size: 11px;
+    font-size: clamp(0.55rem, 1.4vw, 0.65rem);
     color: var(--luxe-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
 }
-
 .bank-card .logo {
-    font-size: 28px;
+    font-size: clamp(1.4rem, 3.5vw, 1.8rem);
     opacity: 0.8;
 }
 
 /* ----- آپلود رسید ----- */
 .upload-area {
     border: 2px dashed var(--luxe-border);
-    border-radius: 16px;
-    padding: 24px 16px;
+    border-radius: var(--radius);
+    padding: 1.2rem 0.8rem;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
     background: var(--luxe-bg);
-    margin: 8px 0 12px;
+    margin: 0.5rem 0 0.75rem;
+    touch-action: manipulation;
 }
-
-.upload-area:hover {
-    border-color: var(--luxe-gold);
-    background: var(--luxe-card-hover);
-}
-
 .upload-area .icon {
-    font-size: 32px;
+    font-size: clamp(1.8rem, 4.5vw, 2.4rem);
     display: block;
-    margin-bottom: 6px;
 }
-
 .upload-area .text {
-    font-size: 14px;
+    font-size: clamp(0.75rem, 2vw, 0.9rem);
     color: var(--luxe-text-muted);
 }
-
 .upload-area .filename {
-    font-size: 13px;
+    font-size: clamp(0.7rem, 1.8vw, 0.85rem);
     color: var(--luxe-gold);
     margin-top: 4px;
     font-weight: 500;
@@ -631,179 +610,105 @@ label {
 
 .receipt-preview {
     max-width: 100%;
-    max-height: 160px;
-    border-radius: 12px;
-    margin: 8px 0;
+    max-height: 120px;
+    border-radius: var(--radius-sm);
+    margin: 0.5rem 0;
     border: 1px solid var(--luxe-border);
+}
+
+/* ----- کارت خدمات ----- */
+.service-card {
+    background: var(--luxe-bg);
+    border-radius: var(--radius);
+    padding: 1.2rem 1rem;
+    margin: 0.5rem 0 1rem;
+    border: 1.5px solid var(--luxe-gold);
+    text-align: center;
+}
+.service-card .icon {
+    font-size: clamp(2rem, 5vw, 2.8rem);
+}
+.service-card .name {
+    font-size: clamp(1.1rem, 2.8vw, 1.4rem);
+    font-weight: 700;
+    color: var(--luxe-text);
+}
+.service-card .price {
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+    font-weight: 700;
+    color: var(--luxe-gold);
+}
+.service-card .desc {
+    font-size: clamp(0.75rem, 2vw, 0.9rem);
+    color: var(--luxe-text-muted);
+    margin-top: 4px;
+}
+.service-card .note {
+    background: rgba(212, 184, 124, 0.06);
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--radius-sm);
+    margin-top: 0.6rem;
+    font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+    color: var(--luxe-gold);
+    border-right: 3px solid var(--luxe-gold);
+    text-align: right;
+}
+.service-card .note strong {
+    color: #f1c40f;
+}
+
+/* ----- قیمت‌ها ----- */
+.price-tag {
+    background: rgba(212, 184, 124, 0.06);
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-sm);
+    margin: 0.5rem 0;
+    text-align: center;
+    border: 1px solid var(--luxe-border);
+}
+.price-tag span:first-child {
+    font-size: clamp(0.75rem, 2vw, 0.9rem);
+    color: var(--luxe-text-muted);
+}
+.price-tag span:last-child {
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    font-weight: 700;
+    color: var(--luxe-gold);
 }
 
 /* ----- پیام‌ها ----- */
 .msg {
-    padding: 14px 18px;
-    border-radius: 14px;
-    margin: 12px 0;
-    font-size: 14px;
+    padding: 0.7rem 1rem;
+    border-radius: var(--radius-sm);
+    margin: 0.6rem 0;
+    font-size: clamp(0.75rem, 2vw, 0.9rem);
     font-weight: 500;
     border-right: 4px solid transparent;
 }
-
 .msg-success {
-    background: rgba(46, 139, 87, 0.12);
+    background: rgba(46, 139, 87, 0.1);
     color: var(--luxe-success);
     border-right-color: var(--luxe-success);
 }
-
 .msg-error {
-    background: rgba(178, 34, 52, 0.12);
+    background: rgba(178, 34, 52, 0.1);
     color: var(--luxe-danger);
     border-right-color: var(--luxe-danger);
 }
-
 .msg-info {
-    background: rgba(212, 184, 124, 0.08);
+    background: rgba(212, 184, 124, 0.06);
     color: var(--luxe-gold);
     border-right-color: var(--luxe-gold);
 }
 
-/* ----- لیست کاربران (ادمین) ----- */
-.user-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 18px;
-    background: var(--luxe-bg);
-    border-radius: 14px;
-    margin: 6px 0;
-    border: 1px solid var(--luxe-border);
-    transition: all 0.3s ease;
-}
-
-.user-item:hover {
-    border-color: var(--luxe-border-light);
-}
-
-.user-item .admin-badge {
-    background: var(--luxe-gold);
-    color: #0A0E17;
-    padding: 2px 14px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-/* ----- تنظیمات ساعات کاری (ادمین) ----- */
-.schedule-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--luxe-border);
-    flex-wrap: wrap;
-}
-
-.schedule-item .day-name {
-    width: 70px;
-    font-weight: 600;
-    color: var(--luxe-text);
-    font-size: 14px;
-}
-
-.schedule-item input[type="time"] {
-    width: 100px;
-    padding: 6px 10px;
-    border-radius: 10px;
-    border: 1px solid var(--luxe-border);
-    background: var(--luxe-bg);
-    color: var(--luxe-text);
-    font-family: inherit;
-    margin: 0;
-}
-
-.schedule-item input[type="time"]:focus {
-    border-color: var(--luxe-gold);
-}
-
-.schedule-item label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--luxe-text-muted);
-    margin: 0;
-}
-
-.schedule-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--luxe-gold);
-    margin: 0;
-}
-
-/* ----- گرید آمار (ادمین) ----- */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin: 12px 0 16px;
-}
-
-.stat-card {
-    background: var(--luxe-bg);
-    padding: 16px 14px;
-    border-radius: 16px;
-    text-align: center;
-    border: 1px solid var(--luxe-border);
-    transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-    border-color: var(--luxe-gold-dark);
-}
-
-.stat-card .number {
-    font-size: 30px;
-    font-weight: 800;
-    color: var(--luxe-gold);
-    display: block;
-    letter-spacing: -0.5px;
-}
-
-.stat-card .label {
-    font-size: 12px;
-    color: var(--luxe-text-muted);
-    margin-top: 4px;
-    display: block;
-    font-weight: 500;
-}
-
-.stat-card.gold {
-    background: var(--luxe-gold);
-    border-color: var(--luxe-gold);
-}
-
-.stat-card.gold .number,
-.stat-card.gold .label {
-    color: #0A0E17;
-}
-
-/* ----- باکس ادمین (مدیریت نوبت‌ها) ----- */
+/* ----- باکس ادمین ----- */
 .admin-box {
     background: var(--luxe-bg);
-    padding: 16px 18px;
-    border-radius: 16px;
-    margin: 10px 0;
+    padding: 0.9rem 1rem;
+    border-radius: var(--radius);
+    margin: 0.5rem 0;
     border-right: 4px solid var(--luxe-gold);
-    border-left: 1px solid var(--luxe-border);
-    border-top: 1px solid var(--luxe-border);
-    border-bottom: 1px solid var(--luxe-border);
-    transition: all 0.3s ease;
 }
-
-.admin-box:hover {
-    border-color: var(--luxe-border-light);
-}
-
 .admin-box.confirmed {
     border-right-color: var(--luxe-success);
 }
@@ -813,63 +718,295 @@ label {
 .admin-box.completed {
     border-right-color: var(--luxe-text-muted);
 }
-
 .admin-box .receipt-thumb {
-    max-width: 70px;
-    max-height: 70px;
-    border-radius: 10px;
+    max-width: 60px;
+    max-height: 60px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     border: 1px solid var(--luxe-border);
-    transition: all 0.3s ease;
 }
 
-.admin-box .receipt-thumb:hover {
-    transform: scale(1.05);
-    border-color: var(--luxe-gold);
-}
-
-/* ----- ناحیه اعلان همگانی ----- */
-.broadcast-area {
+/* ----- لیست کاربران ----- */
+.user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 0.8rem;
     background: var(--luxe-bg);
-    padding: 18px 20px;
-    border-radius: 16px;
-    margin: 10px 0;
+    border-radius: var(--radius-sm);
+    margin: 4px 0;
     border: 1px solid var(--luxe-border);
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.user-item .admin-badge {
+    background: var(--luxe-gold);
+    color: #0A0E17;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: clamp(0.55rem, 1.4vw, 0.65rem);
+    font-weight: 700;
 }
 
-.broadcast-area textarea {
-    min-height: 80px;
-    resize: vertical;
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 14px;
+/* ----- تنظیمات ساعات کاری ----- */
+.schedule-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--luxe-border);
+    flex-wrap: wrap;
+}
+.schedule-item .day-name {
+    width: 55px;
+    font-weight: 600;
+    font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+    color: var(--luxe-text);
+}
+.schedule-item input[type="time"] {
+    width: 80px;
+    padding: 4px 6px;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--luxe-border);
     background: var(--luxe-bg);
     color: var(--luxe-text);
     font-family: inherit;
-    font-size: 14px;
+    margin: 0;
+    min-height: 30px;
+}
+.schedule-item input[type="number"] {
+    width: 45px;
+    padding: 4px 4px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--luxe-border);
+    background: var(--luxe-bg);
+    color: var(--luxe-text);
+    font-family: inherit;
+    margin: 0;
+    min-height: 30px;
+}
+.schedule-item label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: clamp(0.65rem, 1.6vw, 0.75rem);
+    font-weight: 400;
+    color: var(--luxe-text-muted);
+    margin: 0;
+}
+.schedule-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--luxe-gold);
+    margin: 0;
 }
 
-.broadcast-area textarea:focus {
+/* ----- آمار ----- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin: 0.75rem 0;
+}
+.stat-card {
+    background: var(--luxe-bg);
+    padding: 0.8rem 0.5rem;
+    border-radius: var(--radius);
+    text-align: center;
+    border: 1px solid var(--luxe-border);
+}
+.stat-card .number {
+    font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+    font-weight: 800;
+    color: var(--luxe-gold);
+    display: block;
+}
+.stat-card .label {
+    font-size: clamp(0.6rem, 1.4vw, 0.7rem);
+    color: var(--luxe-text-muted);
+    margin-top: 2px;
+    display: block;
+}
+.stat-card.gold {
+    background: var(--luxe-gold);
     border-color: var(--luxe-gold);
 }
-
-/* ----- اسکرول نرم ----- */
-html {
-    scroll-behavior: smooth;
+.stat-card.gold .number,
+.stat-card.gold .label {
+    color: #0A0E17;
 }
 
-/* ----- ریسپانسیو ----- */
+.stats-detail {
+    background: var(--luxe-bg);
+    border-radius: var(--radius);
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--luxe-border);
+}
+.stats-detail .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: clamp(0.75rem, 2vw, 0.9rem);
+    border-bottom: 1px solid var(--luxe-border);
+}
+.stats-detail .row:last-child {
+    border-bottom: none;
+}
+.stats-detail .row .label {
+    color: var(--luxe-text-muted);
+}
+.stats-detail .row .value {
+    font-weight: 600;
+    color: var(--luxe-text);
+}
+
+/* ----- باکس پشتیبانی ----- */
+.support-box {
+    text-align: center;
+    padding: 0.6rem 0;
+    font-size: clamp(0.75rem, 2vw, 0.9rem);
+    color: var(--luxe-text-muted);
+}
+.support-box strong {
+    color: var(--luxe-text);
+}
+
+/* ----- نوت WebApp ----- */
+.webapp-note {
+    background: rgba(212, 184, 124, 0.04);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.8rem;
+    margin: 0.5rem 0 0.75rem;
+    text-align: center;
+    font-size: clamp(0.65rem, 1.6vw, 0.75rem);
+    color: var(--luxe-text-muted);
+    border: 1px dashed rgba(212, 184, 124, 0.08);
+}
+.webapp-note strong {
+    color: var(--luxe-gold);
+}
+
+/* ----- فوتر ----- */
+.footer-note {
+    text-align: center;
+    font-size: clamp(0.55rem, 1.2vw, 0.65rem);
+    color: var(--luxe-text-muted);
+    margin-top: 1rem;
+    opacity: 0.3;
+}
+
+/* ====== ریسپانسیو برای صفحه‌های خیلی کوچک ====== */
 @media (max-width: 400px) {
-    .container { padding: 20px 16px; }
-    .brand-logo { font-size: 28px; }
-    .time-grid { grid-template-columns: repeat(3, 1fr); }
-    .day-grid { gap: 4px; }
-    .day-grid button { padding: 10px 0; font-size: 13px; }
-    .schedule-item { flex-direction: column; align-items: stretch; gap: 6px; }
-    .schedule-item input[type="time"] { width: 100%; }
-    .step-dot { font-size: 11px; gap: 4px; }
-    .step-dot .dot { width: 28px; height: 28px; font-size: 11px; }
-    .stats-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
-    .stat-card .number { font-size: 24px; }
+    body {
+        padding: 0.5rem;
+    }
+    .container {
+        padding: 1.2rem 0.9rem;
+        border-radius: 20px;
+    }
+    .brand-logo {
+        font-size: clamp(1.4rem, 5vw, 1.8rem);
+    }
+    .time-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+    }
+    .time-grid button {
+        font-size: clamp(0.5rem, 1.4vw, 0.65rem);
+        padding: 0.3rem 0.1rem;
+        min-height: 32px;
+    }
+    .day-grid {
+        gap: 3px;
+    }
+    .day-grid button {
+        font-size: clamp(0.6rem, 1.5vw, 0.7rem);
+        padding: 0.4rem 0;
+        min-height: 30px;
+    }
+    .step-dot {
+        font-size: clamp(0.5rem, 1.2vw, 0.6rem);
+        gap: 2px;
+    }
+    .step-dot .dot {
+        width: clamp(22px, 6vw, 26px);
+        height: clamp(22px, 6vw, 26px);
+        font-size: clamp(0.55rem, 1.4vw, 0.7rem);
+    }
+    .btn {
+        padding: 0.7rem 0.8rem;
+        font-size: clamp(0.8rem, 2vw, 0.9rem);
+        min-height: 40px;
+    }
+    .tabs button {
+        font-size: clamp(0.6rem, 1.5vw, 0.7rem);
+        padding: 0.4rem 0.2rem;
+        min-height: 34px;
+    }
+    .filter-buttons button {
+        font-size: clamp(0.55rem, 1.4vw, 0.65rem);
+        padding: 0.3rem 0.4rem;
+        min-height: 28px;
+    }
+    .schedule-item input[type="time"] {
+        width: 60px;
+    }
+    .bank-card .number {
+        font-size: clamp(0.7rem, 2vw, 0.85rem);
+        letter-spacing: 0.5px;
+    }
+    .appointment-item {
+        padding: 0.6rem 0.7rem;
+    }
+    .stats-grid {
+        gap: 4px;
+    }
+    .stat-card .number {
+        font-size: clamp(1.1rem, 3vw, 1.4rem);
+    }
+}
+
+/* ====== صفحه‌های خیلی کوچک (زیر ۳۵۰px) ====== */
+@media (max-width: 350px) {
+    .container {
+        padding: 0.8rem 0.6rem;
+        border-radius: 16px;
+    }
+    .time-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .day-grid {
+        gap: 2px;
+    }
+    .day-grid button {
+        font-size: clamp(0.5rem, 1.2vw, 0.6rem);
+        padding: 0.3rem 0;
+        min-height: 26px;
+    }
+    .tabs button {
+        font-size: clamp(0.5rem, 1.2vw, 0.6rem);
+        padding: 0.3rem 0.1rem;
+        min-height: 28px;
+    }
+    .filter-buttons button {
+        font-size: clamp(0.5rem, 1.2vw, 0.6rem);
+        padding: 0.2rem 0.3rem;
+        min-height: 24px;
+    }
+    .btn {
+        font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+        padding: 0.5rem 0.6rem;
+        min-height: 34px;
+    }
+    .schedule-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+    }
+    .schedule-item input[type="time"] {
+        width: 100%;
+    }
+    .schedule-item input[type="number"] {
+        width: 100%;
+    }
 }

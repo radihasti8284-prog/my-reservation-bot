@@ -2,21 +2,139 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>M4Cut - ثبت‌نام</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .welcome-box {
+            background: var(--luxe-bg);
+            border-radius: var(--radius);
+            padding: 1.2rem 1rem;
+            margin-bottom: 1.2rem;
+            border: 1px solid var(--luxe-gold);
+            box-shadow: var(--luxe-glow);
+        }
+        .welcome-box .greeting {
+            font-size: clamp(1.1rem, 3vw, 1.5rem);
+            font-weight: 700;
+            color: var(--luxe-text);
+            margin-bottom: 6px;
+        }
+        .welcome-box .greeting span {
+            color: var(--luxe-gold);
+        }
+        .welcome-box .sub {
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
+            color: var(--luxe-text-muted);
+            line-height: 1.7;
+        }
+        .welcome-box .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin: 0.75rem 0;
+        }
+        .welcome-box .feature-item {
+            background: var(--luxe-card);
+            border-radius: var(--radius-sm);
+            padding: 0.6rem 0.4rem;
+            text-align: center;
+            border: 1px solid var(--luxe-border);
+        }
+        .welcome-box .feature-item .icon {
+            font-size: clamp(1.2rem, 3vw, 1.6rem);
+            display: block;
+        }
+        .welcome-box .feature-item .label {
+            font-size: clamp(0.55rem, 1.4vw, 0.65rem);
+            color: var(--luxe-text-muted);
+            margin-top: 2px;
+        }
+        .welcome-box .note {
+            font-size: clamp(0.65rem, 1.6vw, 0.75rem);
+            color: var(--luxe-gold);
+            background: rgba(212,184,124,0.04);
+            padding: 0.5rem 0.7rem;
+            border-radius: var(--radius-sm);
+            margin-top: 0.6rem;
+            border-right: 3px solid var(--luxe-gold);
+        }
+        .welcome-box .support {
+            font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+            color: var(--luxe-text-muted);
+            margin-top: 0.6rem;
+            text-align: center;
+        }
+        .welcome-box .support strong {
+            color: var(--luxe-text);
+        }
+        .form-title {
+            font-size: clamp(0.95rem, 2.4vw, 1.2rem);
+            font-weight: 600;
+            color: var(--luxe-text);
+            margin-bottom: 0.75rem;
+            text-align: center;
+        }
+        .form-title span {
+            color: var(--luxe-gold);
+        }
+        .error {
+            color: var(--luxe-danger);
+            margin-top: 0.6rem;
+            text-align: center;
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
+        }
+
+        @media (max-width: 400px) {
+            .welcome-box {
+                padding: 0.8rem 0.6rem;
+            }
+            .welcome-box .features {
+                gap: 4px;
+            }
+            .welcome-box .feature-item {
+                padding: 0.3rem 0.2rem;
+            }
+            .welcome-box .feature-item .icon {
+                font-size: clamp(1rem, 2.5vw, 1.2rem);
+            }
+        }
+
+        @media (max-width: 350px) {
+            .welcome-box .features {
+                grid-template-columns: 1fr 1fr;
+                gap: 3px;
+            }
+        }
+    </style>
 </head>
 <body>
 <div class="container">
     <div class="brand-header">
         <div class="brand-logo">M4<span>Cut</span></div>
-        <div class="brand-tagline">ثبت‌نام و ورود</div>
+        <div class="brand-tagline">آرایشگاه مدرن و حرفه‌ای</div>
     </div>
 
-    <p style="text-align:center;color:var(--m4cut-gray);font-size:14px;margin-bottom:16px;">
-        لطفاً اطلاعات خود را وارد کنید
-    </p>
+    <div class="welcome-box">
+        <div class="greeting">✨ سلام دوست عزیز به <span>M4Cut</span> خوش آمدید!</div>
+        <div class="sub">💇‍♂️ با ما بهترین تجربه‌ی کوتاهی مو را داشته باشید.</div>
+
+        <div class="features">
+            <div class="feature-item"><span class="icon">✂️</span><span class="label">کوتاهی حرفه‌ای</span></div>
+            <div class="feature-item"><span class="icon">⚡</span><span class="label">سریع و دقیق</span></div>
+            <div class="feature-item"><span class="icon">💆‍♂️</span><span class="label">مشاوره رایگان</span></div>
+            <div class="feature-item"><span class="icon">📅</span><span class="label">رزرو آسان</span></div>
+        </div>
+
+        <div class="note">💳 بیعانه: <strong>۲۰۰,۰۰۰ تومان</strong> (قابل بازگشت در صورت حضور)<br>⚠️ در صورت عدم حضور، نوبت شما از بین خواهد رفت.</div>
+
+        <div class="support">📞 پشتیبانی: <strong id="supportIndex">@Tvpnred</strong></div>
+    </div>
+
+    <div class="form-title">
+        برای ادامه، <span>ثبت‌نام</span> کنید
+    </div>
 
     <form id="authForm">
         <label>نام و نام خانوادگی</label>
@@ -26,13 +144,24 @@
         <input type="text" id="phone" placeholder="مثلاً: 09123456789" required>
 
         <button type="submit" class="btn">ورود / ثبت‌نام</button>
-        <div id="error" style="color:var(--m4cut-clay);margin-top:10px;text-align:center;font-size:14px;"></div>
+        <div id="error" class="error"></div>
     </form>
 
     <button onclick="Telegram.WebApp.close()" class="btn btn-close">❌ بستن</button>
 </div>
 
 <script>
+    async function loadSupportIndex() {
+        try {
+            const res = await fetch('/api/admin/support');
+            const data = await res.json();
+            if (data.status === 'ok') {
+                document.getElementById('supportIndex').textContent = data.support_contact;
+            }
+        } catch(e) {}
+    }
+    loadSupportIndex();
+
     document.getElementById('authForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const name = document.getElementById('name').value.trim();
@@ -51,9 +180,9 @@
 
         try {
             const res = await fetch('/api/auth', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({
                     telegram_id: tgUser.id,
                     name: name,
                     phone: phone

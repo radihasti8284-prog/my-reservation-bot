@@ -2,480 +2,52 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>M4Cut - پنل کاربری</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* ========================================
-           استایل‌های اختصاصی پنل کاربری
-           ======================================== */
-        .service-card {
-            background: var(--luxe-bg);
-            border-radius: 16px;
-            padding: 20px 22px;
-            margin: 10px 0 16px;
-            border: 1.5px solid var(--luxe-gold);
-            text-align: center;
-            box-shadow: var(--luxe-glow);
-        }
-        .service-card .icon { font-size: 36px; display: block; margin-bottom: 6px; }
-        .service-card .name { font-size: 20px; font-weight: 700; color: var(--luxe-text); }
-        .service-card .price { font-size: 22px; font-weight: 700; color: var(--luxe-gold); margin: 4px 0; }
-        .service-card .desc { font-size: 13px; color: var(--luxe-text-muted); margin-top: 6px; line-height: 1.7; }
-        .service-card .note {
-            background: rgba(212, 184, 124, 0.08);
-            padding: 12px 16px;
-            border-radius: 12px;
-            margin-top: 14px;
-            font-size: 13px;
-            color: var(--luxe-gold);
-            border-right: 3px solid var(--luxe-gold);
-            text-align: right;
-        }
-        .service-card .note strong { color: #f1c40f; }
-
-        .appointment-item {
-            background: var(--luxe-bg);
-            padding: 16px 18px;
-            margin: 10px 0;
-            border-radius: 16px;
-            border-right: 4px solid var(--luxe-gold);
-            transition: all 0.3s ease;
-        }
-        .appointment-item:hover { background: var(--luxe-card-hover); }
-        .appointment-item.confirmed { border-right-color: var(--luxe-success); }
-        .appointment-item.cancelled { border-right-color: var(--luxe-danger); opacity: 0.6; }
-        .appointment-item.completed { border-right-color: var(--luxe-text-muted); }
-        .appointment-item.past { opacity: 0.5; border-right-color: var(--luxe-border); }
-
-        .badge {
-            display: inline-block;
-            padding: 3px 14px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .badge-pending { background: rgba(212, 184, 124, 0.2); color: var(--luxe-gold); }
-        .badge-confirmed { background: rgba(46, 139, 87, 0.2); color: var(--luxe-success); }
-        .badge-cancelled { background: rgba(178, 34, 52, 0.2); color: var(--luxe-danger); }
-        .badge-completed { background: rgba(154, 165, 181, 0.2); color: var(--luxe-text-muted); }
-        .badge-past { background: rgba(154, 165, 181, 0.1); color: var(--luxe-text-muted); }
-
-        .filter-buttons {
-            display: flex;
-            gap: 8px;
-            margin: 12px 0 16px;
-        }
-        .filter-buttons button {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1px solid var(--luxe-border);
-            border-radius: 12px;
-            background: var(--luxe-bg);
-            color: var(--luxe-text-muted);
-            font-size: 12px;
-            font-weight: 500;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .filter-buttons button.active {
-            background: var(--luxe-gold);
-            border-color: var(--luxe-gold);
-            color: #0A0E17;
-        }
-        .filter-buttons button:hover:not(.active) {
-            border-color: var(--luxe-gold-dark);
-            color: var(--luxe-text);
-        }
-
-        .tabs {
-            display: flex;
-            gap: 6px;
-            margin: 16px 0 20px;
-            background: var(--luxe-bg);
-            border-radius: 16px;
-            padding: 4px;
-            border: 1px solid var(--luxe-border);
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 10px 8px;
-            border: none;
-            border-radius: 12px;
-            background: transparent;
-            color: var(--luxe-text-muted);
-            font-size: 13px;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .tab-btn.active {
-            background: var(--luxe-gold);
-            color: #0A0E17;
-            box-shadow: 0 4px 12px rgba(212, 184, 124, 0.2);
-        }
-        .tab-btn:hover:not(.active) { color: var(--luxe-text); }
-
-        .tab-content { display: none; animation: fadeSlide 0.4s ease; }
-        .tab-content.active { display: block; }
-
-        @keyframes fadeSlide {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .month-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 8px 0 4px;
-        }
-        .month-nav button {
-            background: none;
-            border: none;
-            font-size: 22px;
-            cursor: pointer;
-            color: var(--luxe-gold);
-            padding: 0 16px;
-            font-weight: 300;
-            transition: all 0.3s ease;
-        }
-        .month-nav button:hover { color: var(--luxe-gold-light); transform: scale(1.1); }
-        .month-nav span { font-weight: 600; font-size: 16px; color: var(--luxe-text); }
-
-        .day-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-            margin: 12px 0 18px;
-        }
-        .day-name {
-            font-size: 11px;
-            color: var(--luxe-text-muted);
-            text-align: center;
-            padding: 6px 0;
-            font-weight: 600;
-            opacity: 0.6;
-        }
-        .day-grid button {
-            padding: 12px 0;
-            border: 1.5px solid var(--luxe-border);
-            border-radius: 12px;
-            background: var(--luxe-bg);
-            color: var(--luxe-text);
-            font-size: 14px;
-            font-weight: 500;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-        .day-grid button:hover:not(:disabled) {
-            border-color: var(--luxe-gold-dark);
-            background: var(--luxe-card-hover);
-        }
-        .day-grid button.selected {
-            background: var(--luxe-gold);
-            border-color: var(--luxe-gold);
-            color: #0A0E17;
-            box-shadow: 0 4px 15px rgba(212, 184, 124, 0.25);
-        }
-        .day-grid button:disabled { opacity: 0.25; cursor: not-allowed; }
-
-        .time-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin: 12px 0 18px;
-        }
-        .time-grid button {
-            padding: 10px 4px;
-            border: 1.5px solid var(--luxe-border);
-            border-radius: 12px;
-            background: var(--luxe-bg);
-            color: var(--luxe-text);
-            font-size: 13px;
-            font-weight: 500;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-        .time-grid button:hover {
-            border-color: var(--luxe-gold-dark);
-            background: var(--luxe-card-hover);
-        }
-        .time-grid button.selected {
-            background: var(--luxe-gold);
-            border-color: var(--luxe-gold);
-            color: #0A0E17;
-            box-shadow: 0 4px 15px rgba(212, 184, 124, 0.2);
-        }
-        .time-grid button:disabled { opacity: 0.3; cursor: not-allowed; }
-
-        .bank-card {
-            background: var(--luxe-bg);
-            border-radius: 16px;
-            padding: 18px 20px;
-            margin: 12px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid var(--luxe-border);
-        }
-        .bank-card .number {
-            font-family: 'Courier New', monospace;
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            color: var(--luxe-gold);
-            direction: ltr;
-        }
-        .bank-card .label { font-size: 11px; color: var(--luxe-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        .bank-card .logo { font-size: 28px; opacity: 0.8; }
-
-        .upload-area {
-            border: 2px dashed var(--luxe-border);
-            border-radius: 16px;
-            padding: 24px 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: var(--luxe-bg);
-            margin: 8px 0 12px;
-        }
-        .upload-area:hover { border-color: var(--luxe-gold); background: var(--luxe-card-hover); }
-        .upload-area .icon { font-size: 32px; display: block; margin-bottom: 6px; }
-        .upload-area .text { font-size: 14px; color: var(--luxe-text-muted); }
-        .upload-area .filename { font-size: 13px; color: var(--luxe-gold); margin-top: 4px; font-weight: 500; }
-
-        .receipt-preview {
-            max-width: 100%;
-            max-height: 160px;
-            border-radius: 12px;
-            margin: 8px 0;
-            border: 1px solid var(--luxe-border);
-        }
-
-        .step-indicator {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 24px;
-            padding: 0 4px;
-        }
-        .step-dot {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--luxe-text-muted);
-        }
-        .step-dot .dot {
-            width: 34px; height: 34px; border-radius: 50%;
-            background: var(--luxe-bg);
-            border: 2px solid var(--luxe-border);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 13px;
-            color: var(--luxe-text-muted);
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        .step-dot.active .dot {
-            background: var(--luxe-gold);
-            border-color: var(--luxe-gold);
-            color: #0A0E17;
-            box-shadow: 0 4px 20px rgba(212, 184, 124, 0.3);
-        }
-        .step-dot.completed .dot {
-            background: var(--luxe-success);
-            border-color: var(--luxe-success);
-            color: white;
-        }
-        .step-dot.active { color: var(--luxe-text); }
-
-        .booking-step { display: none; animation: fadeSlide 0.4s ease; }
-        .booking-step--visible { display: block; }
-
-        .step-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--luxe-text); }
-        .step-help { font-size: 14px; color: var(--luxe-text-muted); margin-bottom: 16px; }
-
-        .msg {
-            padding: 14px 18px;
-            border-radius: 14px;
-            margin: 12px 0;
-            font-size: 14px;
-            font-weight: 500;
-            border-right: 4px solid transparent;
-        }
-        .msg-success { background: rgba(46, 139, 87, 0.12); color: var(--luxe-success); border-right-color: var(--luxe-success); }
-        .msg-error { background: rgba(178, 34, 52, 0.12); color: var(--luxe-danger); border-right-color: var(--luxe-danger); }
-        .msg-info { background: rgba(212, 184, 124, 0.08); color: var(--luxe-gold); border-right-color: var(--luxe-gold); }
-
-        .btn {
-            display: inline-block;
-            width: 100%;
-            padding: 14px 20px;
-            border: none;
-            border-radius: 14px;
-            font-size: 16px;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            text-align: center;
-            letter-spacing: 0.3px;
-            background: var(--luxe-gold);
-            color: #0A0E17;
-            box-shadow: 0 4px 15px rgba(212, 184, 124, 0.25);
-        }
-        .btn:hover {
-            background: var(--luxe-gold-light);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(212, 184, 124, 0.35);
-        }
-        .btn:disabled {
-            opacity: 0.4;
-            pointer-events: none;
-        }
-        .btn-close {
-            background: transparent;
-            color: var(--luxe-text-muted);
-            border: 1px solid var(--luxe-border);
-            box-shadow: none;
-            margin-top: 16px;
-        }
-        .btn-close:hover {
-            background: var(--luxe-border);
-            color: var(--luxe-text);
-            box-shadow: none;
-            transform: none;
-        }
-        .btn-sm {
-            padding: 6px 14px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: inherit;
-            font-weight: 600;
-            font-size: 12px;
-            transition: all 0.2s ease;
-            display: inline-block;
-            margin: 4px 2px;
-        }
-        .btn-sm-primary { background: var(--luxe-gold); color: #0A0E17; }
-        .btn-sm-primary:hover { background: var(--luxe-gold-light); }
-        .btn-sm-danger { background: var(--luxe-danger); color: white; }
-        .btn-sm-danger:hover { background: #c0392b; }
-        .btn-sm-success { background: var(--luxe-success); color: white; }
-        .btn-sm-success:hover { background: #3CA06A; }
-
-        .container {
-            max-width: 480px;
-            width: 100%;
-            margin: 0 auto;
-            background: var(--luxe-card);
-            border-radius: 28px;
-            padding: 32px 24px;
-            box-shadow: var(--luxe-shadow), var(--luxe-glow);
-            border: 1px solid var(--luxe-border);
-        }
-        .brand-header {
-            text-align: center;
-            padding-bottom: 24px;
-            border-bottom: 1px solid var(--luxe-border);
-            margin-bottom: 24px;
-        }
-        .brand-logo {
-            font-size: 36px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            color: var(--luxe-text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 4px;
-        }
-        .brand-logo span { color: var(--luxe-gold); }
-        .brand-tagline {
-            font-size: 13px;
-            color: var(--luxe-text-muted);
-            margin-top: 6px;
-            letter-spacing: 1px;
-            font-weight: 300;
-        }
-
+        /* استایل‌های اختصاصی کاربر (ریسپانسیو) */
         .user-info {
             background: var(--luxe-bg);
-            padding: 12px 16px;
-            border-radius: 14px;
-            margin-bottom: 16px;
-            font-size: 14px;
+            padding: 0.7rem 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
             border: 1px solid var(--luxe-border);
             color: var(--luxe-text-muted);
+            word-break: break-word;
         }
-        .user-info strong { color: var(--luxe-text); }
-
-        .price-tag {
-            background: rgba(212, 184, 124, 0.08);
-            padding: 10px 16px;
-            border-radius: 12px;
-            margin: 6px 0;
-            text-align: center;
-            border: 1px solid var(--luxe-border);
-        }
-        .price-tag span:first-child { font-size: 14px; color: var(--luxe-text-muted); }
-        .price-tag span:last-child { font-size: 18px; font-weight: 700; color: var(--luxe-gold); }
-
-        .review-box {
-            background: var(--luxe-bg);
-            padding: 12px 16px;
-            border-radius: 12px;
-            margin: 6px 0;
-            border: 1px solid var(--luxe-border);
-        }
-        .review-box .stars {
-            color: var(--luxe-gold);
-            font-size: 18px;
-            letter-spacing: 2px;
-        }
-        .review-box .comment {
-            font-size: 13px;
-            color: var(--luxe-text-muted);
-            margin-top: 4px;
-        }
-
-        :root {
-            --luxe-bg: #0A0E17;
-            --luxe-card: #131B2A;
-            --luxe-card-hover: #1A2438;
-            --luxe-gold: #D4B87C;
-            --luxe-gold-light: #E8C98A;
-            --luxe-gold-dark: #B8995E;
-            --luxe-text: #EAEAEA;
-            --luxe-text-muted: #9AA5B5;
-            --luxe-border: #1E2A3A;
-            --luxe-border-light: #2A3A50;
-            --luxe-success: #2E8B57;
-            --luxe-danger: #B22234;
-            --luxe-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-            --luxe-glow: 0 0 20px rgba(212, 184, 124, 0.08);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: var(--luxe-bg);
+        .user-info strong {
             color: var(--luxe-text);
-            font-family: 'IRANYekanXVF', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            direction: rtl;
-            min-height: 100vh;
+        }
+
+        .btn-sm-group {
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 20px;
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 8px;
+        }
+        .btn-sm-group .btn-sm {
+            flex: 1 1 auto;
+            min-width: 60px;
+        }
+
+        @media (max-width: 400px) {
+            .time-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .btn-sm-group .btn-sm {
+                min-width: 45px;
+                font-size: clamp(0.55rem, 1.4vw, 0.65rem);
+                padding: 0.3rem 0.5rem;
+            }
+        }
+
+        @media (max-width: 350px) {
+            .time-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
@@ -493,7 +65,7 @@
         <button class="tab-btn" data-tab="myapps">📋 نوبت‌های من</button>
     </div>
 
-    <!-- ====== تب رزرو ====== -->
+    <!-- تب رزرو -->
     <div id="tab-reserve" class="tab-content active">
         <form id="bookingForm">
             <div class="step-indicator">
@@ -502,7 +74,6 @@
                 <div class="step-dot" data-step="3"><span class="dot">۳</span> ساعت</div>
             </div>
 
-            <!-- استپ ۱ -->
             <div class="booking-step booking-step--visible" data-step="1">
                 <div class="step-title">۱. نوع آرایش</div>
                 <p class="step-help">تنها گزینه موجود:</p>
@@ -511,30 +82,25 @@
                     <div class="name">کوتاهی مو</div>
                     <div class="price">۲۰۰,۰۰۰ تومان</div>
                     <div class="desc">✨ کوتاهی و اصلاح مو با جدیدترین متدها</div>
-                    <div class="note">
-                        <strong>⚠️ نکته مهم:</strong> در صورت عدم حضور در وقت تعیین‌شده، نوبت شما از بین خواهد رفت.
-                    </div>
+                    <div class="note"><strong>⚠️ نکته مهم:</strong> در صورت عدم حضور، نوبت از بین خواهد رفت.</div>
                 </div>
-                <button type="button" class="btn" style="margin-top:12px;" onclick="goToStep(2)">ادامه ➜</button>
+                <button type="button" class="btn" style="margin-top:0.75rem;" onclick="goToStep(2)">ادامه ➜</button>
             </div>
 
-            <!-- استپ ۲ -->
             <div class="booking-step" data-step="2">
                 <div class="step-title">۲. انتخاب تاریخ</div>
-                <p class="step-help">تاریخ مورد نظر را انتخاب کنید — فقط از امروز به بعد</p>
+                <p class="step-help">فقط از امروز به بعد</p>
                 <div class="month-nav">
                     <button type="button" id="prevMonth">‹</button>
                     <span id="currentMonthDisplay">فروردین ۱۴۰۴</span>
                     <button type="button" id="nextMonth">›</button>
                 </div>
                 <div id="dayGrid" class="day-grid"></div>
-                <button type="button" class="btn" style="margin-top:12px;" onclick="goToStep(3)">ادامه ➜</button>
+                <button type="button" class="btn" style="margin-top:0.75rem;" onclick="goToStep(3)">ادامه ➜</button>
             </div>
 
-            <!-- استپ ۳ -->
             <div class="booking-step" data-step="3">
                 <div class="step-title">۳. ساعت و پرداخت</div>
-                <p class="step-help">ساعت مورد نظر را انتخاب کنید</p>
                 <div id="timeGrid" class="time-grid"></div>
                 <div class="bank-card">
                     <div>
@@ -543,10 +109,7 @@
                     </div>
                     <div class="logo">💳</div>
                 </div>
-                <div class="price-tag">
-                    <span>مبلغ بیعانه:</span>
-                    <span>۲۰۰,۰۰۰ تومان</span>
-                </div>
+                <div class="price-tag"><span>مبلغ بیعانه:</span><span>۲۰۰,۰۰۰ تومان</span></div>
                 <div class="upload-area" id="uploadBox">
                     <span class="icon">📎</span>
                     <div class="text">برای آپلود رسید کلیک کنید</div>
@@ -560,7 +123,7 @@
         </form>
     </div>
 
-    <!-- ====== تب نوبت‌های من ====== -->
+    <!-- تب نوبت‌های من -->
     <div id="tab-myapps" class="tab-content">
         <div class="filter-buttons">
             <button class="active" data-filter="all">🔽 همه</button>
@@ -574,10 +137,6 @@
 </div>
 
 <script>
-    // ============================================================
-    //   M4Cut - اسکریپت کاربر (کامل با ویرایش و نظردهی)
-    // ============================================================
-
     // ====== کاربر ======
     const userStr = localStorage.getItem('user');
     if (!userStr) window.location.href = '/static/index.html';
@@ -586,59 +145,55 @@
 
     // ====== متغیرها ======
     let selectedService = { id: null, name: 'کوتاهی مو', price: 200000 };
-    let selectedDate = null;
-    let selectedTime = null;
-    let uploadedFileUrl = null;
-    let currentStep = 1;
-    let allAppointments = [];
-    let currentFilter = 'all';
+    let selectedDate = null, selectedTime = null, uploadedFileUrl = null;
+    let currentStep = 1, allAppointments = [], currentFilter = 'all';
 
-    // ====== تاریخ شمسی (ساده و دقیق) ======
-    const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+    // ====== تاریخ شمسی ======
+    const persianMonths = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
     const today = new Date();
     let currentYear = today.getFullYear() - 621;
     let currentMonth = today.getMonth() + 2;
     if (currentMonth > 12) { currentMonth -= 12; currentYear += 1; }
     let currentDay = today.getDate() + 10;
-    const maxDayInMonth = (y, m) => {
-        const d = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
-        if (m === 11 && ((y % 33) === 1 || (y % 33) === 5 || (y % 33) === 9 || (y % 33) === 13 || (y % 33) === 17 || (y % 33) === 22 || (y % 33) === 26 || (y % 33) === 30)) return 30;
+    const maxDay = (y,m) => {
+        const d=[31,31,31,31,31,31,30,30,30,30,30,29];
+        if(m===11 && ((y%33)===1||(y%33)===5||(y%33)===9||(y%33)===13||(y%33)===17||(y%33)===22||(y%33)===26||(y%33)===30)) return 30;
         return d[m];
     };
-    if (currentDay > maxDayInMonth(currentYear, currentMonth - 1)) currentDay = maxDayInMonth(currentYear, currentMonth - 1);
+    if (currentDay > maxDay(currentYear, currentMonth-1)) currentDay = maxDay(currentYear, currentMonth-1);
     let selectedYear = currentYear, selectedMonth = currentMonth, selectedDay = currentDay;
 
-    function isPastDate(y, m, d) {
+    function isPast(y,m,d) {
         if (y < currentYear) return true;
-        if (y === currentYear && m < currentMonth - 1) return true;
-        if (y === currentYear && m === currentMonth - 1 && d < currentDay) return true;
+        if (y === currentYear && m < currentMonth-1) return true;
+        if (y === currentYear && m === currentMonth-1 && d < currentDay) return true;
         return false;
     }
 
-    function buildDayGrid(y, m) {
+    function buildDayGrid(y,m) {
         const grid = document.getElementById('dayGrid');
         grid.innerHTML = '';
-        const days = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
+        const days = ['ش','ی','د','س','چ','پ','ج'];
         days.forEach(d => {
-            const div = document.createElement('div');
-            div.className = 'day-name';
-            div.textContent = d;
+            const div=document.createElement('div');
+            div.className='day-name';
+            div.textContent=d;
             grid.appendChild(div);
         });
-        const total = maxDayInMonth(y, m);
-        for (let d = 1; d <= total; d++) {
+        const total = maxDay(y,m);
+        for (let d=1; d<=total; d++) {
             const btn = document.createElement('button');
             btn.textContent = d;
             btn.dataset.day = d;
-            if (isPastDate(y, m, d)) btn.disabled = true;
-            if (d === selectedDay && y === selectedYear && m === selectedMonth - 1) btn.classList.add('selected');
+            if (isPast(y,m,d)) btn.disabled = true;
+            if (d === selectedDay && y === selectedYear && m === selectedMonth-1) btn.classList.add('selected');
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.day-grid button').forEach(b => b.classList.remove('selected'));
                 this.classList.add('selected');
                 selectedDay = parseInt(this.dataset.day);
                 selectedYear = y;
-                selectedMonth = m + 1;
-                selectedDate = `${selectedYear}/${String(selectedMonth).padStart(2, '0')}/${String(selectedDay).padStart(2, '0')}`;
+                selectedMonth = m+1;
+                selectedDate = `${selectedYear}/${String(selectedMonth).padStart(2,'0')}/${String(selectedDay).padStart(2,'0')}`;
                 goToStep(3);
             });
             grid.appendChild(btn);
@@ -647,19 +202,18 @@
     }
 
     function updateMonth(delta) {
-        let nm = selectedMonth - 1 + delta;
-        let ny = selectedYear;
+        let nm = selectedMonth-1+delta, ny = selectedYear;
         if (nm < 0) { nm = 11; ny -= 1; }
         if (nm > 11) { nm = 0; ny += 1; }
         if (ny < currentYear) return;
-        if (ny === currentYear && nm < currentMonth - 1) return;
+        if (ny === currentYear && nm < currentMonth-1) return;
         selectedYear = ny;
-        selectedMonth = nm + 1;
-        selectedDay = Math.min(selectedDay, maxDayInMonth(ny, nm));
+        selectedMonth = nm+1;
+        selectedDay = Math.min(selectedDay, maxDay(ny, nm));
         buildDayGrid(ny, nm);
     }
-    document.getElementById('prevMonth').addEventListener('click', () => updateMonth(-1));
-    document.getElementById('nextMonth').addEventListener('click', () => updateMonth(1));
+    document.getElementById('prevMonth').addEventListener('click', ()=>updateMonth(-1));
+    document.getElementById('nextMonth').addEventListener('click', ()=>updateMonth(1));
 
     // ====== تب‌ها ======
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -667,12 +221,11 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+            document.getElementById('tab-'+this.dataset.tab).classList.add('active');
             if (this.dataset.tab === 'myapps') loadMyAppointments();
         });
     });
 
-    // ====== فیلتر نوبت‌ها ======
     document.querySelectorAll('.filter-buttons button').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.filter-buttons button').forEach(b => b.classList.remove('active'));
@@ -687,10 +240,8 @@
         try {
             const res = await fetch('/api/services');
             const data = await res.json();
-            if (data.services && data.services.length > 0) {
-                selectedService.id = data.services[0].id;
-            }
-        } catch (e) { console.error(e); }
+            if (data.services && data.services.length > 0) selectedService.id = data.services[0].id;
+        } catch(e) {}
     }
 
     // ====== استپ‌ها ======
@@ -704,20 +255,21 @@
             el.classList.toggle('active', s === step);
             el.classList.toggle('completed', s < step);
         });
-        document.querySelector('#bookingForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        if (step === 2) buildDayGrid(selectedYear, selectedMonth - 1);
-        if (step === 3) {
-            buildTimeGrid();
-            document.getElementById('submitBtn').disabled = !(selectedDate && selectedTime && uploadedFileUrl);
-            document.getElementById('submitBtn').style.opacity = document.getElementById('submitBtn').disabled ? '0.5' : '1';
-        }
+        if (step === 2) buildDayGrid(selectedYear, selectedMonth-1);
+        if (step === 3) { buildTimeGrid(); updateSubmitBtn(); }
+    }
+
+    function updateSubmitBtn() {
+        const disabled = !(selectedDate && selectedTime && uploadedFileUrl);
+        document.getElementById('submitBtn').disabled = disabled;
+        document.getElementById('submitBtn').style.opacity = disabled ? '0.5' : '1';
     }
 
     // ====== ساخت ساعت‌ها ======
     function buildTimeGrid() {
         const grid = document.getElementById('timeGrid');
         grid.innerHTML = '';
-        ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'].forEach(t => {
+        ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'].forEach(t => {
             const btn = document.createElement('button');
             btn.textContent = `${t} - ۲۰۰,۰۰۰ تومان`;
             btn.dataset.time = t;
@@ -725,8 +277,7 @@
                 document.querySelectorAll('.time-grid button').forEach(b => b.classList.remove('selected'));
                 this.classList.add('selected');
                 selectedTime = this.dataset.time;
-                document.getElementById('submitBtn').disabled = false;
-                document.getElementById('submitBtn').style.opacity = '1';
+                updateSubmitBtn();
             });
             grid.appendChild(btn);
         });
@@ -745,55 +296,31 @@
         const formData = new FormData();
         formData.append('file', file);
         try {
-            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+            const res = await fetch('/api/upload', { method:'POST', body:formData });
             const data = await res.json();
             if (data.status === 'ok') {
                 uploadedFileUrl = data.url;
                 previewImg.src = data.url;
                 previewImg.style.display = 'block';
-                document.getElementById('submitBtn').disabled = !(selectedDate && selectedTime && uploadedFileUrl);
-                document.getElementById('submitBtn').style.opacity = document.getElementById('submitBtn').disabled ? '0.5' : '1';
-            } else {
-                alert('خطا در آپلود رسید.');
-            }
-        } catch (e) {
-            alert('خطا در ارتباط با سرور.');
-        }
+                updateSubmitBtn();
+            } else alert('خطا در آپلود.');
+        } catch(e) { alert('خطا در ارتباط با سرور.'); }
     });
 
     // ====== ثبت نوبت ======
     document.getElementById('bookingForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const msgDiv = document.getElementById('formMessage');
-
-        if (!selectedService.id) {
-            msgDiv.innerHTML = '<div class="msg msg-error">❌ خطا در شناسایی خدمت.</div>';
-            return;
-        }
-        if (!selectedDate) {
-            msgDiv.innerHTML = '<div class="msg msg-error">❌ لطفاً یک تاریخ انتخاب کنید.</div>';
-            return;
-        }
-        if (!selectedTime) {
-            msgDiv.innerHTML = '<div class="msg msg-error">❌ لطفاً یک ساعت انتخاب کنید.</div>';
-            return;
-        }
-        if (!uploadedFileUrl) {
-            msgDiv.innerHTML = '<div class="msg msg-error">⚠️ لطفاً رسید را آپلود کنید.</div>';
-            return;
-        }
+        if (!selectedService.id) return msgDiv.innerHTML = '<div class="msg msg-error">❌ خطا در شناسایی خدمت.</div>';
+        if (!selectedDate) return msgDiv.innerHTML = '<div class="msg msg-error">❌ تاریخ انتخاب نشده.</div>';
+        if (!selectedTime) return msgDiv.innerHTML = '<div class="msg msg-error">❌ ساعت انتخاب نشده.</div>';
+        if (!uploadedFileUrl) return msgDiv.innerHTML = '<div class="msg msg-error">⚠️ رسید را آپلود کنید.</div>';
 
         try {
             const res = await fetch('/api/appointments', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    telegram_id: user.telegram_id,
-                    service_id: selectedService.id,
-                    date: selectedDate,
-                    time: selectedTime,
-                    receipt: uploadedFileUrl
-                })
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({telegram_id:user.telegram_id, service_id:selectedService.id, date:selectedDate, time:selectedTime, receipt:uploadedFileUrl})
             });
             const result = await res.json();
             if (result.status === 'ok') {
@@ -802,67 +329,55 @@
             } else {
                 msgDiv.innerHTML = `<div class="msg msg-error">❌ ${result.message}</div>`;
             }
-        } catch (e) {
-            msgDiv.innerHTML = '<div class="msg msg-error">❌ خطا در ارتباط با سرور.</div>';
-        }
+        } catch(e) { msgDiv.innerHTML = '<div class="msg msg-error">❌ خطا در ارتباط با سرور.</div>'; }
     });
 
-    // ====== بارگیری نوبت‌ها ======
+    // ====== نوبت‌ها ======
     async function loadMyAppointments() {
         try {
             const res = await fetch(`/api/appointments/user/${user.telegram_id}`);
             const data = await res.json();
             allAppointments = data.appointments || [];
             renderAppointments();
-        } catch (e) {
-            document.getElementById('myAppointmentsList').innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:20px;">خطا در بارگیری نوبت‌ها.</p>';
+        } catch(e) {
+            document.getElementById('myAppointmentsList').innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">خطا در بارگیری نوبت‌ها.</p>';
         }
     }
 
-    // ====== رندر نوبت‌ها با دکمه‌های ویرایش و نظردهی ======
     function renderAppointments() {
         const div = document.getElementById('myAppointmentsList');
         let filtered = allAppointments;
-        if (currentFilter === 'upcoming') {
-            filtered = allAppointments.filter(a => a.status !== 'cancelled' && a.status !== 'completed');
-        } else if (currentFilter === 'past') {
-            filtered = allAppointments.filter(a => a.status === 'cancelled' || a.status === 'completed');
-        }
+        if (currentFilter === 'upcoming') filtered = allAppointments.filter(a => a.status !== 'cancelled' && a.status !== 'completed');
+        else if (currentFilter === 'past') filtered = allAppointments.filter(a => a.status === 'cancelled' || a.status === 'completed');
 
         if (filtered.length === 0) {
-            div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:20px;">هیچ نوبتی در این دسته‌بندی وجود ندارد.</p>';
+            div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">هیچ نوبتی در این دسته‌بندی وجود ندارد.</p>';
             return;
         }
 
         const statusMap = {
-            'pending': '<span class="badge badge-pending">در انتظار تأیید</span>',
-            'confirmed': '<span class="badge badge-confirmed">✅ تأیید شده</span>',
-            'cancelled': '<span class="badge badge-cancelled">لغو شده</span>',
-            'completed': '<span class="badge badge-completed">انجام شده</span>'
+            'pending':'<span class="badge badge-pending">در انتظار</span>',
+            'confirmed':'<span class="badge badge-confirmed">✅ تأیید</span>',
+            'cancelled':'<span class="badge badge-cancelled">لغو</span>',
+            'completed':'<span class="badge badge-completed">انجام</span>'
         };
 
         div.innerHTML = filtered.map(a => {
             const isPast = a.status === 'cancelled' || a.status === 'completed';
             const isPending = a.status === 'pending';
-            const isConfirmed = a.status === 'confirmed';
-
             return `
                 <div class="appointment-item ${a.status} ${isPast ? 'past' : ''}">
-                    <strong>${a.service_name}</strong><br>
-                    📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
-                    وضعیت: ${statusMap[a.status] || a.status}
-                    ${a.receipt ? `<br><img src="${a.receipt}" style="max-height:60px;border-radius:8px;margin-top:6px;border:1px solid var(--luxe-border);" />` : ''}
-                    ${isPast ? '<br><span style="font-size:11px;color:var(--luxe-text-muted);opacity:0.6;">📆 نوبت گذشته</span>' : ''}
-                    <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;">
+                    <strong>${a.service_name}</strong>
+                    <div style="font-size:clamp(0.7rem,1.8vw,0.85rem);margin:2px 0;">
+                        📅 ${a.appointment_date} | 🕐 ${a.appointment_time}
+                    </div>
+                    <div>وضعیت: ${statusMap[a.status] || a.status}</div>
+                    ${a.receipt ? `<div><img src="${a.receipt}" style="max-height:50px;border-radius:8px;margin-top:4px;border:1px solid var(--luxe-border);" /></div>` : ''}
+                    ${isPast ? '<div style="font-size:clamp(0.55rem,1.4vw,0.65rem);color:var(--luxe-text-muted);opacity:0.6;margin-top:4px;">📆 گذشته</div>' : ''}
+                    <div class="btn-sm-group">
                         ${isPending ? `
                             <button class="btn-sm btn-sm-primary" onclick="editAppointment(${a.id})">✏️ ویرایش</button>
                             <button class="btn-sm btn-sm-danger" onclick="cancelAppointment(${a.id})">🗑️ لغو</button>
-                        ` : ''}
-                        ${isConfirmed ? `
-                            <button class="btn-sm btn-sm-primary" onclick="rateAppointment(${a.id})">⭐ نظردهی</button>
-                        ` : ''}
-                        ${a.status === 'completed' ? `
-                            <button class="btn-sm btn-sm-primary" onclick="viewReview(${a.id})">📝 مشاهده نظر</button>
                         ` : ''}
                     </div>
                 </div>
@@ -870,97 +385,41 @@
         }).join('');
     }
 
-    // ====== ویرایش نوبت ======
-    async function editAppointment(appointmentId) {
+    // ====== ویرایش و لغو ======
+    async function editAppointment(id) {
         const newDate = prompt('تاریخ جدید (مثلاً 1404/05/20):');
         if (!newDate) return;
         const newTime = prompt('ساعت جدید (مثلاً 16:00):');
         if (!newTime) return;
-
         try {
-            const res = await fetch(`/api/appointments/${appointmentId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    telegram_id: user.telegram_id,
-                    date: newDate,
-                    time: newTime
-                })
+            const res = await fetch(`/api/appointments/${id}`, {
+                method:'PUT',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({telegram_id:user.telegram_id, date:newDate, time:newTime})
             });
             const result = await res.json();
             alert(result.message);
             loadMyAppointments();
-        } catch (e) {
-            alert('خطا در ویرایش نوبت.');
-        }
+        } catch(e) { alert('خطا!'); }
     }
 
-    // ====== لغو نوبت ======
-    async function cancelAppointment(appointmentId) {
-        if (!confirm('آیا از لغو این نوبت مطمئن هستید؟')) return;
+    async function cancelAppointment(id) {
+        if (!confirm('لغو نوبت؟')) return;
         try {
-            const res = await fetch(`/api/appointments/${appointmentId}/cancel`, { method: 'POST' });
+            const res = await fetch(`/api/appointments/${id}/cancel`, { method:'POST' });
             const result = await res.json();
             alert(result.message);
             loadMyAppointments();
-        } catch (e) {
-            alert('خطا در لغو نوبت.');
-        }
+        } catch(e) { alert('خطا!'); }
     }
 
-    // ====== نظردهی ======
-    async function rateAppointment(appointmentId) {
-        const rating = prompt('امتیاز خود را از ۱ تا ۵ وارد کنید:');
-        if (!rating || isNaN(rating) || rating < 1 || rating > 5) {
-            alert('لطفاً عددی بین ۱ تا ۵ وارد کنید.');
-            return;
-        }
-        const comment = prompt('نظر خود را وارد کنید (اختیاری):');
-
-        try {
-            const res = await fetch('/api/reviews', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: user.id,
-                    appointment_id: appointmentId,
-                    rating: parseInt(rating),
-                    comment: comment || ''
-                })
-            });
-            const result = await res.json();
-            alert(result.message);
-        } catch (e) {
-            alert('خطا در ثبت نظر.');
-        }
-    }
-
-    // ====== مشاهده نظر ======
-    async function viewReview(appointmentId) {
-        try {
-            const res = await fetch(`/api/reviews/${appointmentId}`);
-            const data = await res.json();
-            if (data.review) {
-                const r = data.review;
-                const stars = '⭐'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
-                alert(`امتیاز: ${r.rating}/5\n${stars}\n\nنظر: ${r.comment || 'نظری ثبت نشده است.'}`);
-            } else {
-                alert('هنوز نظری برای این نوبت ثبت نشده است.');
-            }
-        } catch (e) {
-            alert('خطا در دریافت نظر.');
-        }
-    }
-
-    // ====== مقداردهی اولیه ======
+    // ====== مقداردهی ======
     loadServiceId();
-    buildDayGrid(currentYear, currentMonth - 1);
+    buildDayGrid(currentYear, currentMonth-1);
     buildTimeGrid();
-
     document.getElementById('submitBtn').disabled = true;
     document.getElementById('submitBtn').style.opacity = '0.5';
-
-    selectedDate = `${currentYear}/${String(currentMonth).padStart(2, '0')}/${String(currentDay).padStart(2, '0')}`;
+    selectedDate = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(currentDay).padStart(2,'0')}`;
     selectedDay = currentDay;
     selectedYear = currentYear;
     selectedMonth = currentMonth;

@@ -2,34 +2,188 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>M4Cut - آرایشگاه تخصصی مردانه</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* ... تمام استایل‌های قبلی ... */
-        .webapp-note {
-            background: rgba(212, 184, 124, 0.06);
-            padding: 10px 16px;
-            border-radius: 12px;
-            margin: 10px 0;
+        /* استایل‌های اختصاصی لندینگ (ریسپانسیو) */
+        .hero {
             text-align: center;
-            font-size: 13px;
+            padding: 0.5rem 0 1rem;
+        }
+        .hero .greeting {
+            font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+            font-weight: 700;
+            color: var(--luxe-text);
+        }
+        .hero .greeting span {
+            color: var(--luxe-gold);
+        }
+        .hero .sub {
+            font-size: clamp(0.8rem, 2vw, 0.95rem);
             color: var(--luxe-text-muted);
+            margin-top: 4px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin: 1rem 0 1.2rem;
+        }
+        .feature-card {
+            background: var(--luxe-bg);
+            border-radius: var(--radius);
+            padding: 0.9rem 0.5rem;
+            text-align: center;
+            border: 1px solid var(--luxe-border);
+            transition: all 0.3s ease;
+        }
+        .feature-card .icon {
+            font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+            display: block;
+        }
+        .feature-card .label {
+            font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+            font-weight: 500;
+            color: var(--luxe-text);
+        }
+        .feature-card .desc {
+            font-size: clamp(0.55rem, 1.4vw, 0.7rem);
+            color: var(--luxe-text-muted);
+            margin-top: 2px;
+        }
+
+        .info-box {
+            background: var(--luxe-bg);
+            border-radius: var(--radius);
+            padding: 0.9rem 1rem;
+            margin: 0.75rem 0;
             border: 1px solid var(--luxe-border);
         }
-        .webapp-note strong {
+        .info-box .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--luxe-border);
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
+        }
+        .info-box .row:last-child {
+            border-bottom: none;
+        }
+        .info-box .row .label {
+            color: var(--luxe-text-muted);
+        }
+        .info-box .row .value {
+            font-weight: 600;
+            color: var(--luxe-text);
+        }
+        .info-box .row .gold {
             color: var(--luxe-gold);
+        }
+
+        .note-box {
+            background: rgba(212, 184, 124, 0.04);
+            border-radius: var(--radius-sm);
+            padding: 0.8rem 0.9rem;
+            margin: 0.75rem 0;
+            border-right: 3px solid var(--luxe-gold);
+            font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+            color: var(--luxe-text-muted);
+            line-height: 1.7;
+        }
+        .note-box strong {
+            color: var(--luxe-gold);
+        }
+
+        .badge-men {
+            background: rgba(212, 184, 124, 0.08);
+            color: var(--luxe-gold);
+            padding: 2px 14px;
+            border-radius: 20px;
+            font-size: clamp(0.6rem, 1.4vw, 0.7rem);
+            font-weight: 600;
+            display: inline-block;
+            border: 1px solid rgba(212, 184, 124, 0.1);
+            margin-top: 4px;
+        }
+
+        .btn-start {
+            display: block;
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border: none;
+            border-radius: var(--radius);
+            font-size: clamp(0.95rem, 2.4vw, 1.1rem);
+            font-weight: 700;
+            cursor: pointer;
+            background: var(--luxe-gold);
+            color: #0A0E17;
+            transition: all 0.3s;
+            margin: 0.75rem 0 0.5rem;
+            box-shadow: 0 4px 20px rgba(212, 184, 124, 0.2);
+            font-family: inherit;
+            text-align: center;
+            min-height: 50px;
+            touch-action: manipulation;
+        }
+        .btn-start:active {
+            transform: scale(0.98);
+        }
+
+        @media (max-width: 400px) {
+            .features-grid {
+                gap: 4px;
+            }
+            .feature-card {
+                padding: 0.5rem 0.3rem;
+            }
+            .feature-card .icon {
+                font-size: clamp(1rem, 3vw, 1.4rem);
+            }
+        }
+
+        @media (max-width: 350px) {
+            .features-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 3px;
+            }
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- ... هدر و محتوای قبلی ... -->
+    <div class="brand-header">
+        <div class="brand-logo">M4<span>Cut</span></div>
+        <div class="brand-tagline">آرایشگاه تخصصی مردانه</div>
+        <div class="badge-men">✂️ حرفه‌ای • مدرن • سریع</div>
+    </div>
+
+    <div class="hero">
+        <div class="greeting">✨ سلام دوست عزیز به <span>M4Cut</span> خوش آمدید!</div>
+        <div class="sub">بهترین تجربه‌ی کوتاهی مو برای آقایان</div>
+    </div>
+
+    <div class="features-grid">
+        <div class="feature-card"><span class="icon">✂️</span><div class="label">کوتاهی تخصصی</div><div class="desc">مخصوص آقایان</div></div>
+        <div class="feature-card"><span class="icon">⚡</span><div class="label">سریع و دقیق</div><div class="desc">صرفه‌جویی در زمان</div></div>
+        <div class="feature-card"><span class="icon">💆‍♂️</span><div class="label">مشاوره رایگان</div><div class="desc">قبل از هر سرویس</div></div>
+        <div class="feature-card"><span class="icon">📅</span><div class="label">رزرو آسان</div><div class="desc">چند کلیک ساده</div></div>
+    </div>
+
+    <div class="info-box">
+        <div class="row"><span class="label">💳 بیعانه</span><span class="value gold">۲۰۰,۰۰۰ تومان</span></div>
+        <div class="row"><span class="label">🔄 بازگشت بیعانه</span><span class="value">در صورت حضور</span></div>
+        <div class="row"><span class="label">⚠️ عدم حضور</span><span class="value" style="color:var(--luxe-danger);">نوبت از بین می‌رود</span></div>
+    </div>
+
+    <div class="note-box">
+        <strong>📌 نکته مهم:</strong> در صورت عدم حضور در وقت تعیین‌شده، نوبت شما از بین خواهد رفت و بیعانه عودت داده نمی‌شود. لطفاً ۱۰ دقیقه قبل از ساعت رزرو در سالن حضور داشته باشید.
+    </div>
 
     <div class="webapp-note">
-        🔹 این صفحه از طریق <strong>WebApp</strong> در تلگرام باز شده است.
-        برای رزرو نوبت، روی دکمه زیر کلیک کنید.
+        🔹 این صفحه از طریق <strong>WebApp</strong> در تلگرام باز شده است. برای رزرو نوبت، روی دکمه زیر کلیک کنید.
     </div>
 
     <div class="support-box">
@@ -37,13 +191,12 @@
     </div>
 
     <button class="btn-start" id="startBtn">🚀 شروع رزرو</button>
-    <button onclick="Telegram.WebApp.close()" class="btn-start btn-close">❌ بستن</button>
+    <button onclick="Telegram.WebApp.close()" class="btn btn-close" style="margin-top:0.5rem;">❌ بستن</button>
 
     <div class="footer-note">M4Cut © 2026 • کلیه حقوق محفوظ است</div>
 </div>
 
 <script>
-    // ====== دریافت شماره پشتیبانی از سرور ======
     async function loadSupport() {
         try {
             const res = await fetch('/api/admin/support');
@@ -51,9 +204,7 @@
             if (data.status === 'ok') {
                 document.getElementById('supportDisplay').textContent = data.support_contact;
             }
-        } catch(e) {
-            console.error('Error loading support:', e);
-        }
+        } catch(e) {}
     }
     loadSupport();
 
