@@ -37,17 +37,85 @@ TOKEN = "8971000707:AAESYFI--ALKEXQgDN7c0yb9SjEBbQQN3BM"
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'}
 
 ADMIN_IDS = [int(x.strip()) for x in os.environ.get("ADMIN_IDS", "").split(",") if x.strip().isdigit()]
 print(f"👑 Admin IDs: {ADMIN_IDS}")
 
-# ====== تنظیمات Cloudinary (از متغیرهای محیطی) ======
-cloudinary.config(
-    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
-    api_key=os.environ.get("CLOUDINARY_API_KEY"),
-    api_secret=os.environ.get("CLOUDINARY_API_SECRET")
-)
+# ====== تنظیمات Cloudinary (با دیباگ) ======
+CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME")
+CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY")
+CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET")
+
+if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
+    cloudinary.config(
+        cloud_name=CLOUDINARY_CLOUD_NAME,
+        api_key=CLOUDINARY_API_KEY,
+        api_secret=CLOUDINARY_API_SECRET
+    )
+    print("✅ Cloudinary configured successfully.")
+else:
+    print("⚠️ Cloudinary credentials not found. Using local upload fallback.")
+
+
+# ============================================================
+#   تابع آپلود (با دیباگ قوی و پشتیبانی از آپلود محلی)
+# ============================================================
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route('/api/upload', methods=['POST'])
+def upload_file():
+    try:
+        # بررسی وجود فایل
+        if 'file' not in request.files:
+            return jsonify({"status": "error", "message": "هیچ فایلی ارسال نشده است."}), 400
+
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({"status": "error", "message": "هیچ فایلی انتخاب نشده است."}), 400
+
+        # بررسی فرمت فایل
+        if not allowed_file(file.filename):
+            return jsonify({
+                "status": "error",
+                "message": "فرمت فایل پشتیبانی نمی‌شود. فقط PNG, JPG, JPEG, GIF, WEBP, PDF"
+            }), 400
+
+        # ====== تلاش برای آپلود در Cloudinary ======
+        if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
+            try:
+                upload_result = cloudinary.uploader.upload(
+                    file,
+                    folder="m4cut_receipts",
+                    transformation={"quality": "auto", "fetch_format": "auto"},
+                    timeout=30
+                )
+                image_url = upload_result['secure_url']
+                print(f"✅ File uploaded to Cloudinary: {image_url}")
+                return jsonify({"status": "ok", "url": image_url})
+            except Exception as e:
+                print(f"⚠️ Cloudinary upload failed: {e}")
+                # اگر Cloudinary خطا داد، به آپلود محلی برگرد
+                print("🔄 Falling back to local upload...")
+
+        # ====== آپلود محلی (Fallback) ======
+        try:
+            filename = f"{int(time.time())}_{secure_filename(file.filename)}"
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            local_url = f"/static/uploads/{filename}"
+            print(f"✅ File uploaded locally: {local_url}")
+            return jsonify({"status": "ok", "url": local_url})
+        except Exception as e:
+            print(f"❌ Local upload failed: {e}")
+            return jsonify({"status": "error", "message": f"خطا در ذخیره فایل: {str(e)}"}), 500
+
+    except Exception as e:
+        print(f"❌ upload_file critical error: {e}")
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": f"خطای سرور: {str(e)}"}), 500)
 
 
 # ============================================================
