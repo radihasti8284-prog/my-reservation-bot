@@ -7,13 +7,72 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
+        /* ====== استایل‌های اختصاصی ادمین ====== */
+        .admin-box {
+            background: var(--luxe-bg);
+            padding: 0.9rem 1rem;
+            border-radius: var(--radius);
+            margin: 0.5rem 0;
+            border-right: 4px solid var(--luxe-gold);
+            transition: all 0.3s ease;
+            word-wrap: break-word;
+        }
+        .admin-box:hover {
+            border-color: var(--luxe-gold-light);
+        }
+        .admin-box.confirmed {
+            border-right-color: var(--luxe-success);
+        }
+        .admin-box.cancelled {
+            border-right-color: var(--luxe-danger);
+            opacity: 0.6;
+        }
+        .admin-box.completed {
+            border-right-color: var(--luxe-text-muted);
+        }
+        .admin-box .receipt-thumb {
+            max-width: 60px;
+            max-height: 60px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            border: 1px solid var(--luxe-border);
+            transition: all 0.3s ease;
+        }
+        .admin-box .receipt-thumb:hover {
+            transform: scale(1.05);
+            border-color: var(--luxe-gold);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: clamp(0.6rem, 1.4vw, 0.7rem);
+            font-weight: 700;
+        }
+        .status-badge.pending {
+            background: rgba(212, 184, 124, 0.2);
+            color: var(--luxe-gold);
+        }
+        .status-badge.confirmed {
+            background: rgba(46, 139, 87, 0.2);
+            color: var(--luxe-success);
+        }
+        .status-badge.cancelled {
+            background: rgba(178, 34, 52, 0.2);
+            color: var(--luxe-danger);
+        }
+        .status-badge.completed {
+            background: rgba(154, 165, 181, 0.2);
+            color: var(--luxe-text-muted);
+        }
         .search-box {
             display: flex;
             gap: 6px;
             margin-bottom: 0.75rem;
             flex-wrap: wrap;
         }
-        .search-box input, .search-box select {
+        .search-box input,
+        .search-box select {
             flex: 1 1 auto;
             min-width: 70px;
             padding: 0.5rem 0.6rem;
@@ -25,13 +84,10 @@
             font-size: clamp(0.7rem, 1.8vw, 0.85rem);
             min-height: 36px;
         }
-        .search-box input:focus, .search-box select:focus {
+        .search-box input:focus,
+        .search-box select:focus {
             border-color: var(--luxe-gold);
             outline: none;
-        }
-        .search-box .btn-sm {
-            flex: 0 1 auto;
-            min-width: 50px;
         }
         .setting-item {
             display: flex;
@@ -83,9 +139,59 @@
             border-color: var(--luxe-gold);
             outline: none;
         }
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--luxe-border);
+            border-top-color: var(--luxe-gold);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--luxe-card);
+            color: var(--luxe-text);
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--luxe-gold);
+            box-shadow: var(--luxe-shadow);
+            z-index: 9999;
+            font-size: clamp(0.85rem, 2vw, 1rem);
+            animation: slideUp 0.4s ease;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.success {
+            border-color: var(--luxe-success);
+        }
+        .toast.error {
+            border-color: var(--luxe-danger);
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
 
         @media (max-width: 400px) {
-            .search-box input, .search-box select {
+            .search-box input,
+            .search-box select {
                 min-width: 50px;
                 font-size: clamp(0.6rem, 1.5vw, 0.7rem);
                 padding: 0.3rem 0.4rem;
@@ -103,332 +209,567 @@
                 flex-direction: column;
                 gap: 4px;
             }
-            .search-box input, .search-box select {
+            .search-box input,
+            .search-box select {
                 width: 100%;
                 min-width: unset;
-            }
-            .search-box .btn-sm {
-                width: 100%;
-                text-align: center;
             }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="brand-header">
-        <div class="brand-logo">M4<span>Cut</span></div>
-        <div class="brand-tagline">📊 پنل مدیریت</div>
-    </div>
-
-    <div class="tabs">
-        <button class="active" data-tab="stats">📊 آمار</button>
-        <button data-tab="apps">📋 نوبت‌ها</button>
-        <button data-tab="users">👥 کاربران</button>
-        <button data-tab="schedule">⏰ ساعات</button>
-        <button data-tab="settings">⚙️ تنظیمات</button>
-        <button data-tab="broadcast">📢 اعلان</button>
-    </div>
-
-    <!-- آمار -->
-    <div id="tab-stats" class="tab-content active">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
-            <span style="font-weight:600;font-size:clamp(0.85rem,2.2vw,1rem);">📊 آمار کلی</span>
-            <button class="btn-sm btn-sm-primary" onclick="loadStats()" style="padding:0.3rem 0.8rem;">⟳ بروزرسانی</button>
+    <div class="container">
+        <div class="brand-header">
+            <div class="brand-logo">M4<span>Cut</span></div>
+            <div class="brand-tagline">📊 پنل مدیریت</div>
         </div>
-        <div class="stats-grid" id="statsGrid">
-            <div class="stat-card gold"><span class="number" id="statUsers">...</span><span class="label">👥 کاربران</span></div>
-            <div class="stat-card gold"><span class="number" id="statTotalApps">...</span><span class="label">📋 کل نوبت‌ها</span></div>
-            <div class="stat-card"><span class="number" id="statTodayApps">...</span><span class="label">📅 نوبت‌های امروز</span></div>
-            <div class="stat-card"><span class="number" id="statUpcomingApps">...</span><span class="label">📆 نوبت‌های آینده</span></div>
+
+        <div class="tabs">
+            <button class="active" data-tab="stats">📊 آمار</button>
+            <button data-tab="apps">📋 نوبت‌ها</button>
+            <button data-tab="users">👥 کاربران</button>
+            <button data-tab="schedule">⏰ ساعات</button>
+            <button data-tab="settings">⚙️ تنظیمات</button>
+            <button data-tab="broadcast">📢 اعلان</button>
         </div>
-        <div class="stats-detail">
-            <div class="row"><span class="label">⏳ در انتظار</span><span class="value" id="statPending">...</span></div>
-            <div class="row"><span class="label">✅ تأیید شده</span><span class="value" id="statConfirmed">...</span></div>
-            <div class="row"><span class="label">✔️ انجام شده</span><span class="value" id="statCompleted">...</span></div>
-            <div class="row"><span class="label">❌ لغو شده</span><span class="value" id="statCancelled">...</span></div>
+
+        <!-- ====== تب آمار ====== -->
+        <div id="tab-stats" class="tab-content active">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                <span style="font-weight:600;font-size:clamp(0.85rem,2.2vw,1rem);">📊 آمار کلی</span>
+                <button class="btn-sm btn-sm-primary" onclick="loadStats()" style="padding:0.3rem 0.8rem;">⟳ بروزرسانی</button>
+            </div>
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card gold"><span class="number" id="statUsers">...</span><span class="label">👥 کاربران</span></div>
+                <div class="stat-card gold"><span class="number" id="statTotalApps">...</span><span class="label">📋 کل نوبت‌ها</span></div>
+                <div class="stat-card"><span class="number" id="statTodayApps">...</span><span class="label">📅 نوبت‌های امروز</span></div>
+                <div class="stat-card"><span class="number" id="statUpcomingApps">...</span><span class="label">📆 نوبت‌های آینده</span></div>
+            </div>
+            <div class="stats-detail">
+                <div class="row"><span class="label">⏳ در انتظار</span><span class="value" id="statPending">...</span></div>
+                <div class="row"><span class="label">✅ تأیید شده</span><span class="value" id="statConfirmed">...</span></div>
+                <div class="row"><span class="label">✔️ انجام شده</span><span class="value" id="statCompleted">...</span></div>
+                <div class="row"><span class="label">❌ لغو شده</span><span class="value" id="statCancelled">...</span></div>
+            </div>
+            <div class="footer-note" style="margin-top:0.3rem;">🔄 هر بار ورود بروزرسانی می‌شود</div>
         </div>
-        <div class="footer-note" style="margin-top:0.3rem;">🔄 هر بار ورود بروزرسانی می‌شود</div>
-    </div>
 
-    <!-- نوبت‌ها -->
-    <div id="tab-apps" class="tab-content">
-        <div class="search-box">
-            <select id="filterStatus"><option value="">همه</option><option value="pending">در انتظار</option><option value="confirmed">تأیید</option><option value="completed">انجام</option><option value="cancelled">لغو</option></select>
-            <input type="text" id="filterUser" placeholder="آیدی کاربر...">
-            <input type="text" id="filterDate" placeholder="تاریخ...">
-            <button class="btn-sm btn-sm-primary" onclick="applyFilters()">🔍 فیلتر</button>
-            <button class="btn-sm btn-sm-primary" onclick="exportExcel()">📤 اکسل</button>
-        </div>
-        <div id="appointmentsList"></div>
-    </div>
-
-    <!-- کاربران -->
-    <div id="tab-users" class="tab-content">
-        <div id="usersList"></div>
-    </div>
-
-    <!-- ساعات کاری -->
-    <div id="tab-schedule" class="tab-content">
-        <div id="scheduleList"></div>
-        <button id="saveSchedule" class="btn btn-success" style="margin-top:0.75rem;">💾 ذخیره</button>
-    </div>
-
-    <!-- تنظیمات -->
-    <div id="tab-settings" class="tab-content">
-        <div class="setting-item">
-            <span class="label">📞 پشتیبانی</span>
-            <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                <input type="text" id="supportInput" value="@Tvpnred">
-                <button class="btn-sm btn-sm-primary" onclick="updateSupport()">ذخیره</button>
+        <!-- ====== تب نوبت‌ها ====== -->
+        <div id="tab-apps" class="tab-content">
+            <div class="search-box">
+                <select id="filterStatus">
+                    <option value="">همه</option>
+                    <option value="pending">در انتظار</option>
+                    <option value="confirmed">تأیید</option>
+                    <option value="completed">انجام</option>
+                    <option value="cancelled">لغو</option>
+                </select>
+                <input type="text" id="filterUser" placeholder="آیدی کاربر...">
+                <input type="text" id="filterDate" placeholder="تاریخ (مثلاً 1404/05/20)...">
+                <button class="btn-sm btn-sm-primary" onclick="applyFilters()">🔍 فیلتر</button>
+                <button class="btn-sm btn-sm-primary" onclick="exportExcel()">📤 اکسل</button>
+            </div>
+            <div id="appointmentsList">
+                <div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div>
             </div>
         </div>
-    </div>
 
-    <!-- اعلان همگانی -->
-    <div id="tab-broadcast" class="tab-content">
-        <div class="broadcast-area">
-            <textarea id="broadcastMessage" placeholder="متن پیام همگانی..."></textarea>
-            <button id="sendBroadcast" class="btn btn-success" style="margin-top:0.5rem;">📤 ارسال</button>
-            <div id="broadcastResult"></div>
+        <!-- ====== تب کاربران ====== -->
+        <div id="tab-users" class="tab-content">
+            <div id="usersList">
+                <div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div>
+            </div>
         </div>
+
+        <!-- ====== تب ساعات کاری ====== -->
+        <div id="tab-schedule" class="tab-content">
+            <div id="scheduleList">
+                <div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div>
+            </div>
+            <button id="saveSchedule" class="btn btn-success" style="margin-top:0.75rem;">💾 ذخیره</button>
+        </div>
+
+        <!-- ====== تب تنظیمات ====== -->
+        <div id="tab-settings" class="tab-content">
+            <div class="setting-item">
+                <span class="label">📞 شماره پشتیبانی (ادمین)</span>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                    <input type="text" id="supportInput" value="@Tvpnred">
+                    <button class="btn-sm btn-sm-primary" onclick="updateSupport()">ذخیره</button>
+                </div>
+            </div>
+            <div style="font-size:clamp(0.6rem,1.4vw,0.7rem);color:var(--luxe-text-muted);margin-top:0.5rem;">
+                این شماره در پیام استارت و لندینگ نمایش داده می‌شود.
+            </div>
+        </div>
+
+        <!-- ====== تب اعلان همگانی ====== -->
+        <div id="tab-broadcast" class="tab-content">
+            <div class="broadcast-area">
+                <label style="font-size:clamp(0.7rem,1.8vw,0.85rem);color:var(--luxe-text-muted);font-weight:500;">متن پیام همگانی:</label>
+                <textarea id="broadcastMessage" placeholder="متن پیام را وارد کنید..."></textarea>
+                <button id="sendBroadcast" class="btn btn-success" style="margin-top:0.5rem;">📤 ارسال</button>
+                <div id="broadcastResult"></div>
+            </div>
+        </div>
+
+        <button onclick="Telegram.WebApp.close()" class="btn btn-close">❌ بستن</button>
     </div>
 
-    <button onclick="Telegram.WebApp.close()" class="btn btn-close">❌ بستن</button>
-</div>
+    <script>
+        // ============================================================
+        //   M4Cut - اسکریپت پنل ادمین (بهینه‌شده)
+        // ============================================================
 
-<script>
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user || user.is_admin !== 1) window.location.href = '/static/index.html';
+        // ====== اعتبارسنجی کاربر ======
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.is_admin !== 1) {
+            alert('⛔ شما دسترسی ادمین ندارید.');
+            window.location.href = '/static/index.html';
+        }
 
-    // ====== تب‌ها ======
-    document.querySelectorAll('.tabs button').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + this.dataset.tab).classList.add('active');
-            if (this.dataset.tab === 'stats') loadStats();
-            if (this.dataset.tab === 'apps') loadAppointments();
-            if (this.dataset.tab === 'users') loadUsers();
-            if (this.dataset.tab === 'schedule') loadSchedule();
-            if (this.dataset.tab === 'settings') loadSupport();
+        // ====== متغیرهای عمومی ======
+        let currentFilter = {};
+        let toastTimeout = null;
+
+        // ====== تابع نمایش پیام (Toast) ======
+        function showToast(message, type = 'success') {
+            // حذف توست قبلی
+            const oldToast = document.querySelector('.toast');
+            if (oldToast) oldToast.remove();
+            if (toastTimeout) clearTimeout(toastTimeout);
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            toastTimeout = setTimeout(() => {
+                toast.remove();
+                toastTimeout = null;
+            }, 4000);
+        }
+
+        // ====== تب‌ها ======
+        document.querySelectorAll('.tabs button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+
+                // بارگیری داده‌ها با Lazy Loading
+                const tab = this.dataset.tab;
+                if (tab === 'stats') loadStats();
+                else if (tab === 'apps') loadAppointments();
+                else if (tab === 'users') loadUsers();
+                else if (tab === 'schedule') loadSchedule();
+            });
         });
-    });
 
-    // ====== آمار ======
-    async function loadStats() {
-        try {
-            const res = await fetch('/api/admin/stats');
-            const data = await res.json();
-            if (data.status === 'ok') {
-                const s = data.stats;
-                document.getElementById('statUsers').textContent = s.total_users;
-                document.getElementById('statTotalApps').textContent = s.total_appointments;
-                document.getElementById('statTodayApps').textContent = s.today_appointments;
-                document.getElementById('statUpcomingApps').textContent = s.upcoming_appointments;
-                document.getElementById('statPending').textContent = s.status.pending;
-                document.getElementById('statConfirmed').textContent = s.status.confirmed;
-                document.getElementById('statCompleted').textContent = s.status.completed;
-                document.getElementById('statCancelled').textContent = s.status.cancelled;
+        // ====== آمار ======
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/admin/stats');
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    const s = data.stats;
+                    document.getElementById('statUsers').textContent = s.total_users;
+                    document.getElementById('statTotalApps').textContent = s.total_appointments;
+                    document.getElementById('statTodayApps').textContent = s.today_appointments;
+                    document.getElementById('statUpcomingApps').textContent = s.upcoming_appointments;
+                    document.getElementById('statPending').textContent = s.status.pending;
+                    document.getElementById('statConfirmed').textContent = s.status.confirmed;
+                    document.getElementById('statCompleted').textContent = s.status.completed;
+                    document.getElementById('statCancelled').textContent = s.status.cancelled;
+                }
+            } catch (e) {
+                console.error('Error loading stats:', e);
+                showToast('خطا در بارگیری آمار', 'error');
             }
-        } catch(e) {}
-    }
+        }
 
-    // ====== نوبت‌ها ======
-    async function loadAppointments(filters = {}) {
-        try {
-            let url = '/api/admin/appointments?';
-            if (filters.status) url += `status=${filters.status}&`;
-            if (filters.user) url += `user=${filters.user}&`;
-            if (filters.date) url += `date=${filters.date}&`;
-            const res = await fetch(url);
-            const data = await res.json();
+        // ====== نوبت‌ها (با Pagination و Lazy Loading) ======
+        let appointmentsPage = 0;
+        const APPOINTMENTS_PER_PAGE = 10;
+        let allAppointments = [];
+        let filteredAppointments = [];
+
+        async function loadAppointments() {
             const div = document.getElementById('appointmentsList');
-            if (!data.appointments || data.appointments.length === 0) {
+            div.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div>';
+
+            try {
+                let url = '/api/admin/appointments?';
+                if (currentFilter.status) url += `status=${currentFilter.status}&`;
+                if (currentFilter.user) url += `user=${currentFilter.user}&`;
+                if (currentFilter.date) url += `date=${currentFilter.date}&`;
+
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (data.status === 'ok') {
+                    allAppointments = data.appointments || [];
+                    filteredAppointments = allAppointments;
+                    appointmentsPage = 0;
+                    renderAppointments();
+                } else {
+                    div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">خطا در بارگیری نوبت‌ها.</p>';
+                }
+            } catch (e) {
+                console.error('Error loading appointments:', e);
+                div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">خطا در بارگیری نوبت‌ها.</p>';
+                showToast('خطا در بارگیری نوبت‌ها', 'error');
+            }
+        }
+
+        function renderAppointments() {
+            const div = document.getElementById('appointmentsList');
+            const start = appointmentsPage * APPOINTMENTS_PER_PAGE;
+            const end = start + APPOINTMENTS_PER_PAGE;
+            const pageItems = filteredAppointments.slice(start, end);
+
+            if (filteredAppointments.length === 0) {
                 div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">هیچ نوبتی یافت نشد.</p>';
                 return;
             }
-            div.innerHTML = data.appointments.map(a => `
-                <div class="admin-box ${a.status}">
-                    <strong>${a.service_name}</strong><br>
-                    👤 ${a.user_name} | 📞 ${a.phone} | 🆔 ${a.telegram_id}<br>
-                    📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
-                    وضعیت: <span class="status-badge ${a.status}">${a.status === 'pending' ? 'در انتظار' : a.status === 'confirmed' ? 'تأیید شده' : a.status === 'cancelled' ? 'لغو شده' : 'انجام شده'}</span>
-                    ${a.receipt ? `<br><img src="${a.receipt}" class="receipt-thumb" onclick="window.open('${a.receipt}')" />` : ''}
-                    <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-                        <select onchange="updateStatus(${a.id}, this.value)" style="padding:0.3rem 0.5rem;border-radius:var(--radius-sm);border:1px solid var(--luxe-border);background:var(--luxe-bg);color:var(--luxe-text);font-family:inherit;font-size:clamp(0.65rem,1.6vw,0.75rem);min-height:30px;">
-                            <option value="pending" ${a.status === 'pending' ? 'selected' : ''}>در انتظار</option>
-                            <option value="confirmed" ${a.status === 'confirmed' ? 'selected' : ''}>تأیید</option>
-                            <option value="completed" ${a.status === 'completed' ? 'selected' : ''}>انجام</option>
-                            <option value="cancelled" ${a.status === 'cancelled' ? 'selected' : ''}>لغو</option>
-                        </select>
-                        ${a.status === 'pending' ? `<button class="btn-sm btn-sm-success" onclick="quickApprove(${a.id})">✔️ تأیید</button>` : ''}
+
+            let html = pageItems.map(a => `
+                    <div class="admin-box ${a.status}">
+                        <strong>${a.service_name}</strong><br>
+                        👤 ${a.user_name} | 📞 ${a.phone} | 🆔 ${a.telegram_id}<br>
+                        📅 ${a.appointment_date} | 🕐 ${a.appointment_time}<br>
+                        وضعیت: <span class="status-badge ${a.status}">${a.status === 'pending' ? 'در انتظار' : a.status === 'confirmed' ? 'تأیید شده' : a.status === 'cancelled' ? 'لغو شده' : 'انجام شده'}</span>
+                        ${a.receipt ? `<br><img src="${a.receipt}" class="receipt-thumb" onclick="window.open('${a.receipt}')" />` : ''}
+                        <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+                            <select onchange="updateStatus(${a.id}, this.value)" style="padding:0.3rem 0.5rem;border-radius:var(--radius-sm);border:1px solid var(--luxe-border);background:var(--luxe-bg);color:var(--luxe-text);font-family:inherit;font-size:clamp(0.65rem,1.6vw,0.75rem);min-height:30px;">
+                                <option value="pending" ${a.status === 'pending' ? 'selected' : ''}>در انتظار</option>
+                                <option value="confirmed" ${a.status === 'confirmed' ? 'selected' : ''}>تأیید</option>
+                                <option value="completed" ${a.status === 'completed' ? 'selected' : ''}>انجام</option>
+                                <option value="cancelled" ${a.status === 'cancelled' ? 'selected' : ''}>لغو</option>
+                            </select>
+                            ${a.status === 'pending' ? `<button class="btn-sm btn-sm-success" onclick="quickApprove(${a.id})">✔️ تأیید</button>` : ''}
+                        </div>
                     </div>
-                </div>
-            `).join('');
-        } catch(e) {}
-    }
+                `).join('');
 
-    function applyFilters() {
-        const status = document.getElementById('filterStatus').value;
-        const user = document.getElementById('filterUser').value;
-        const date = document.getElementById('filterDate').value;
-        loadAppointments({ status, user, date });
-    }
+            // دکمه‌های Pagination
+            const totalPages = Math.ceil(filteredAppointments.length / APPOINTMENTS_PER_PAGE);
+            if (totalPages > 1) {
+                html += `
+                        <div style="display:flex;justify-content:center;gap:8px;margin-top:1rem;flex-wrap:wrap;">
+                            ${appointmentsPage > 0 ? `<button class="btn-sm btn-sm-primary" onclick="changePage(-1)">⬅️ قبلی</button>` : ''}
+                            <span style="color:var(--luxe-text-muted);font-size:clamp(0.7rem,1.8vw,0.85rem);">صفحه ${appointmentsPage + 1} از ${totalPages}</span>
+                            ${appointmentsPage < totalPages - 1 ? `<button class="btn-sm btn-sm-primary" onclick="changePage(1)">بعدی ➡️</button>` : ''}
+                        </div>
+                    `;
+            }
 
-    async function updateStatus(id, status) {
-        try {
-            const res = await fetch(`/api/admin/appointments/${id}/status`, {
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({status})
-            });
-            const result = await res.json();
-            alert(result.message);
-            applyFilters();
-            loadStats();
-        } catch(e) { alert('خطا!'); }
-    }
+            div.innerHTML = html;
+        }
 
-    async function quickApprove(id) {
-        if (!confirm('تأیید نوبت؟')) return;
-        await updateStatus(id, 'confirmed');
-    }
+        function changePage(delta) {
+            appointmentsPage += delta;
+            renderAppointments();
+            // اسکرول به بالای لیست
+            document.getElementById('appointmentsList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
 
-    function exportExcel() {
-        window.open('/api/admin/export/excel', '_blank');
-    }
+        function applyFilters() {
+            currentFilter.status = document.getElementById('filterStatus').value;
+            currentFilter.user = document.getElementById('filterUser').value.trim();
+            currentFilter.date = document.getElementById('filterDate').value.trim();
+            appointmentsPage = 0;
+            loadAppointments();
+        }
 
-    // ====== کاربران ======
-    async function loadUsers() {
-        try {
-            const res = await fetch('/api/admin/users');
-            const data = await res.json();
+        async function updateStatus(id, status) {
+            try {
+                const btn = event?.target?.previousElementSibling;
+                if (btn) btn.disabled = true;
+
+                const res = await fetch(`/api/admin/appointments/${id}/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                const result = await res.json();
+
+                if (res.ok) {
+                    showToast(result.message || 'وضعیت با موفقیت تغییر کرد.', 'success');
+                    loadAppointments();
+                    loadStats();
+                } else {
+                    showToast(result.message || 'خطا در تغییر وضعیت.', 'error');
+                }
+            } catch (e) {
+                showToast('خطا در ارتباط با سرور.', 'error');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function quickApprove(id) {
+            if (!confirm('آیا از تأیید این نوبت مطمئن هستید؟')) return;
+            await updateStatus(id, 'confirmed');
+        }
+
+        function exportExcel() {
+            window.open('/api/admin/export/excel', '_blank');
+            showToast('📤 در حال دانلود فایل اکسل...', 'success');
+        }
+
+        // ====== کاربران ======
+        async function loadUsers() {
             const div = document.getElementById('usersList');
-            if (!data.users || data.users.length === 0) {
-                div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">هیچ کاربری ثبت نشده است.</p>';
+            div.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div>';
+
+            try {
+                const res = await fetch('/api/admin/users');
+                const data = await res.json();
+
+                if (data.status === 'ok' && data.users) {
+                    if (data.users.length === 0) {
+                        div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">هیچ کاربری ثبت نشده است.</p>';
+                        return;
+                    }
+
+                    div.innerHTML = data.users.map(u => `
+                            <div class="user-item">
+                                <div style="font-size:clamp(0.7rem,1.8vw,0.85rem);">
+                                    <strong>${u.name}</strong> | 📞 ${u.phone || '---'} | 🆔 ${u.telegram_id}
+                                    ${u.is_admin === 1 ? '<span class="admin-badge">👑 ادمین</span>' : ''}
+                                </div>
+                                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                                    <button class="btn-sm btn-sm-primary" onclick="toggleAdmin(${u.telegram_id}, ${u.is_admin === 1 ? 0 : 1})">${u.is_admin === 1 ? '⬇️ حذف ادمین' : '⬆️ ادمین کن'}</button>
+                                    <button class="btn-sm btn-sm-danger" onclick="deleteUser(${u.telegram_id})">🗑️ حذف</button>
+                                </div>
+                            </div>
+                        `).join('');
+                } else {
+                    div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">خطا در بارگیری کاربران.</p>';
+                }
+            } catch (e) {
+                console.error('Error loading users:', e);
+                div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">خطا در بارگیری کاربران.</p>';
+                showToast('خطا در بارگیری کاربران', 'error');
+            }
+        }
+
+        async function toggleAdmin(id, newStatus) {
+            if (!confirm(`آیا از ${newStatus === 1 ? 'ادمین کردن' : 'حذف ادمین از'} این کاربر مطمئن هستید؟`)) return;
+
+            try {
+                const res = await fetch(`/api/admin/users/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_admin: newStatus })
+                });
+                const result = await res.json();
+
+                if (res.ok) {
+                    showToast(result.message || 'نقش کاربر با موفقیت تغییر کرد.', 'success');
+                    loadUsers();
+                } else {
+                    showToast(result.message || 'خطا در تغییر نقش.', 'error');
+                }
+            } catch (e) {
+                showToast('خطا در ارتباط با سرور.', 'error');
+            }
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('آیا از حذف این کاربر مطمئن هستید؟ این عملیات قابل بازگشت نیست!')) return;
+
+            try {
+                const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+                const result = await res.json();
+
+                if (res.ok) {
+                    showToast(result.message || 'کاربر با موفقیت حذف شد.', 'success');
+                    loadUsers();
+                    loadStats();
+                } else {
+                    showToast(result.message || 'خطا در حذف کاربر.', 'error');
+                }
+            } catch (e) {
+                showToast('خطا در ارتباط با سرور.', 'error');
+            }
+        }
+
+        // ====== ساعات کاری ======
+        async function loadSchedule() {
+            const div = document.getElementById('scheduleList');
+            div.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--luxe-text-muted);">⏳ در حال بارگیری...</div>';
+
+            try {
+                const res = await fetch('/api/admin/schedule');
+                const data = await res.json();
+
+                if (data.status === 'ok' && data.schedule) {
+                    const days = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'];
+                    div.innerHTML = data.schedule.map(s => `
+                            <div class="schedule-item">
+                                <span class="day-name">${days[s.day_of_week]}</span>
+                                <input type="time" value="${s.start_time}" data-day="${s.day_of_week}" class="start-time">
+                                <span>تا</span>
+                                <input type="time" value="${s.end_time}" data-day="${s.day_of_week}" class="end-time">
+                                <span>ظرفیت: <input type="number" value="${s.capacity}" data-day="${s.day_of_week}" class="capacity-input" min="0" max="10"></span>
+                                <label><input type="checkbox" ${s.is_active === 1 ? 'checked' : ''} data-day="${s.day_of_week}" class="active-check"> فعال</label>
+                            </div>
+                        `).join('');
+                } else {
+                    div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">خطا در بارگیری ساعات کاری.</p>';
+                }
+            } catch (e) {
+                console.error('Error loading schedule:', e);
+                div.innerHTML = '<p style="color:var(--luxe-text-muted);text-align:center;padding:1rem;">خطا در بارگیری ساعات کاری.</p>';
+                showToast('خطا در بارگیری ساعات کاری', 'error');
+            }
+        }
+
+        document.getElementById('saveSchedule').addEventListener('click', async function() {
+            const items = document.querySelectorAll('.schedule-item');
+            const updates = [];
+            let hasError = false;
+
+            items.forEach(item => {
+                const day = parseInt(item.querySelector('.start-time').dataset.day);
+                const start = item.querySelector('.start-time').value;
+                const end = item.querySelector('.end-time').value;
+                const cap = parseInt(item.querySelector('.capacity-input').value) || 2;
+
+                if (!start || !end) {
+                    hasError = true;
+                    showToast(`لطفاً ساعت شروع و پایان را برای ${item.querySelector('.day-name').textContent} وارد کنید.`, 'error');
+                    return;
+                }
+
+                updates.push({
+                    day_of_week: day,
+                    start_time: start,
+                    end_time: end,
+                    capacity: cap,
+                    is_active: item.querySelector('.active-check').checked ? 1 : 0
+                });
+            });
+
+            if (hasError) return;
+
+            try {
+                this.disabled = true;
+                this.textContent = '⏳ در حال ذخیره...';
+
+                for (const update of updates) {
+                    const res = await fetch('/api/admin/schedule', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(update)
+                    });
+                    if (!res.ok) throw new Error('خطا در ذخیره');
+                }
+
+                showToast('✅ ساعات کاری با موفقیت ذخیره شد!', 'success');
+                loadSchedule();
+            } catch (e) {
+                showToast('❌ خطا در ذخیره ساعات کاری.', 'error');
+            } finally {
+                this.disabled = false;
+                this.textContent = '💾 ذخیره';
+            }
+        });
+
+        // ====== تنظیمات پشتیبانی ======
+        async function loadSupport() {
+            try {
+                const res = await fetch('/api/admin/support');
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    document.getElementById('supportInput').value = data.support_contact || '@Tvpnred';
+                }
+            } catch (e) {
+                console.error('Error loading support:', e);
+            }
+        }
+
+        async function updateSupport() {
+            const val = document.getElementById('supportInput').value.trim();
+            if (!val) {
+                showToast('لطفاً مقدار را وارد کنید.', 'error');
                 return;
             }
-            div.innerHTML = data.users.map(u => `
-                <div class="user-item">
-                    <div style="font-size:clamp(0.7rem,1.8vw,0.85rem);">
-                        <strong>${u.name}</strong> | 📞 ${u.phone || '---'} | 🆔 ${u.telegram_id}
-                        ${u.is_admin === 1 ? '<span class="admin-badge">👑 ادمین</span>' : ''}
-                    </div>
-                    <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                        <button class="btn-sm btn-sm-primary" onclick="toggleAdmin(${u.telegram_id}, ${u.is_admin === 1 ? 0 : 1})">${u.is_admin === 1 ? '⬇️' : '⬆️'}</button>
-                        <button class="btn-sm btn-sm-danger" onclick="deleteUser(${u.telegram_id})">🗑️</button>
-                    </div>
-                </div>
-            `).join('');
-        } catch(e) {}
-    }
 
-    async function toggleAdmin(id, newStatus) {
-        if (!confirm('تغییر نقش؟')) return;
-        try {
-            await fetch(`/api/admin/users/${id}`, {
-                method:'PUT',
-                headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({is_admin:newStatus})
-            });
-            loadUsers();
-        } catch(e) { alert('خطا!'); }
-    }
+            try {
+                const btn = event?.target;
+                if (btn) btn.disabled = true;
 
-    async function deleteUser(id) {
-        if (!confirm('حذف کاربر؟')) return;
-        try {
-            await fetch(`/api/admin/users/${id}`, { method:'DELETE' });
-            loadUsers();
-        } catch(e) { alert('خطا!'); }
-    }
+                const res = await fetch('/api/admin/support', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ support_contact: val })
+                });
+                const result = await res.json();
 
-    // ====== ساعات کاری ======
-    async function loadSchedule() {
-        try {
-            const res = await fetch('/api/admin/schedule');
-            const data = await res.json();
-            const div = document.getElementById('scheduleList');
-            const days = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
-            div.innerHTML = data.schedule.map(s => `
-                <div class="schedule-item">
-                    <span class="day-name">${days[s.day_of_week]}</span>
-                    <input type="time" value="${s.start_time}" data-day="${s.day_of_week}" class="start-time">
-                    <span>تا</span>
-                    <input type="time" value="${s.end_time}" data-day="${s.day_of_week}" class="end-time">
-                    <span>ظرفیت: <input type="number" value="${s.capacity}" data-day="${s.day_of_week}" class="capacity-input"></span>
-                    <label><input type="checkbox" ${s.is_active === 1 ? 'checked' : ''} data-day="${s.day_of_week}" class="active-check"> فعال</label>
-                </div>
-            `).join('');
-        } catch(e) {}
-    }
-
-    document.getElementById('saveSchedule').addEventListener('click', async function() {
-        const items = document.querySelectorAll('.schedule-item');
-        const updates = [];
-        items.forEach(item => {
-            const day = parseInt(item.querySelector('.start-time').dataset.day);
-            const start = item.querySelector('.start-time').value;
-            const end = item.querySelector('.end-time').value;
-            const cap = parseInt(item.querySelector('.capacity-input').value) || 2;
-            const active = item.querySelector('.active-check').checked ? 1 : 0;
-            updates.push({ day_of_week: day, start_time: start, end_time: end, capacity: cap, is_active: active });
-        });
-        for (const u of updates) {
-            await fetch('/api/admin/schedule', {
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body:JSON.stringify(u)
-            });
+                if (res.ok) {
+                    showToast('✅ شماره پشتیبانی به‌روزرسانی شد!', 'success');
+                } else {
+                    showToast(result.message || 'خطا در به‌روزرسانی.', 'error');
+                }
+            } catch (e) {
+                showToast('خطا در ارتباط با سرور.', 'error');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
         }
-        alert('✅ ذخیره شد!');
-        loadSchedule();
-    });
 
-    // ====== تنظیمات پشتیبانی ======
-    async function loadSupport() {
-        try {
-            const res = await fetch('/api/admin/support');
-            const data = await res.json();
-            document.getElementById('supportInput').value = data.support_contact || '@Tvpnred';
-        } catch(e) {}
-    }
+        // ====== اعلان همگانی ======
+        document.getElementById('sendBroadcast').addEventListener('click', async function() {
+            const msg = document.getElementById('broadcastMessage').value.trim();
+            if (!msg) {
+                showToast('لطفاً متن پیام را وارد کنید.', 'error');
+                return;
+            }
 
-    async function updateSupport() {
-        const val = document.getElementById('supportInput').value.trim();
-        if (!val) { alert('مقدار را وارد کنید.'); return; }
-        try {
-            await fetch('/api/admin/support', {
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({support_contact:val})
-            });
-            alert('✅ ذخیره شد!');
-        } catch(e) { alert('خطا!'); }
-    }
+            if (!confirm(`آیا از ارسال این پیام به همه کاربران مطمئن هستید؟\n\n${msg}`)) return;
 
-    // ====== اعلان همگانی ======
-    document.getElementById('sendBroadcast').addEventListener('click', async function() {
-        const msg = document.getElementById('broadcastMessage').value.trim();
-        if (!msg) { alert('متن را وارد کنید.'); return; }
-        if (!confirm(`ارسال:\n\n${msg}`)) return;
-        try {
-            const res = await fetch('/api/admin/broadcast', {
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({message:msg})
-            });
-            const result = await res.json();
-            document.getElementById('broadcastResult').innerHTML = `<div class="msg msg-success">✅ ${result.message}</div>`;
-            document.getElementById('broadcastMessage').value = '';
-        } catch(e) { alert('خطا!'); }
-    });
+            try {
+                this.disabled = true;
+                this.textContent = '⏳ در حال ارسال...';
 
-    // بارگیری اولیه
-    loadStats();
-    loadAppointments();
-</script>
+                const res = await fetch('/api/admin/broadcast', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const result = await res.json();
+
+                if (res.ok) {
+                    document.getElementById('broadcastResult').innerHTML = `<div class="msg msg-success">✅ ${result.message}</div>`;
+                    document.getElementById('broadcastMessage').value = '';
+                    showToast(`✅ ${result.message}`, 'success');
+                } else {
+                    showToast(result.message || 'خطا در ارسال پیام.', 'error');
+                }
+            } catch (e) {
+                showToast('خطا در ارتباط با سرور.', 'error');
+            } finally {
+                this.disabled = false;
+                this.textContent = '📤 ارسال';
+            }
+        });
+
+        // ====== بارگیری اولیه ======
+        loadStats();
+        loadAppointments();
+
+        // ====== به‌روزرسانی خودکار آمار (هر ۶۰ ثانیه) ======
+        setInterval(() => {
+            // فقط اگه تب آمار فعال باشه
+            const statsTab = document.getElementById('tab-stats');
+            if (statsTab.classList.contains('active')) {
+                loadStats();
+            }
+        }, 60000);
+    </script>
 </body>
 </html>
