@@ -699,25 +699,21 @@ def get_services():
 def upload_file():
     try:
         if 'file' not in request.files:
-            return jsonify({"status": "error", "message": "No file"}), 400
+            return jsonify({"status": "error", "message": "هیچ فایلی ارسال نشده است."}), 400
+
         file = request.files['file']
         if file.filename == '':
-            return jsonify({"status": "error", "message": "No file selected"}), 400
-        if file and allowed_file(file.filename):
-            # آپلود به Cloudinary
-            upload_result = cloudinary.uploader.upload(
-                file,
-                folder="m4cut_receipts",
-                transformation={"quality": "auto", "fetch_format": "auto"}
-            )
-            image_url = upload_result['secure_url']
-            return jsonify({"status": "ok", "url": image_url})
-        return jsonify({"status": "error", "message": "Invalid format"}), 400
-    except Exception as e:
-        print(f"❌ upload_file error: {e}")
-        traceback.print_exc()
-        return jsonify({"status": "error", "message": str(e)}), 500
+            return jsonify({"status": "error", "message": "هیچ فایلی انتخاب نشده است."}), 400
 
+        # آپلود فایل به Cloudinary
+        upload_result = cloudinary.uploader.upload(file, folder="m4cut_receipts")
+        image_url = upload_result['secure_url']  # دریافت URL امن
+
+        return jsonify({"status": "ok", "url": image_url})
+
+    except Exception as e:
+        print(f"❌ خطا در آپلود: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/appointments', methods=['POST'])
 def create_appointment():
