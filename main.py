@@ -29,7 +29,6 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
 
-    # جدول users
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,7 +40,6 @@ def init_db():
         )
     ''')
 
-    # جدول services
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS services (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -53,7 +51,6 @@ def init_db():
         )
     ''')
 
-    # جدول appointments
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS appointments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -70,7 +67,6 @@ def init_db():
         )
     ''')
 
-    # جدول work_schedule
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS work_schedule (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -81,7 +77,6 @@ def init_db():
         )
     ''')
 
-    # جدول broadcasts
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS broadcasts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -90,7 +85,6 @@ def init_db():
         )
     ''')
 
-    # اضافه کردن ستون‌های جدید
     cursor.execute("PRAGMA table_info(appointments)")
     cols = [c[1] for c in cursor.fetchall()]
     if 'notification_sent' not in cols:
@@ -101,7 +95,6 @@ def init_db():
     if 'description' not in cols:
         cursor.execute("ALTER TABLE services ADD COLUMN description TEXT")
 
-    # اضافه کردن فقط یک خدمت: کوتاهی مو
     cursor.execute("DELETE FROM services")
     services = [
         ('✂️ کوتاهی مو', 30, 200000,
@@ -112,7 +105,6 @@ def init_db():
         services
     )
 
-    # تنظیمات پیش‌فرض ساعات کاری
     cursor.execute("SELECT COUNT(*) FROM work_schedule")
     if cursor.fetchone()[0] == 0:
         default_schedule = [
@@ -214,11 +206,27 @@ def webhook():
 
             if text == '/start':
                 send_message(chat_id,
-                             "👋 به ربات رزرو آرایشگاه خوش آمدید!\nبرای رزرو روی دکمه زیر کلیک کنید:",
+                             "✨ سلام دوست عزیز به **M4Cut** خوش آمدید! ✨\n\n"
+                             "💇‍♂️ **آرایشگاه مدرن و حرفه‌ای**\n"
+                             "با ما بهترین تجربه‌ی کوتاهی مو را داشته باشید.\n\n"
+                             "🔹 **خدمات ما:**\n"
+                             "✂️ کوتاهی موی حرفه‌ای (مردانه و زنانه)\n"
+                             "✨ اصلاح و استایل‌دهی با جدیدترین متدها\n"
+                             "💆‍♂️ مشاوره رایگان قبل از هر سرویس\n\n"
+                             "📅 **رزرو آسان و سریع**\n"
+                             "فقط با چند کلیک، نوبت خود را ثبت کنید.\n\n"
+                             "💳 **بیعانه:** ۲۰۰,۰۰۰ تومان (قابل بازگشت در صورت حضور)\n"
+                             "⚠️ توجه: در صورت عدم حضور، نوبت شما از بین خواهد رفت.\n\n"
+                             "📞 **پشتیبانی:**\n"
+                             "برای راهنمایی و ارتباط با ادمین، از دستور /admin استفاده کنید.\n\n"
+                             "🕒 **ساعات کاری:**\n"
+                             "شنبه تا چهارشنبه: ۹ صبح تا ۶ عصر\n"
+                             "پنجشنبه و جمعه: تعطیل\n\n"
+                             "👇 برای رزرو نوبت، روی دکمه زیر کلیک کنید:",
                              reply_markup={
                                  "inline_keyboard": [[
                                      {"text": "📅 رزرو نوبت",
-                                      "web_app": {"url": "https://my-reservation-bot.onrender.com/static/user.html"}}
+                                      "web_app": {"url": "https://my-reservation-bot.onrender.com/static/landing.html"}}
                                  ]]
                              }
                              )
@@ -388,41 +396,23 @@ def admin_get_users():
     return jsonify({"status": "ok", "users": [dict(u) for u in users]})
 
 
-# ========== API جدید: آمار کامل ==========
 @app.route('/api/admin/stats', methods=['GET'])
 def admin_get_stats():
     conn = get_db()
     cursor = conn.cursor()
-
-    # تعداد کل کاربران
     cursor.execute("SELECT COUNT(*) FROM users")
     total_users = cursor.fetchone()[0]
-
-    # تعداد کل نوبت‌ها
     cursor.execute("SELECT COUNT(*) FROM appointments")
     total_appointments = cursor.fetchone()[0]
-
-    # آمار وضعیت نوبت‌ها
-    cursor.execute("""
-        SELECT status, COUNT(*) as count 
-        FROM appointments 
-        GROUP BY status
-    """)
+    cursor.execute("SELECT status, COUNT(*) as count FROM appointments GROUP BY status")
     status_counts = cursor.fetchall()
     status_stats = {row['status']: row['count'] for row in status_counts}
-
-    # تعداد نوبت‌های امروز
     today = datetime.now().strftime("%Y/%m/%d")
     cursor.execute("SELECT COUNT(*) FROM appointments WHERE appointment_date = ?", (today,))
     today_appointments = cursor.fetchone()[0]
-
-    # تعداد نوبت‌های هفته جاری (۷ روز آینده)
-    # برای سادگی، فقط تاریخ‌های آینده را حساب می‌کنیم
     cursor.execute("SELECT COUNT(*) FROM appointments WHERE appointment_date >= ?", (today,))
     upcoming_appointments = cursor.fetchone()[0]
-
     conn.close()
-
     return jsonify({
         "status": "ok",
         "stats": {
@@ -446,15 +436,12 @@ def admin_broadcast():
     message = data.get('message')
     if not message:
         return jsonify({"status": "error", "message": "Message required"}), 400
-
     count = send_broadcast(message)
-
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("INSERT INTO broadcasts (message) VALUES (?)", (message,))
     conn.commit()
     conn.close()
-
     return jsonify({"status": "ok", "message": f"پیام به {count} کاربر ارسال شد."})
 
 
@@ -475,7 +462,6 @@ def update_schedule():
     start_time = data.get('start_time')
     end_time = data.get('end_time')
     is_active = data.get('is_active', 1)
-
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
