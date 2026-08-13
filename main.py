@@ -9,10 +9,14 @@ from datetime import datetime, timedelta
 import threading
 import jdatetime
 
-# ========== تعریف app در ابتدا ==========
+# ============================================================
+#   تعریف app در ابتدا (مهم!)
+# ============================================================
 app = Flask(__name__)
 
-# ========== تنظیمات اولیه ==========
+# ============================================================
+#   تنظیمات اولیه
+# ============================================================
 TOKEN = "8971000707:AAESYFI--ALKEXQgDN7c0yb9SjEBbQQN3BM"
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -22,7 +26,9 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 ADMIN_IDS = [int(x.strip()) for x in os.environ.get("ADMIN_IDS", "").split(",") if x.strip().isdigit()]
 
 
-# ========== دیتابیس ==========
+# ============================================================
+#   دیتابیس
+# ============================================================
 def get_db():
     conn = sqlite3.connect('data.db')
     conn.row_factory = sqlite3.Row
@@ -139,7 +145,9 @@ def init_db():
 init_db()
 
 
-# ========== توابع کمکی ==========
+# ============================================================
+#   توابع کمکی
+# ============================================================
 def send_message(chat_id, text, reply_markup=None):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
     payload = {"chat_id": chat_id, "text": text}
@@ -257,7 +265,9 @@ def decrement_capacity(date, time_slot):
     conn.close()
 
 
-# ========== Scheduler یادآوری خودکار ==========
+# ============================================================
+#   Scheduler یادآوری خودکار
+# ============================================================
 def reminder_job():
     while True:
         try:
@@ -296,7 +306,9 @@ def reminder_job():
 threading.Thread(target=reminder_job, daemon=True).start()
 
 
-# ========== وب‌هوک تلگرام ==========
+# ============================================================
+#   وب‌هوک تلگرام
+# ============================================================
 @app.route('/webhook', methods=['POST'])
 def webhook():
     try:
@@ -356,7 +368,9 @@ def webhook():
         return {"status": "error"}, 500
 
 
-# ========== API ==========
+# ============================================================
+#   API
+# ============================================================
 @app.route('/api/auth', methods=['POST'])
 def auth_user():
     data = request.get_json()
@@ -798,7 +812,9 @@ def get_persian_date():
     })
 
 
-# ========== سرو فایل‌های استاتیک ==========
+# ============================================================
+#   سرو فایل‌های استاتیک
+# ============================================================
 @app.route('/static/<path:path>')
 def serve_static(path):
     return send_from_directory('static', path)
@@ -809,7 +825,9 @@ def home():
     return "✅ M4Cut روشن است!"
 
 
-# ========== اجرا ==========
+# ============================================================
+#   اجرا
+# ============================================================
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port, debug=False)
