@@ -2,3 +2,8 @@ flask
 requests
 openpyxl
 jdatetime
+cloudinary
+reportlab
+arabic_reshaper
+python-bidi
+APScheduler

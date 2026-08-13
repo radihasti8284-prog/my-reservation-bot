@@ -8,7 +8,25 @@ from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 import threading
 import jdatetime
-import traceback  # برای لاگ دقیق خطاها
+import traceback
+
+# ====== کتابخانه‌های Cloudinary ======
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+# ====== کتابخانه‌های PDF ======
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+from io import BytesIO
+
+# ====== کتابخانه‌های فارسی در PDF ======
+import arabic_reshaper
+from bidi.algorithm import get_display
 
 # ============================================================
 #   راه‌اندازی اولیه
@@ -24,9 +42,141 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 ADMIN_IDS = [int(x.strip()) for x in os.environ.get("ADMIN_IDS", "").split(",") if x.strip().isdigit()]
 print(f"👑 Admin IDs: {ADMIN_IDS}")
 
+# ====== تنظیمات Cloudinary (از متغیرهای محیطی) ======
+cloudinary.config(
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET")
+)
+
 
 # ============================================================
-#   دیتابیس (با دیباگ قوی)
+#   توابع کمکی PDF (تبدیل فارسی)
+# ============================================================
+def reshape_persian(text):
+    """تبدیل متن فارسی به شکل صحیح برای نمایش در PDF"""
+    if not text:
+        return ""
+    try:
+        reshaped = arabic_reshaper.reshape(text)
+        return get_display(reshaped)
+    except:
+        return text
+
+
+def generate_appointment_pdf(appointments, title="گزارش نوبت‌ها"):
+    """تولید PDF از لیست نوبت‌ها با پشتیبانی از فارسی"""
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=1.5 * cm, leftMargin=1.5 * cm,
+                            topMargin=1.5 * cm, bottomMargin=1.5 * cm)
+    styles = getSampleStyleSheet()
+
+    # استایل فارسی
+    persian_style = ParagraphStyle(
+        'PersianStyle',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=10,
+        alignment=TA_RIGHT,
+        encoding='utf-8'
+    )
+
+    elements = []
+
+    # عنوان
+    title_style = ParagraphStyle(
+        'TitleStyle',
+        parent=styles['Heading1'],
+        fontName='Helvetica-Bold',
+        fontSize=16,
+        alignment=TA_CENTER,
+        spaceAfter=20
+    )
+    elements.append(Paragraph(reshape_persian(title), title_style))
+
+    # تاریخ امروز (شمسی)
+    now = jdatetime.datetime.now()
+    date_str = now.strftime("%Y/%m/%d - %H:%M")
+    date_style = ParagraphStyle(
+        'DateStyle',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=9,
+        alignment=TA_RIGHT,
+        textColor=colors.gray
+    )
+    elements.append(Paragraph(reshape_persian(f"تاریخ: {date_str}"), date_style))
+    elements.append(Spacer(1, 20))
+
+    # جدول داده‌ها
+    if appointments and len(appointments) > 0:
+        # هدر جدول
+        headers = ['ردیف', 'نام کاربر', 'شماره تماس', 'خدمت', 'تاریخ', 'ساعت', 'وضعیت']
+        data = [headers]
+
+        for idx, app in enumerate(appointments, 1):
+            status_map = {
+                'pending': 'در انتظار',
+                'confirmed': 'تأیید شده',
+                'completed': 'انجام شده',
+                'cancelled': 'لغو شده'
+            }
+            row = [
+                str(idx),
+                app.get('user_name', 'نامشخص'),
+                app.get('phone', '---'),
+                app.get('service_name', '---'),
+                app.get('appointment_date', '---'),
+                app.get('appointment_time', '---'),
+                status_map.get(app.get('status', ''), app.get('status', '---'))
+            ]
+            data.append(row)
+
+        # ساخت جدول
+        table = Table(data, colWidths=[30, 80, 80, 100, 80, 60, 80])
+        table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.gold),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        elements.append(table)
+
+        # تعداد کل
+        elements.append(Spacer(1, 10))
+        count_style = ParagraphStyle(
+            'CountStyle',
+            parent=styles['Normal'],
+            fontName='Helvetica-Bold',
+            fontSize=10,
+            alignment=TA_RIGHT
+        )
+        elements.append(Paragraph(reshape_persian(f"تعداد کل نوبت‌ها: {len(appointments)}"), count_style))
+    else:
+        elements.append(Paragraph(reshape_persian("هیچ نوبتی یافت نشد."), persian_style))
+
+    # فوتر
+    elements.append(Spacer(1, 30))
+    footer_style = ParagraphStyle(
+        'FooterStyle',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=8,
+        alignment=TA_CENTER,
+        textColor=colors.gray
+    )
+    elements.append(Paragraph(reshape_persian("M4Cut © 2026 - گزارش خودکار"), footer_style))
+
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
+
+
+# ============================================================
+#   دیتابیس
 # ============================================================
 def get_db():
     try:
@@ -110,14 +260,13 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )''')
 
-        # اضافه کردن ستون‌های جدید در صورت عدم وجود (با دیباگ)
         try:
             cursor.execute("PRAGMA table_info(appointments)")
             cols = [c[1] for c in cursor.fetchall()]
             if 'notification_sent' not in cols:
                 cursor.execute("ALTER TABLE appointments ADD COLUMN notification_sent INTEGER DEFAULT 0")
         except Exception as e:
-            print(f"⚠️ Error altering appointments table: {e}")
+            print(f"⚠️ Error altering appointments: {e}")
 
         try:
             cursor.execute("PRAGMA table_info(services)")
@@ -125,9 +274,8 @@ def init_db():
             if 'description' not in cols:
                 cursor.execute("ALTER TABLE services ADD COLUMN description TEXT")
         except Exception as e:
-            print(f"⚠️ Error altering services table: {e}")
+            print(f"⚠️ Error altering services: {e}")
 
-        # تنظیمات پیش‌فرض
         cursor.execute("SELECT COUNT(*) FROM settings WHERE key = 'support_contact'")
         if cursor.fetchone()[0] == 0:
             cursor.execute("INSERT INTO settings (key, value) VALUES ('support_contact', '@Tvpnred')")
@@ -166,7 +314,7 @@ init_db()
 
 
 # ============================================================
-#   توابع کمکی با دیباگ قوی
+#   توابع کمکی اصلی
 # ============================================================
 def send_message(chat_id, text, reply_markup=None):
     try:
@@ -178,8 +326,7 @@ def send_message(chat_id, text, reply_markup=None):
         if response.status_code != 200:
             print(f"⚠️ Telegram API error: {response.status_code} - {response.text}")
     except Exception as e:
-        print(f"⚠️ Error sending message to {chat_id}: {e}")
-        traceback.print_exc()
+        print(f"⚠️ Error sending message: {e}")
 
 
 def get_or_create_user(telegram_id, name, phone):
@@ -207,7 +354,6 @@ def get_or_create_user(telegram_id, name, phone):
         return dict(user)
     except Exception as e:
         print(f"❌ get_or_create_user error: {e}")
-        traceback.print_exc()
         return None
 
 
@@ -329,7 +475,7 @@ def decrement_capacity(date, time_slot):
 
 
 # ============================================================
-#   Scheduler یادآوری (با دیباگ)
+#   Scheduler یادآوری
 # ============================================================
 def reminder_job():
     while True:
@@ -378,7 +524,7 @@ except Exception as e:
 
 
 # ============================================================
-#   وب‌هوک تلگرام (با دیباگ قوی)
+#   وب‌هوک تلگرام
 # ============================================================
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -387,7 +533,7 @@ def webhook():
         if not data:
             return jsonify({"status": "error", "message": "Invalid JSON"}), 400
 
-        print(f"📩 Webhook received: {data.get('update_id', 'N/A')}")
+        print(f"📩 Webhook received")
 
         if 'message' in data:
             msg = data['message']
@@ -397,7 +543,6 @@ def webhook():
             telegram_id = user.get('id')
             full_name = f"{user.get('first_name', '')} {user.get('last_name', '')}".strip()
 
-            # ثبت یا دریافت کاربر
             get_or_create_user(telegram_id, full_name, "")
 
             if text == '/start':
@@ -445,13 +590,13 @@ def webhook():
                 send_message(chat_id, "❓ از /start استفاده کنید.")
         return {"status": "ok"}, 200
     except Exception as e:
-        print(f"❌ Webhook critical error: {e}")
+        print(f"❌ Webhook error: {e}")
         traceback.print_exc()
         return {"status": "error", "message": str(e)}, 500
 
 
 # ============================================================
-#   API های عمومی (با دیباگ قوی)
+#   API های عمومی
 # ============================================================
 @app.route('/api/auth', methods=['POST'])
 def auth_user():
@@ -493,13 +638,18 @@ def upload_file():
         if file.filename == '':
             return jsonify({"status": "error", "message": "No file selected"}), 400
         if file and allowed_file(file.filename):
-            filename = f"{int(time.time())}_{secure_filename(file.filename)}"
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            return jsonify({"status": "ok", "url": f"/static/uploads/{filename}"})
+            # آپلود به Cloudinary
+            upload_result = cloudinary.uploader.upload(
+                file,
+                folder="m4cut_receipts",
+                transformation={"quality": "auto", "fetch_format": "auto"}
+            )
+            image_url = upload_result['secure_url']
+            return jsonify({"status": "ok", "url": image_url})
         return jsonify({"status": "error", "message": "Invalid format"}), 400
     except Exception as e:
         print(f"❌ upload_file error: {e}")
+        traceback.print_exc()
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
@@ -900,6 +1050,86 @@ def admin_broadcast():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
+# ====== API جدید: گزارش روزانه PDF ======
+@app.route('/api/admin/daily-report/pdf', methods=['GET'])
+def daily_report_pdf():
+    try:
+        conn = get_db()
+        if conn is None:
+            return jsonify({"status": "error", "message": "Database connection failed"}), 500
+        cursor = conn.cursor()
+
+        today = datetime.now().strftime("%Y/%m/%d")
+
+        cursor.execute('''
+            SELECT a.*, u.name as user_name, u.phone, s.name as service_name
+            FROM appointments a
+            JOIN users u ON a.user_id = u.id
+            JOIN services s ON a.service_id = s.id
+            WHERE a.appointment_date = ?
+            ORDER BY a.appointment_time ASC
+        ''', (today,))
+        apps = cursor.fetchall()
+        conn.close()
+
+        appointments = [dict(a) for a in apps]
+
+        # عنوان شامل تاریخ شمسی
+        now = jdatetime.datetime.now()
+        persian_date = now.strftime("%Y/%m/%d")
+        title = f"گزارش روزانه مشتریان - {persian_date}"
+
+        pdf_buffer = generate_appointment_pdf(appointments, title)
+
+        return send_file(
+            pdf_buffer,
+            as_attachment=True,
+            download_name=f"daily-report-{now.strftime('%Y-%m-%d')}.pdf",
+            mimetype='application/pdf'
+        )
+    except Exception as e:
+        print(f"❌ daily_report_pdf error: {e}")
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+# ====== API جدید: گزارش کامل PDF ======
+@app.route('/api/admin/full-report/pdf', methods=['GET'])
+def full_report_pdf():
+    try:
+        conn = get_db()
+        if conn is None:
+            return jsonify({"status": "error", "message": "Database connection failed"}), 500
+        cursor = conn.cursor()
+
+        cursor.execute('''
+            SELECT a.*, u.name as user_name, u.phone, s.name as service_name
+            FROM appointments a
+            JOIN users u ON a.user_id = u.id
+            JOIN services s ON a.service_id = s.id
+            ORDER BY a.appointment_date DESC, a.appointment_time ASC
+        ''')
+        apps = cursor.fetchall()
+        conn.close()
+
+        appointments = [dict(a) for a in apps]
+        title = "گزارش کامل نوبت‌ها"
+
+        pdf_buffer = generate_appointment_pdf(appointments, title)
+
+        return send_file(
+            pdf_buffer,
+            as_attachment=True,
+            download_name=f"full-report-{datetime.now().strftime('%Y-%m-%d')}.pdf",
+            mimetype='application/pdf'
+        )
+    except Exception as e:
+        print(f"❌ full_report_pdf error: {e}")
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+# ====== API قبلی اکسل (برای موارد خاص) ======
 @app.route('/api/admin/export/excel', methods=['GET'])
 def export_excel():
     try:
@@ -989,7 +1219,7 @@ def serve_static(path):
 
 @app.route('/')
 def home():
-    return "✅ M4Cut روشن است! (نسخه با دیباگ قوی)"
+    return "✅ M4Cut روشن است! (نسخه نهایی با Cloudinary و PDF)"
 
 
 # ============================================================
