@@ -224,7 +224,8 @@
             <div class="brand-tagline">📊 پنل مدیریت</div>
         </div>
 
-        <div class="tabs">
+        <!-- ====== منوهای اصلی (تب‌ها) ====== -->
+        <div class="tabs" id="adminTabs">
             <button class="active" data-tab="stats">📊 آمار</button>
             <button data-tab="apps">📋 نوبت‌ها</button>
             <button data-tab="users">👥 کاربران</button>
@@ -318,7 +319,7 @@
 
     <script>
         // ============================================================
-        //   M4Cut - اسکریپت پنل ادمین (بهینه‌شده)
+        //   M4Cut - اسکریپت پنل ادمین (دیباگ شده)
         // ============================================================
 
         // ====== اعتبارسنجی کاربر ======
@@ -334,7 +335,6 @@
 
         // ====== تابع نمایش پیام (Toast) ======
         function showToast(message, type = 'success') {
-            // حذف توست قبلی
             const oldToast = document.querySelector('.toast');
             if (oldToast) oldToast.remove();
             if (toastTimeout) clearTimeout(toastTimeout);
@@ -350,20 +350,39 @@
             }, 4000);
         }
 
-        // ====== تب‌ها ======
-        document.querySelectorAll('.tabs button').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-                document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+        // ====== تابع تغییر تب (رفع مشکل اصلی) ======
+        function switchTab(tabId) {
+            // مخفی کردن همه تب‌ها
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            // حذف کلاس active از همه دکمه‌ها
+            document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
 
-                // بارگیری داده‌ها با Lazy Loading
-                const tab = this.dataset.tab;
-                if (tab === 'stats') loadStats();
-                else if (tab === 'apps') loadAppointments();
-                else if (tab === 'users') loadUsers();
-                else if (tab === 'schedule') loadSchedule();
+            // نمایش تب انتخاب شده
+            const targetTab = document.getElementById('tab-' + tabId);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+
+            // فعال کردن دکمه مربوطه
+            const targetBtn = document.querySelector(`.tabs button[data-tab="${tabId}"]`);
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+            }
+
+            // بارگیری داده‌های مربوط به تب
+            if (tabId === 'stats') loadStats();
+            else if (tabId === 'apps') loadAppointments();
+            else if (tabId === 'users') loadUsers();
+            else if (tabId === 'schedule') loadSchedule();
+        }
+
+        // ====== رویدادهای کلیک روی منوها ======
+        document.querySelectorAll('.tabs button').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tabId = this.dataset.tab;
+                console.log('Switching to tab:', tabId);
+                switchTab(tabId);
             });
         });
 
@@ -389,7 +408,7 @@
             }
         }
 
-        // ====== نوبت‌ها (با Pagination و Lazy Loading) ======
+        // ====== نوبت‌ها ======
         let appointmentsPage = 0;
         const APPOINTMENTS_PER_PAGE = 10;
         let allAppointments = [];
@@ -453,7 +472,6 @@
                     </div>
                 `).join('');
 
-            // دکمه‌های Pagination
             const totalPages = Math.ceil(filteredAppointments.length / APPOINTMENTS_PER_PAGE);
             if (totalPages > 1) {
                 html += `
@@ -471,7 +489,6 @@
         function changePage(delta) {
             appointmentsPage += delta;
             renderAppointments();
-            // اسکرول به بالای لیست
             document.getElementById('appointmentsList').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -758,18 +775,21 @@
             }
         });
 
-        // ====== بارگیری اولیه ======
+        // ====== بارگیری اولیه (آمار پیش‌فرض) ======
+        console.log('Admin panel loaded. Loading stats...');
         loadStats();
-        loadAppointments();
 
         // ====== به‌روزرسانی خودکار آمار (هر ۶۰ ثانیه) ======
         setInterval(() => {
-            // فقط اگه تب آمار فعال باشه
             const statsTab = document.getElementById('tab-stats');
-            if (statsTab.classList.contains('active')) {
+            if (statsTab && statsTab.classList.contains('active')) {
                 loadStats();
             }
         }, 60000);
+
+        // ====== راه‌اندازی اولیه ======
+        // اطمینان از اینکه تب آمار فعال باشد
+        switchTab('stats');
     </script>
 </body>
 </html>
